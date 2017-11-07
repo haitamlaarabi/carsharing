@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<carsharingscenario>
+	<stations>
+		<station  id="stat.id.1" name="null" x="1050" y="3950" capacity="1" stationtype="default"/>
+		<station  id="stat.id.2" name="null" x="1050" y="1050" capacity="1" stationtype="default"/>
+	</stations>
+	<vehicles>
+		<vehicle  id="veh.id.1.0" name="null" station="stat.id.1" vehicletype="default"/>
+	</vehicles>
+</carsharingscenario>
