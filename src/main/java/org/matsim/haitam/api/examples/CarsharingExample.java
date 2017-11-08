@@ -1,151 +1,101 @@
 package org.matsim.haitam.api.examples;
 
-import java.io.File;
-import java.util.ArrayList;
+import java.util.HashMap;
 
-import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
+import org.apache.log4j.Logger;
+import org.matsim.analysis.LegHistogramModule;
+import org.matsim.analysis.LegTimesModule;
+import org.matsim.analysis.ScoreStatsModule;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.population.Activity;
-import org.matsim.api.core.v01.population.Leg;
-import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.Plan;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
-import org.matsim.core.gbl.MatsimRandom;
-import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.population.PopulationUtils;
-import org.matsim.core.population.io.PopulationWriter;
+import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.facilities.ActivityFacilitiesFactory;
-import org.matsim.facilities.ActivityFacility;
-import org.matsim.facilities.FacilitiesWriter;
-import org.matsim.haitam.api.carsharing.CarsharingScenario;
-import org.matsim.haitam.api.carsharing.CarsharingScenarioReader;
-import org.matsim.haitam.api.carsharing.core.CarsharingStation;
-import org.matsim.haitam.api.config.CarsharingInstaller;
-import org.matsim.haitam.api.replanning.CarsharingPlanModeCst;
+import org.matsim.haitam.api.config.CarsharingInstaller.CarsharingMobsimHandleImpl;
+import org.matsim.haitam.api.qsim.CarsharingMobsimHandle;
+import org.matsim.haitam.api.utils.CarsharingUtils;
+import org.matsim.withinday.trafficmonitoring.TravelTimeCollector;
+import org.matsim.withinday.trafficmonitoring.TravelTimeCollectorModule;
+
+import com.google.inject.Inject;
 
 public class CarsharingExample {
 	
-	protected String rootDir = "examples";
+	private static Logger logger = Logger.getLogger(CarsharingExample.class);
+	static String rootDir = "examples/"+CarsharingExample.class.getSimpleName();
 
-	public static void main(String[] args) {	
-		new CarsharingExample().run("CarsharingExample", "carsharing.xml");
-	}
-	
-	protected void modulesToInstance(CarsharingInstaller installer) {
-		installer.carsharing.getConfig().setCarsharingScenarioInputFile(rootDir + "/data/carsharing.xml");
-		installer.carsharing.getConfig().setActivateModule(true);
-		installer.carsharing.getConfig().setRentalRatePerMin(-0.0);
-		installer.carsharing.getConfig().setSearchDistance(500.0);
-	}
-	
-	
-	public void run(final String exampleDir, final String carsharingfile) {
-		if(!new File(rootDir + "/" + exampleDir ).exists()) {
-			new File(rootDir + "/" + exampleDir ).mkdir();
-		}
-		final Config config = ConfigUtils.loadConfig(rootDir + "/data/0.config.xml");
-		config.controler().setOutputDirectory(rootDir + "/" + exampleDir + "/output");
+	public static void main(String[] args) {
+		
+		final Config config = ConfigUtils.createConfig();
+		config.controler().setOutputDirectory(rootDir + "/output");
 		config.controler().setFirstIteration(0);
 		config.controler().setLastIteration(0);
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
+		config.transit().setTransitScheduleFile(rootDir + "/transit-schedule.xml");
+		config.transit().setVehiclesFile(rootDir + "/transit-vehicles.xml");
+		config.network().setInputFile(rootDir + "/multimodalnetwork.xml");
+		config.planCalcScore().addActivityParams(CarsharingUtils.createActivityParam("h", CarsharingUtils.toSecond(0,0,0), CarsharingUtils.toSecond(23,59,59),  CarsharingUtils.toSecond(11,0,0)));
+		config.planCalcScore().addActivityParams(CarsharingUtils.createActivityParam("w", CarsharingUtils.toSecond(7,0,0), CarsharingUtils.toSecond(21,0,0), CarsharingUtils.toSecond(8,0,0)));
+
 		final Scenario scenario = ScenarioUtils.loadScenario(config);
 		final Controler controler = new Controler(scenario);
 		
-		String logdir =  rootDir + "/" + exampleDir + "/output/log";
-		CarsharingInstaller installer = new CarsharingInstaller(scenario, controler, logdir){
-			@Override
-			public void installOrOverrideModules() {
-				modulesToInstance(this);
-			}
-
+		CarsharingInstallerDefault installer = new CarsharingInstallerDefault(scenario, controler, rootDir + "/log") {
 			@Override
 			public void init() {
+				manager.getConfig().setCarsharingScenarioInputFile(rootDir + "/carsharing-scenario.xml");
+				//manager.getConfig().setCarsharingScenarioInputFile(rootDir + "/user-reloc-scenario.xml");
+				super.init();
+			}
+			@Override
+			public void installOrOverrideModules() {
+				super.installOrOverrideModules();
+				
+				/// ********
+				bindCarsharingMobsimMonitoring(TestingTravelTimeCollector.class);
+				bind(TravelTime.class).to(TravelTimeCollector.class);
+				addEventHandlerBinding().to(TravelTimeCollector.class);
+				bindNetworkTravelTime().to(TravelTimeCollector.class);
+				addMobsimListenerBinding().to(TravelTimeCollector.class);
+				// *********
 				
 			}
 		};
+		installer.init();
+		
+		CarsharingDemandGenerator.dummy(scenario, installer.getCarsharingScenario(), 100);
+		//CarsharingDemandGenerator.scenario_user_relocation(scenario, installer.getCarsharingScenario());
 		
 		controler.addOverridingModule(installer);
-		new CarsharingScenarioReader(installer.getCarsharingScenario(), scenario).readXml( rootDir + "/data/" +  carsharingfile);
-		generateCarsharingDemand(scenario, installer.getCarsharingScenario(), 100);
-		new FacilitiesWriter(scenario.getActivityFacilities()).writeV1( rootDir + "/data/" + carsharingfile + "_facilities.xml");
-		new PopulationWriter(scenario.getPopulation()).writeV5( rootDir + "/" + "/data/" + carsharingfile + "_plans.xml");
+		controler.addOverridingModule(new LegHistogramModule());	
+		controler.addOverridingModule(new LegTimesModule());
+		controler.addOverridingModule(new ScoreStatsModule());
 		controler.run();
+		logger.info("END :)");
 	}
 	
-
-	// Default behavior, customers will be living and working within a radius of 500m
-	protected void generateCarsharingDemand(Scenario scenario, CarsharingScenario carsharing, int demandSize) {		
-		ActivityFacilitiesFactory factory = scenario.getActivityFacilities().getFactory();
-		int facility_counter = 0;
-		for(int i = 0 ; i < demandSize ; i++) {
-			Person p = scenario.getPopulation().getFactory().createPerson(Id.createPersonId("c"+i));
-			Plan plan = PopulationUtils.createPlan(p);
-
-			// home
-			CarsharingStation start_station = getRandomStation(carsharing, null);
-			Coord h = getRandomCoordInDisk(start_station.facility().getCoord(), carsharing.getConfig().getSearchDistance());
-			Id<Link> hlink = NetworkUtils.getNearestLink(scenario.getNetwork(), h).getId();
-			Activity home1 = PopulationUtils.createAndAddActivityFromCoord(plan, "h", h);
-			home1.setEndTime(8 * 3600);
-			home1.setLinkId(hlink);
-			ActivityFacility hfacility = factory.createActivityFacility(Id.create((facility_counter++)+"h", ActivityFacility.class), h);
-			home1.setFacilityId(hfacility.getId());
-			
-			// leg
-			Leg leg1 = PopulationUtils.createAndAddLeg(plan, CarsharingPlanModeCst.directTrip);
-			
-			// work
-			CarsharingStation dest_station = getRandomStation(carsharing, start_station);
-			Coord w = getRandomCoordInDisk(dest_station.facility().getCoord(), carsharing.getConfig().getSearchDistance());
-			Activity work = PopulationUtils.createAndAddActivityFromCoord(plan, "w", w);
-			Id<Link> wlink = NetworkUtils.getNearestLink(scenario.getNetwork(), w).getId();
-			work.setLinkId(wlink);
-			work.setEndTime(17 * 3600);
-			ActivityFacility wfacility = factory.createActivityFacility(Id.create((facility_counter++)+"w", ActivityFacility.class), w);
-			work.setFacilityId(wfacility.getId());
-			
-			// leg
-			Leg leg2 = PopulationUtils.createAndAddLeg(plan, CarsharingPlanModeCst.directTrip);
-			
-			// home
-			Activity home2 = PopulationUtils.createAndAddActivityFromCoord(plan, "h", h);
-			home2.setLinkId(hlink);
-			home2.setFacilityId(hfacility.getId());
-			
-
-			p.addPlan(plan);
-			scenario.getPopulation().addPerson(p);
-			scenario.getActivityFacilities().addActivityFacility(hfacility);
-			scenario.getActivityFacilities().addActivityFacility(wfacility);
-		}
-	}
-	
-	protected static CarsharingStation getRandomStation(CarsharingScenario carsharing, CarsharingStation toexclude) {
-		ArrayList<CarsharingStation> stations = new ArrayList<CarsharingStation>();
-		for(CarsharingStation s : carsharing.getStations().values()) {
-			if(s != toexclude) {
-				stations.add(s);
+	public static class TestingTravelTimeCollector extends CarsharingMobsimHandle {
+		@Inject private TravelTime tt;
+		HashMap<Link, Double> testing = new HashMap<Link, Double>();
+		@Override
+		protected void execute(double time) {
+			TravelTimeCollector ttc = (TravelTimeCollector) tt;
+			for(Link l : sc.getNetwork().getLinks().values()) {
+				double t = ttc.getLinkTravelTime(l, time, null, null);
+				if(!testing.containsKey(l)) {
+					testing.put(l,  t);
+				} else {
+					if (testing.get(l) != t) {
+						System.out.println("working");
+					}
+				}
 			}
 		}
-		return stations.get(MatsimRandom.getRandom().nextInt(stations.size()));
 	}
 	
-	protected static Coord getRandomCoordInDisk(Coord center, double radius) {
-		Double a = MatsimRandom.getRandom().nextDouble();
-		Double b = MatsimRandom.getRandom().nextDouble();
-		if(b < a) {
-			double c = b;
-			b = a;
-			a = c;
-		}
-		return new Coord(center.getX() + b*radius*Math.cos(2*Math.PI*a/b), center.getY() + b*radius*Math.sin(2*Math.PI*a/b));
-	}
-	
-	
+
 }

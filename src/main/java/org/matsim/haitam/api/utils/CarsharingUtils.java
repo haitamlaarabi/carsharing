@@ -18,6 +18,9 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup.ModeRoutingParams;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.routes.NetworkRoute;
@@ -142,6 +145,35 @@ public final class CarsharingUtils {
 		walkLeg.setTravelTime(awalkRoute.getTravelTime());
 		walkLeg.setRoute(awalkRoute);
 		return walkLeg;
+	}
+	
+	
+	public static ActivityParams createActivityParam(String TYPE, double oTime, double cTime, double tDuration) {
+		ActivityParams x = new ActivityParams(TYPE);
+		x.setClosingTime(cTime);
+		x.setOpeningTime(oTime);
+		x.setTypicalDuration(tDuration);
+		return x;
+	}
+	
+	public static ModeParams createModeParam(String mode, double factTraveling, double factMoney, double factConstant) {
+		double utilPerf = 6.0;
+		ModeParams x = new ModeParams(mode);
+		x.setMode(mode);
+		x.setMarginalUtilityOfTraveling(factTraveling*60.0 + utilPerf);
+		//x.setMarginalUtilityOfDistance(factDistance/1000.0 + utilPerf);
+		x.setMonetaryDistanceRate(factMoney/1000.0);
+		x.setConstant(factConstant);
+		return x;
+	}
+	
+	public static ModeRoutingParams createModeRouting(String mode, double distanceFact, double teleSpeed) {
+		ModeRoutingParams x = new ModeRoutingParams(mode);
+		x.setMode(mode);
+		x.setBeelineDistanceFactor(distanceFact);
+		//x.setTeleportedModeFreespeedFactor(teleFreeSpeedFact);
+		x.setTeleportedModeSpeed(teleSpeed/3.6);
+		return x;
 	}
 	
 	

@@ -1,48 +1,77 @@
 package org.matsim.haitam.api.examples;
 
+import java.util.ArrayList;
+
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
+import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
+import org.matsim.facilities.ActivityFacilitiesFactory;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.haitam.api.carsharing.CarsharingScenario;
 import org.matsim.haitam.api.carsharing.core.CarsharingStation;
-import org.matsim.haitam.api.config.CarsharingInstaller;
 import org.matsim.haitam.api.replanning.CarsharingPlanModeCst;
 
-public class CarsharingUserRelocationExample extends CarsharingExample {
+public class CarsharingDemandGenerator {
+	
+	// Default behavior, customers will be living and working within a radius of 500m
+	public static void dummy(Scenario scenario, CarsharingScenario carsharing, int demandSize) {
+		ActivityFacilitiesFactory factory = scenario.getActivityFacilities().getFactory();
+		int facility_counter = 0;
+		for(int i = 0 ; i < demandSize ; i++) {
+			Person p = scenario.getPopulation().getFactory().createPerson(Id.createPersonId("c"+i));
+			Plan plan = PopulationUtils.createPlan(p);
 
-	public static void main(String[] args) {
-		new CarsharingUserRelocationExample().run("CarsharingUserRelocationExample", "carsharing_scenario1.xml");
+			// home
+			CarsharingStation start_station = getRandomStation(carsharing, null);
+			Coord h = getRandomCoordInDisk(start_station.facility().getCoord(), carsharing.getConfig().getSearchDistance());
+			Id<Link> hlink = NetworkUtils.getNearestLink(scenario.getNetwork(), h).getId();
+			Activity home1 = PopulationUtils.createAndAddActivityFromCoord(plan, "h", h);
+			home1.setEndTime(8 * 3600);
+			home1.setLinkId(hlink);
+			ActivityFacility hfacility = factory.createActivityFacility(Id.create((facility_counter++)+"h", ActivityFacility.class), h);
+			home1.setFacilityId(hfacility.getId());
+			
+			// leg
+			Leg leg1 = PopulationUtils.createAndAddLeg(plan, CarsharingPlanModeCst.directTrip);
+			
+			// work
+			CarsharingStation dest_station = getRandomStation(carsharing, start_station);
+			Coord w = getRandomCoordInDisk(dest_station.facility().getCoord(), carsharing.getConfig().getSearchDistance());
+			Activity work = PopulationUtils.createAndAddActivityFromCoord(plan, "w", w);
+			Id<Link> wlink = NetworkUtils.getNearestLink(scenario.getNetwork(), w).getId();
+			work.setLinkId(wlink);
+			work.setStartTime(8 * 3600 + 30 * 60);
+			work.setEndTime(17 * 3600);
+			ActivityFacility wfacility = factory.createActivityFacility(Id.create((facility_counter++)+"w", ActivityFacility.class), w);
+			work.setFacilityId(wfacility.getId());
+			
+			// leg
+			Leg leg2 = PopulationUtils.createAndAddLeg(plan, CarsharingPlanModeCst.directTrip);
+			
+			// home
+			Activity home2 = PopulationUtils.createAndAddActivityFromCoord(plan, "h", h);
+			home2.setStartTime(17 * 3600 + 30 * 60);
+			home2.setLinkId(hlink);
+			home2.setFacilityId(hfacility.getId());
+			
+
+			p.addPlan(plan);
+			scenario.getPopulation().addPerson(p);
+			scenario.getActivityFacilities().addActivityFacility(hfacility);
+			scenario.getActivityFacilities().addActivityFacility(wfacility);
+		}
 	}
 	
-	@Override
-	protected void modulesToInstance(CarsharingInstaller installer) {
-		super.modulesToInstance(installer);
-	}
-	
-	@Override
-	protected void generateCarsharingDemand(Scenario scenario, CarsharingScenario carsharing, int demandSize) {
-		scenario1(scenario, carsharing);
-	}
-	
-	// scenario 1
-	// 2 stations, one with 2 vehicles, and other with 0 vehicle
-	// numberOfVehicles		station1		station2
-	// t0						+2				0
-	// t1						-1 (-1) ---->	+2 	
-	// t2						+1		<----	-1
-	// t3						+1		<----	-1
-	// t4						-1		---->	+1
-	// t5						+1		<----	-1
-	// t6						+1		<----	-1
-	void scenario1(Scenario scenario, CarsharingScenario carsharing) {
+	static void scenario_user_relocation(Scenario scenario, CarsharingScenario carsharing) {
 		
 		Id<ActivityFacility> idStation1 = Id.create("S1", ActivityFacility.class);
 		Id<ActivityFacility> idStation2 = Id.create("S2", ActivityFacility.class);
@@ -163,7 +192,28 @@ public class CarsharingUserRelocationExample extends CarsharingExample {
 	}
 	
 	
-	Activity createAndGetActivity(Scenario scenario, Network carNetwork, Plan plan, String type, Coord coord, String id) {
+	static CarsharingStation getRandomStation(CarsharingScenario carsharing, CarsharingStation toexclude) {
+		ArrayList<CarsharingStation> stations = new ArrayList<CarsharingStation>();
+		for(CarsharingStation s : carsharing.getStations().values()) {
+			if(s != toexclude) {
+				stations.add(s);
+			}
+		}
+		return stations.get(MatsimRandom.getRandom().nextInt(stations.size()));
+	}
+	
+	static Coord getRandomCoordInDisk(Coord center, double radius) {
+		Double a = MatsimRandom.getRandom().nextDouble();
+		Double b = MatsimRandom.getRandom().nextDouble();
+		if(b < a) {
+			double c = b;
+			b = a;
+			a = c;
+		}
+		return new Coord(center.getX() + b*radius*Math.cos(2*Math.PI*a/b), center.getY() + b*radius*Math.sin(2*Math.PI*a/b));
+	}
+	
+	static Activity createAndGetActivity(Scenario scenario, Network carNetwork, Plan plan, String type, Coord coord, String id) {
 		Id<ActivityFacility> idaf = Id.create(id, ActivityFacility.class);
 		ActivityFacility xfacility = scenario.getActivityFacilities().getFacilities().get(idaf);
 		if(xfacility == null) {
@@ -176,5 +226,5 @@ public class CarsharingUserRelocationExample extends CarsharingExample {
 		home1.setFacilityId(xfacility.getId());
 		return home1;
 	}
-	
+
 }

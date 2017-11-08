@@ -18,6 +18,7 @@ import org.matsim.core.mobsim.qsim.pt.ComplexTransitStopHandlerFactory;
 import org.matsim.core.mobsim.qsim.pt.TransitQSimEngine;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngineModule;
 import org.matsim.core.router.TripRouter;
+import org.matsim.core.router.util.TravelTime;
 import org.matsim.haitam.api.carsharing.CarsharingManager;
 import org.matsim.haitam.api.carsharing.core.CarsharingDataCollector.CarsharingDataProvider;
 import org.matsim.haitam.api.config.CarsharingConfigGroup;
@@ -48,6 +49,7 @@ public class CarsharingQsimFactory implements Provider<Netsim> {
 	@Inject private CarsharingManager manager;
 	
 	@Inject private CarsharingMobsimHandle monitoringEngine;
+	
 	
 	
 	@Override
