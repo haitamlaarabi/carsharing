@@ -32,6 +32,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	protected final int iter_activation;
 	protected final int time_bin;
 	
+	
 	public AbstractRelocationStrategy(
 			CarsharingManager m, 
 			TripRouter router, 
@@ -54,51 +55,50 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	}
 	
 	@Override
-	public List<CarsharingOffer> computeUserRelocation(double time, CarsharingDemand demand, List<CarsharingOffer> offers) {
+	public void updateRelocationList(double time) {
+		if(this.time_step.check((int) time)) {
+			this.update();
+		}
+	}
+	
+	@Override
+	public List<CarsharingOffer> relocationList(double time, CarsharingDemand demand, List<CarsharingOffer> offers) {
 		if(this.iter >= this.iter_activation) {
-			if(this.time_step.get() == 0) this.init();
-			if(this.time_step.check((int) time)) this.update();
 			return this.usrelocate(demand, offers);
 		}
 		return new ArrayList<CarsharingOffer>();
 	}
 	
 	@Override
-	public List<CarsharingRelocationTask> computeOperatorRelocation(double time) {
+	public List<CarsharingRelocationTask> relocationList(double time) {
 		List<CarsharingRelocationTask> booked_tasks = new ArrayList<CarsharingRelocationTask>();
 		if(this.iter >= this.iter_activation) {
-			if(this.time_step.get() == 0) this.init();
-			if(this.time_step.check((int) time)) this.update();
-			List<CarsharingOperatorMobsim> ops = this.m.getOperators().availableSet();
-			if(!ops.isEmpty()) {
-				List<CarsharingRelocationTask> tasks = this.oprelocate(ops);
-				CarsharingRelocationTask sTask = null;
-				double accessTime = 0;
-				double accessDistance = 0;
-				List<CarsharingRelocationTask> temp_tasks = new ArrayList<CarsharingRelocationTask>();
-				for(CarsharingRelocationTask t : tasks) {
-					temp_tasks.add(t);
-					if(t.getSize() == 0) {
-						accessTime = t.getTravelTime();
-						accessDistance = t.getDistance();
+			List<CarsharingRelocationTask> tasks = this.oprelocate();
+			CarsharingRelocationTask sTask = null;
+			double accessTime = 0, accessDistance = 0;
+			List<CarsharingRelocationTask> temp_tasks = new ArrayList<CarsharingRelocationTask>();
+			for(CarsharingRelocationTask t : tasks) {
+				temp_tasks.add(t);
+				if(t.getSize() == 0) {
+					accessTime = t.getTravelTime();
+					accessDistance = t.getDistance();
+				} else {
+					if(t.getType().equals("START")) {
+						sTask = t;
 					} else {
-						if(t.getType().equals("START")) {
-							sTask = t;
-						} else {
-							CarsharingBookingRecord b = constructBookingRecord(sTask, t, accessTime, accessDistance);
-							if(this.m.booking().process(b)) { // **** BOOKING 
-								CarsharingOperatorMobsim op = (CarsharingOperatorMobsim) t.getAgent();
-								for(CarsharingRelocationTask t2 : temp_tasks) {
-									t2.setBooking(b);
-									booked_tasks.add(t2);
-									op.addTask(t2);
-								}
+						CarsharingBookingRecord b = constructBookingRecord(sTask, t, accessTime, accessDistance);
+						if(this.m.booking().process(b)) { // **** BOOKING 
+							CarsharingOperatorMobsim op = (CarsharingOperatorMobsim) t.getAgent();
+							for(CarsharingRelocationTask t2 : temp_tasks) {
+								t2.setBooking(b);
+								booked_tasks.add(t2);
+								op.addTask(t2);
 							}
-							sTask = null;
-							accessTime = 0;
-							accessDistance = 0;
-							temp_tasks.clear();
 						}
+						sTask = null;
+						accessTime = 0;
+						accessDistance = 0;
+						temp_tasks.clear();
 					}
 				}
 			}
@@ -135,10 +135,10 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	protected int iter = -1;
 	
 	protected abstract List<CarsharingOffer> usrelocate(CarsharingDemand demand, List<CarsharingOffer> offers);
-	protected abstract List<CarsharingRelocationTask> oprelocate(List<CarsharingOperatorMobsim> operators);
+	protected abstract List<CarsharingRelocationTask> oprelocate();
 	protected abstract void update();
-	protected abstract void init();
-
+	//protected abstract void init();
+	
 	protected class TimeStep {
 		protected int time;
 		protected int time_step;
@@ -166,4 +166,5 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 			return (int)(this.time/timeBin);
 		}
 	}
+
 }

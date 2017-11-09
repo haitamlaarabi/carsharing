@@ -17,12 +17,14 @@ import org.matsim.core.mobsim.qsim.interfaces.MobsimEngine;
 import org.matsim.core.router.TripRouter;
 import org.matsim.core.scoring.ScoringFunctionFactory;
 import org.matsim.haitam.api.carsharing.CarsharingManager;
+import org.matsim.haitam.api.carsharing.core.CarsharingDataCollector;
 import org.matsim.haitam.api.carsharing.core.CarsharingDataCollector.CarsharingDataProvider;
 import org.matsim.haitam.api.carsharing.core.CarsharingOperatorMobsim;
 import org.matsim.haitam.api.carsharing.core.CarsharingRelocationTask;
 import org.matsim.haitam.api.carsharing.core.CarsharingVehicleMobsim;
 import org.matsim.haitam.api.events.CarsharingDropoffVehicleEvent;
 import org.matsim.haitam.api.events.CarsharingPickupVehicleEvent;
+import org.matsim.haitam.api.operation.model.CarsharingRelocationModel;
 
 import com.google.inject.Inject;
 
@@ -35,6 +37,8 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 	@Inject protected Scenario sc;
 	protected double iteration;
 	protected QSim qSim;
+	protected CarsharingRelocationModel relocation;
+	protected CarsharingDataCollector collector;
 	private PriorityQueue<CarsharingRelocationTask> relocationEventsQueue = null;
 	
 	protected abstract void execute(double time);
@@ -42,12 +46,13 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 	
 	@Override
 	public void doSimStep(double time) {
-		this.relocationEventsQueue.addAll(this.m.relocation().computeOperatorRelocation(time));
+		this.relocation.updateRelocationList(time);
+		this.relocationEventsQueue.addAll(this.relocation.relocationList(time));
 		if ((this.relocationEventsQueue != null) && (this.relocationEventsQueue.size() > 0)) {
 			handleRelocationEvents(time);
 		}
-		for(CarsharingDataProvider d : this.m.dataCollector().getAllModules()) {
-			this.m.dataCollector().addLog(d, time);
+		for(CarsharingDataProvider d : this.collector.getAllModules()) {
+			this.collector.addLog(d, time);
 		}
 		this.execute(time);
 	}	
@@ -55,6 +60,8 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 	@Override
 	public void onPrepareSim() {
 		this.relocationEventsQueue = new PriorityQueue<CarsharingRelocationTask>();
+		this.relocation = this.m.relocation();
+		this.collector = this.m.dataCollector();
 	}
 
 	@Override
@@ -139,5 +146,7 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 					
 		}
 	}
+	
+
 	
 }

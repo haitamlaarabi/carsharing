@@ -192,7 +192,7 @@ public class CarsharingDemandGenerator {
 	}
 	
 	
-	static CarsharingStation getRandomStation(CarsharingScenario carsharing, CarsharingStation toexclude) {
+	protected static CarsharingStation getRandomStation(CarsharingScenario carsharing, CarsharingStation toexclude) {
 		ArrayList<CarsharingStation> stations = new ArrayList<CarsharingStation>();
 		for(CarsharingStation s : carsharing.getStations().values()) {
 			if(s != toexclude) {
@@ -202,7 +202,7 @@ public class CarsharingDemandGenerator {
 		return stations.get(MatsimRandom.getRandom().nextInt(stations.size()));
 	}
 	
-	static Coord getRandomCoordInDisk(Coord center, double radius) {
+	protected static Coord getRandomCoordInDisk(Coord center, double radius) {
 		Double a = MatsimRandom.getRandom().nextDouble();
 		Double b = MatsimRandom.getRandom().nextDouble();
 		if(b < a) {
@@ -213,7 +213,7 @@ public class CarsharingDemandGenerator {
 		return new Coord(center.getX() + b*radius*Math.cos(2*Math.PI*a/b), center.getY() + b*radius*Math.sin(2*Math.PI*a/b));
 	}
 	
-	static Activity createAndGetActivity(Scenario scenario, Network carNetwork, Plan plan, String type, Coord coord, String id) {
+	protected static Activity createAndGetActivity(Scenario scenario, Network carNetwork, Plan plan, String type, Coord coord, String id) {
 		Id<ActivityFacility> idaf = Id.create(id, ActivityFacility.class);
 		ActivityFacility xfacility = scenario.getActivityFacilities().getFacilities().get(idaf);
 		if(xfacility == null) {

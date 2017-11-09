@@ -135,7 +135,7 @@ public class CarsharingOfferModelImpl implements CarsharingOfferModel  {
 		// FLOATING OFFER
 		if(this.floatingStations) offers.add(this.getEgressStationFloatingOffer(offer));
 		// USER RELOCATION TIME
-		offers.addAll(manager.relocation().computeUserRelocation(time, offer.getDemand(), offers));
+		offers.addAll(manager.relocation().relocationList(time, offer.getDemand(), offers));
 		return offers;
 	}
 	

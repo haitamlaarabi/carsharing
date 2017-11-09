@@ -8,7 +8,6 @@ import org.matsim.core.router.TripRouter;
 import org.matsim.haitam.api.carsharing.CarsharingManager;
 import org.matsim.haitam.api.carsharing.core.CarsharingDemand;
 import org.matsim.haitam.api.carsharing.core.CarsharingOffer;
-import org.matsim.haitam.api.carsharing.core.CarsharingOperatorMobsim;
 import org.matsim.haitam.api.carsharing.core.CarsharingRelocationTask;
 
 
@@ -32,18 +31,13 @@ public class CarsharingRelocationModelImpl extends AbstractRelocationStrategy {
 	}
 
 	@Override
-	protected ArrayList<CarsharingRelocationTask> oprelocate(List<CarsharingOperatorMobsim> operators) {
+	protected ArrayList<CarsharingRelocationTask> oprelocate() {
 		return new ArrayList<CarsharingRelocationTask>();
 	}
 
 	@Override
 	protected void update() {
 	}
-
-	@Override
-	protected void init() {
-	}
-	
 
 	
 }

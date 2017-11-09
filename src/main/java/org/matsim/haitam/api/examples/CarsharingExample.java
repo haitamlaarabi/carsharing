@@ -7,7 +7,6 @@ import org.matsim.analysis.LegHistogramModule;
 import org.matsim.analysis.LegTimesModule;
 import org.matsim.analysis.ScoreStatsModule;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -15,11 +14,9 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.haitam.api.config.CarsharingInstaller.CarsharingMobsimHandleImpl;
 import org.matsim.haitam.api.qsim.CarsharingMobsimHandle;
 import org.matsim.haitam.api.utils.CarsharingUtils;
 import org.matsim.withinday.trafficmonitoring.TravelTimeCollector;
-import org.matsim.withinday.trafficmonitoring.TravelTimeCollectorModule;
 
 import com.google.inject.Inject;
 
@@ -57,6 +54,7 @@ public class CarsharingExample {
 				
 				/// ********
 				bindCarsharingMobsimMonitoring(TestingTravelTimeCollector.class);
+				
 				bind(TravelTime.class).to(TravelTimeCollector.class);
 				addEventHandlerBinding().to(TravelTimeCollector.class);
 				bindNetworkTravelTime().to(TravelTimeCollector.class);

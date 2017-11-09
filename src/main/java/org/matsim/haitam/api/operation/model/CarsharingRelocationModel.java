@@ -10,8 +10,8 @@ import org.matsim.haitam.api.operation.CarsharingOperationModel;
 public interface CarsharingRelocationModel extends CarsharingOperationModel {
 	
 	
-	List<CarsharingOffer> computeUserRelocation(double time, CarsharingDemand demand, List<CarsharingOffer> offers);
-	List<CarsharingRelocationTask> computeOperatorRelocation(double time);
+	List<CarsharingOffer> relocationList(double time, CarsharingDemand demand, List<CarsharingOffer> offers);
+	List<CarsharingRelocationTask> relocationList(double time);
 	void reset(int iteration);
-	
+	void updateRelocationList(double time);
 }
