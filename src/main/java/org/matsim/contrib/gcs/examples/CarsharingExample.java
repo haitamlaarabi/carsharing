@@ -16,6 +16,7 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.trafficmonitoring.TravelTimeCalculatorModule;
 import org.matsim.withinday.trafficmonitoring.TravelTimeCollector;
 
 import com.google.inject.Inject;
@@ -54,10 +55,10 @@ public class CarsharingExample {
 				
 				/// ********
 				bindCarsharingMobsimMonitoring(TestingTravelTimeCollector.class);
-				
+				//new TravelTimeCalculatorModule().install();
+				//bindNetworkTravelTime().to(TravelTimeCollector.class);
 				bind(TravelTime.class).to(TravelTimeCollector.class);
 				addEventHandlerBinding().to(TravelTimeCollector.class);
-				bindNetworkTravelTime().to(TravelTimeCollector.class);
 				addMobsimListenerBinding().to(TravelTimeCollector.class);
 				// *********
 				
