@@ -131,6 +131,7 @@ public class CarsharingManager {
 			}
 		}
 		this.dataCollector.writeLogs(iteration);
+		new CarsharingScenarioWriter(this).writeXml(this.getConfig().getLogDir() + "/carsharing_scenario_it"+iteration+".xml");
 	}
 	
 	public void setUp(MatsimServices services, MobsimDataProvider mobsimDataProvider) {

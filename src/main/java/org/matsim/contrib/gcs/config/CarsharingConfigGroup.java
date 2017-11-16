@@ -32,6 +32,7 @@ public class CarsharingConfigGroup extends ConfigGroup {
 	public static final String activateModule_str = "activateModule";
 	public static final String scenarioInputFile_str = "scenarioInputFile";
 	
+	public static final String logFrequency_str = "logFrequency";
 	public static final String tripsLogFile_str = "tripsLogFile";
 	public static final String chargingLogFile_str = "chargingLogFile";
 	public static final String relocationLogFile_str = "relocationLogFile";
@@ -71,7 +72,15 @@ public class CarsharingConfigGroup extends ConfigGroup {
 	
 	
 	
-	
+	@StringGetter( logFrequency_str )
+	public int getLogFrequency() {
+		return (int)attributes.get(logFrequency_str);
+	}
+
+	@StringSetter( logFrequency_str )
+	public void setLogFrequency(int value) {
+		attributes.put(logFrequency_str, value);
+	}
 	
 	@StringGetter( logDir_str )
 	public String getLogDir() {

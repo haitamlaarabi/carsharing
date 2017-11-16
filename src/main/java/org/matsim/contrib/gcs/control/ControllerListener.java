@@ -33,9 +33,11 @@ public class ControllerListener
 
 	@Override
 	public void notifyIterationEnds(IterationEndsEvent event) {
-		this.m.finalizeAndwriteCurrentIterationLogs(event.getIteration());
-		this.data.update(event.getIteration(), m);
-		new CarsharingScenarioWriter(this.m).writeXml(this.m.getConfig().getLogDir() + "/carsharing_scenario_it"+event.getIteration()+".xml");
+		if(event.getIteration() == 1 || event.getIteration() % this.m.getConfig().getLogFrequency() == 0) {
+			this.m.finalizeAndwriteCurrentIterationLogs(event.getIteration());
+			this.data.update(event.getIteration(), m);
+		}
+		
 		event.getServices().getEvents().removeHandler(this.agentEventsHandler);
 		event.getServices().getEvents().removeHandler(this.carsharingEventsHandler);
 	}
