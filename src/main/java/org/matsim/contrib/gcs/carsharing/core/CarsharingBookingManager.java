@@ -49,21 +49,7 @@ public class CarsharingBookingManager {
 		br.noParkingOffer = !this.stationBookingMap.get(Sd).add(br);
 		if(br.noParkingOffer) return false;
 		
-		
 		return true;
-		
-		/*if(!this.stationBookingMap.get(So).addAsDemandOrSupply(br)) {
-			//logger.warn("[B-PU-KO] |BT:" + br.getBookingTime() + " |Station:" + So.getId() + " |Agent:" + agent.getId() + " |DT:" + br.getDepartureTime());
-			return false;
-		} 
-		
-		// add supply
-		if(!this.stationBookingMap.get(Sd).addAsDemandOrSupply(br)) {
-			//logger.warn("[B-DO-KO] |BT:" + br.getBookingTime() + " |Station:" + Sd.getId() + " |Agent:" + agent.getId() + " |AT:" + br.getArrivalTime());
-			return false;
-		}
-			
-		return true; */
 	}
 
 	public CarsharingOfferModel offer() {
