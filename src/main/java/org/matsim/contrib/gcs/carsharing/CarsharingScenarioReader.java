@@ -231,7 +231,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 	 * 
 	 * @param rawStationFile
 	 */
-	public void readRawV2(String rawStationFile, String rawStationCRS, Map<String,Integer> header, String sep, int nbrVeh, int staCap) {
+	public void readRawV2(String rawStationFile, String rawStationCRS, Map<String,Integer> header, String sep, int nbrVeh, int staCap, int stop) {
 		CoordinateTransformation CT = TransformationFactory.getCoordinateTransformation(rawStationCRS, scenario.getConfig().global().getCoordinateSystem());
 		try {
 			BufferedReader reader = IOUtils.getBufferedReader(rawStationFile);
@@ -239,7 +239,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 			String[] arr = s.split(sep);	
 			
 		    int k = 0;
-		    while((s = reader.readLine()) != null) {
+		    while((s = reader.readLine()) != null && k < stop) {
 		    	arr = s.split(sep);
 		    	double X = Double.parseDouble(arr[header.get("lng")]); // Longitude
 		    	double Y = Double.parseDouble(arr[header.get("lat")]); // Latitude
