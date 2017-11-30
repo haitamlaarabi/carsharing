@@ -266,5 +266,6 @@ public class CarsharingOffer {
 	public static final String SUCCESS_STANDARDOFFER = "standard_offer";
 	public static final String SUCCESS_FREEFLOATINGOFFER = "freefloating_offer";
 	public static final String FAILURE_NOOFFER = "no_offer";
+	public static final String FAILURE_WALK_OFFER = "walk_offer";
 		
 }

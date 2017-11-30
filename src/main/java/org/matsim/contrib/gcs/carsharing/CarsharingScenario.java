@@ -1,6 +1,7 @@
 package org.matsim.contrib.gcs.carsharing;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -97,6 +98,8 @@ public class CarsharingScenario {
 		csConf.setRelocationLogFile(logdir + "/relocation.log");
 		csConf.setLogDir(logdir);
 		
+		
+		
 		config.addModule(csConf);
 		// matsim config
 		ActivityParams station = new ActivityParams(CarsharingRouterModeCst.ACTIVITY_TYPE_NAME);
@@ -107,6 +110,24 @@ public class CarsharingScenario {
 		ArrayList<String> mainmodes = new ArrayList<String>(config.qsim().getMainModes());
 		mainmodes.add(CarsharingRouterModeCst.cs_drive);
 		config.qsim().setMainModes(mainmodes);
+		
+		
+		/*scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_walk).setMonetaryDistanceRate(0.0);
+		scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_walk).setMarginalUtilityOfTraveling(-0.6*60+6);
+		scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_walk).setMarginalUtilityOfDistance(0.0);
+		scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_walk).setConstant(11.29);*/
+		
+		scenario.getConfig().transit().setUseTransit(true);
+		HashSet<String> tmodes = new HashSet<String>(scenario.getConfig().transit().getTransitModes());
+		tmodes.add(CarsharingRouterModeCst.cs_pt);
+		scenario.getConfig().transit().setTransitModes(tmodes);
+		scenario.getConfig().transitRouter().setAdditionalTransferTime(2*60.0);
+		scenario.getConfig().transitRouter().setExtensionRadius(200.0);
+		scenario.getConfig().transitRouter().setMaxBeelineWalkConnectionDistance(100.0);
+		scenario.getConfig().transitRouter().setSearchRadius(1000.0);
+		ArrayList<String> subModes = new ArrayList<String>(Arrays.asList(scenario.getConfig().subtourModeChoice().getModes()));
+		subModes.add(CarsharingRouterModeCst.cs_pt);
+		scenario.getConfig().subtourModeChoice().setModes(subModes.toArray(new String[0]));
 		return csConf;
 	}
 

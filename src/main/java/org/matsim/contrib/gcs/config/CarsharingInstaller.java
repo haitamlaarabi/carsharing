@@ -17,12 +17,14 @@ import org.matsim.contrib.gcs.operation.impl.CarsharingBatteryModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingEnergyConsumptionModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingMembershipModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingOfferModelImpl;
+import org.matsim.contrib.gcs.operation.impl.CarsharingOfferModelImpl2;
 import org.matsim.contrib.gcs.operation.impl.CarsharingOperatorChoiceModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingParkingModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingPowerDistributionModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingPowerSourceModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingRelocationModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingUserChoiceModelImpl;
+import org.matsim.contrib.gcs.operation.impl.CarsharingUserChoiceModelImpl2;
 import org.matsim.contrib.gcs.operation.model.CarsharingBatteryModel;
 import org.matsim.contrib.gcs.operation.model.CarsharingEnergyConsumptionModel;
 import org.matsim.contrib.gcs.operation.model.CarsharingMembershipModel;
@@ -48,6 +50,7 @@ import org.matsim.core.mobsim.framework.listeners.FixedOrderSimulationListener;
 import org.matsim.core.router.MainModeIdentifier;
 import org.matsim.core.router.RoutingModule;
 import org.matsim.core.router.TripRouter;
+import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
 import org.matsim.withinday.controller.WithinDayControlerListener;
@@ -134,7 +137,7 @@ public abstract class CarsharingInstaller extends AbstractModule {
     	bindCarsharingPowerDistributionModel(CarsharingPowerDistributionModelFactory.class);
     	bindCarsharingPowerSourceModel(CarsharingPowerSourceModelFactory.class);
     	bindCarsharingParkingModel(CarsharingParkingModelFactory.class);
-    	bindCarsharingOfferModel(CarsharingOfferModelImpl.class);
+    	bindCarsharingOfferModel(CarsharingOfferModelImpl2.class);
     	bindCarsharingMembershipModel(CarsharingMembershipModelFactory.class);
     	bindCarsharingRelocationModel(CarsharingRelocationModelFactory.class);
     	bindCarsharingOperatorChoiceModel(CarsharingOperatorChoiceModelFactory.class);
@@ -164,6 +167,13 @@ public abstract class CarsharingInstaller extends AbstractModule {
       	addTravelTimeBinding(CarsharingRouterModeCst.cs_drive).to(networkTravelTime());
     	addTravelDisutilityFactoryBinding(CarsharingRouterModeCst.cs_drive).to(carTravelDisutilityFactoryKey());
     	addRoutingModuleBinding(CarsharingRouterModeCst.cs_drive).to(Key.get(RoutingModule.class, Names.named(TransportMode.car)));
+    	
+    	
+    	//addTravelDisutilityFactoryBinding(CarsharingRouterModeCst.cs_pt).to(Key.get(TravelDisutilityFactory.class, Names.named(TransportMode.pt)));
+    	addRoutingModuleBinding(CarsharingRouterModeCst.cs_pt).to(Key.get(RoutingModule.class, Names.named(TransportMode.pt)));
+    	
+    	//addTravelDisutilityFactoryBinding(CarsharingRouterModeCst.cs_walk).to(Key.get(TravelDisutilityFactory.class, Names.named(TransportMode.walk)));
+    	addRoutingModuleBinding(CarsharingRouterModeCst.cs_walk).to(Key.get(RoutingModule.class, Names.named(TransportMode.walk)));
     	
     	addControlerListenerBinding().to(ControllerListener.class);
     	
@@ -284,7 +294,7 @@ public abstract class CarsharingInstaller extends AbstractModule {
 	}
 	public static class CarsharingUserChoiceModelFactory implements Provider<CarsharingUserChoiceModel> {
 		@Override public CarsharingUserChoiceModel get() {
-			return new CarsharingUserChoiceModelImpl();
+			return new CarsharingUserChoiceModelImpl2();
 		}
 	}
 	public static class CarsharingParkingModelFactory implements Provider<CarsharingParkingModel> {

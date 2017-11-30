@@ -192,11 +192,18 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 		double tt = CarsharingUtils.calcDuration(elements);
 		Boolean novehiclefound = true;
 		Boolean noparkingfound = true;
+		boolean betterWalk = false;
 		for(CarsharingOffer o : offers) {
-			if(o.hasValidAccess()) { novehiclefound = false; break;	}
+			if(!o.hasValidAccess() && o.getAccess().getStatus().equals(CarsharingOffer.FAILURE_WALK_OFFER)) {
+				betterWalk = true;
+				break;
+			} else if(o.hasValidAccess()) { 
+				novehiclefound = false; 
+				break;	
+			} 
 		}
 		CarsharingBookingRecord booking = CarsharingBookingRecord.constructAndGetFailedBookingRec(
-				now, demand, 
+				now, demand, betterWalk,
 				novehiclefound,	departure.station, now,
 				noparkingfound,	arrival.station, deptime + tt);
 		return booking;

@@ -17,6 +17,7 @@ public class CarsharingBookingRecord {
 		
 		boolean noVehicleOffer; 
 		boolean noParkingOffer;
+		boolean betterWalk;
 		String id;
 		
 		CarsharingBookingRecord() {}
@@ -24,6 +25,7 @@ public class CarsharingBookingRecord {
 		public static CarsharingBookingRecord constructAndGetFailedBookingRec(
 				double bookingTime, 
 				CarsharingDemand demand, 
+				boolean betterWalk,
 				boolean noVehicleOffer, CarsharingStationMobsim depStation, double depTime,
 				boolean noParkingOffer,	CarsharingStationMobsim arrStation,	double arrTime) {
 			CarsharingBookingRecord b = new CarsharingBookingRecord();
@@ -39,6 +41,7 @@ public class CarsharingBookingRecord {
 			b.destinationStation = arrStation;
 			b.arrivalTime = arrTime;
 			b.id = ((b.person == null)?"NA":b.person.getId()) + "-FAILED@" + (int)bookingTime;
+			b.betterWalk = betterWalk;
 			return b;
 		}
 		
@@ -112,6 +115,7 @@ public class CarsharingBookingRecord {
 		public boolean vehicleOffer() { return !this.noVehicleOffer; }
 		public boolean parkingOffer() { return !this.noParkingOffer; }
 		
+		public boolean betterWalk() { return this.betterWalk; }
 		public boolean bookingFailed() { return this.noVehicleOffer || this.noParkingOffer; }
 		
 }

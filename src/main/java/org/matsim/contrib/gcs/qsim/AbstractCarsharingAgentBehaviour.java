@@ -16,6 +16,7 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingRecord;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingCustomerMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicleMobsim;
 import org.matsim.contrib.gcs.replanning.CarsharingPlanModeCst;
+import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.mobsim.framework.HasPerson;
 import org.matsim.core.mobsim.framework.MobsimAgent;
@@ -31,6 +32,8 @@ import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
 import org.matsim.core.mobsim.qsim.interfaces.Netsim;
 import org.matsim.core.mobsim.qsim.pt.PTPassengerAgent;
 import org.matsim.core.mobsim.qsim.pt.TransitVehicle;
+import org.matsim.core.population.PopulationUtils;
+import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.TripRouter;
 import org.matsim.facilities.Facility;
@@ -209,13 +212,24 @@ public abstract class AbstractCarsharingAgentBehaviour implements 	VehicleUsingA
 		int unroutedIndex = planelements.indexOf(unroutedPlanElement);
 		Activity O = (Activity) planelements.get(unroutedIndex - 1);
 		Activity D = (Activity) planelements.get(unroutedIndex + 1);
-		List<? extends PlanElement> pttrip = this.tripRouter.calcRoute(
-				TransportMode.pt, 
-				CarsharingUtils.getDummyFacility(O), 
-				CarsharingUtils.getDummyFacility(D), 
-				now, 
-				this.basicAgentDelegate.getPerson());
-		TripRouter.insertTrip(this.getCurrentPlan(), O, pttrip, D);
+		List<PlanElement> new_trip = new ArrayList<PlanElement>();
+		//Leg new_leg = null;
+		if(this.currBookingRecord.betterWalk()) {
+			//new_leg = PopulationUtils.createLeg(CarsharingRouterModeCst.cs_walk);
+			new_trip.addAll(this.tripRouter.calcRoute(
+					CarsharingRouterModeCst.cs_walk, 
+					CarsharingUtils.getDummyFacility(O), CarsharingUtils.getDummyFacility(D), 
+					now, this.basicAgentDelegate.getPerson()));
+		} else {
+			//new_leg = PopulationUtils.createLeg(CarsharingRouterModeCst.cs_pt);
+			new_trip.addAll(this.tripRouter.calcRoute(
+					CarsharingRouterModeCst.cs_pt, 
+					CarsharingUtils.getDummyFacility(O), CarsharingUtils.getDummyFacility(D), 
+					now, this.basicAgentDelegate.getPerson()));
+		}
+		//new_leg.setRoute(new LinkNetworkRouteImpl(O.getLinkId(), D.getLinkId()));
+		//new_trip.add(new_leg);
+		TripRouter.insertTrip(this.getCurrentPlan(), O, new_trip, D);
 	}
 
 	
