@@ -4,13 +4,10 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -27,7 +24,6 @@ import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
-import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.Facility;
@@ -38,6 +34,16 @@ public final class CarsharingUtils {
 	static String ACCESS_STATION = "access_station";
 	static String EGRESS_STATION = "egress_station";
 	
+	
+	public static double distanceBeeline(double euc_distance, ModeRoutingParams r_param) {
+		double distance = euc_distance * r_param.getBeelineDistanceFactor();
+		return distance;
+	}
+	
+	public static double travelTimeBeeline(double euc_distance, ModeRoutingParams r_param) {
+		double traveltime = distanceBeeline(euc_distance, r_param) / r_param.getTeleportedModeSpeed();
+		return traveltime;
+	}
 	
 	public static boolean isUnRoutedCarsharingLeg(PlanElement pe) {
 		if(pe instanceof Leg) {

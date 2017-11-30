@@ -2,10 +2,7 @@ package org.matsim.contrib.gcs.operation.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -18,7 +15,9 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingOffer;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStation;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
 import org.matsim.contrib.gcs.carsharing.impl.CarsharingStationFactory;
+import org.matsim.contrib.gcs.config.CarsharingConfigGroup;
 import org.matsim.contrib.gcs.operation.model.CarsharingOfferModel;
+import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.TripRouter;
@@ -32,10 +31,9 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 	// Attribute
 	Scenario scenario;
 	CarsharingManager manager;
+	CarsharingConfigGroup cs_conf;
 	
 	Network network;
-	double beelineWalkSpeed;
-	double beelineDistanceFactor;
 	boolean floatingStations;
 	double tau = 2.0 * 3600.0;
 	double alpha = 0.7;
@@ -52,9 +50,8 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 	CarsharingOfferModelImpl2(Scenario scenario, CarsharingManager manager, Provider<TripRouter> tripRouterProvider) {
 		this.scenario = scenario;
 		this.manager = manager;
+		this.cs_conf = manager.getConfig();
 		this.network = this.scenario.getNetwork();
-		this.beelineWalkSpeed = manager.getConfig().getAccessWalkCalcRoute().getTeleportedModeSpeed();
-		this.beelineDistanceFactor = manager.getConfig().getAccessWalkCalcRoute().getBeelineDistanceFactor();
 		this.timeFeePerMinute = manager.getConfig().getDriveCalcScore().getMonetaryDistanceRate();
 		this.floatingStations = false;
 		this.router = tripRouterProvider.get();
@@ -78,7 +75,9 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 				for(CarsharingOffer arrOffer : calculateArrivalOffers(depOffer)) {
 					if(arrOffer.hasValidEgress()) {
 						final double trip_duration = arrOffer.getAccess().getTravelTime() + arrOffer.getDrive().getTravelTime() + arrOffer.getEgress().getTravelTime();
-						final double walk_duration = this.beelineWalkSpeed * NetworkUtils.getEuclideanDistance(demand.getOrigin().getCoord(), demand.getDestination().getCoord());
+						final double walk_duration = CarsharingUtils.travelTimeBeeline(
+								NetworkUtils.getEuclideanDistance(demand.getOrigin().getCoord(), demand.getDestination().getCoord()), 
+								this.scenario.getConfig().plansCalcRoute().getModeRoutingParams().get(TransportMode.walk));
 						if(walk_duration < trip_duration) {
 							better_walk = true;
 						} else {
@@ -244,11 +243,9 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 			
 			// GET DURATION DISTANCE STATION ACTIVITY
 			
-			final double egressDist = NetworkUtils.getEuclideanDistance(
-					newFS.facility().getCoord(), 
-					offer.getDemand().getDestination().getCoord());
-			final double duration = egressDist * this.beelineWalkSpeed;
-			final double distance = egressDist * this.beelineDistanceFactor;	
+			final double egressDist = NetworkUtils.getEuclideanDistance(newFS.facility().getCoord(), offer.getDemand().getDestination().getCoord());
+			final double traveltime = CarsharingUtils.travelTimeBeeline(egressDist, this.cs_conf.getEgressWalkCalcRoute());
+			final double distance = CarsharingUtils.distanceBeeline(egressDist, this.cs_conf.getEgressWalkCalcRoute());
 			
 			List<? extends PlanElement> elements = this.router.calcRoute(
 					TransportMode.car, 
@@ -258,7 +255,7 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 					offer.getDemand().getAgent().getPerson());
 			CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromOffer(offer, CarsharingOffer.SUCCESS_FREEFLOATINGOFFER);
 			builder.setDrive(offer.getNbOfVehicles(), elements);
-			builder.setEgress((CarsharingStationMobsim) newFS, duration, distance, this.manager.getConfig().getInteractionOffset());
+			builder.setEgress((CarsharingStationMobsim) newFS, traveltime, distance, this.manager.getConfig().getInteractionOffset());
 			return builder.build();
 	}
 	
@@ -271,10 +268,10 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 	 * @return
 	 */
 	public ArrayList<SelectedStation> getClosestStationToArrivalLink(CarsharingDemand demand, CarsharingStationMobsim excludedDepartureStation) {
+		double real_distance = manager.getConfig().getSearchDistance()/this.cs_conf.getEgressWalkCalcRoute().getBeelineDistanceFactor();
 		Collection<CarsharingStationMobsim> stations = manager.getStations().qtree().getDisk(
-							demand.getDestination().getCoord().getX(), 
-							demand.getDestination().getCoord().getY(), 
-							manager.getConfig().getSearchDistance());
+							demand.getDestination().getCoord().getX(), demand.getDestination().getCoord().getY(), 
+							real_distance);
 		
 		if(stations.isEmpty()) return null;
 		
@@ -282,8 +279,9 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 		for(CarsharingStationMobsim station: stations) {
 			if(station.equals(excludedDepartureStation) || station.getType().equals(FLOATING_STATION)) continue;
 			final double egressDist = NetworkUtils.getEuclideanDistance(demand.getDestination().getCoord(), station.facility().getCoord());
-			final double traveltime = egressDist * this.beelineWalkSpeed;
-			final double distance = egressDist * this.beelineDistanceFactor;	
+			final double traveltime = CarsharingUtils.travelTimeBeeline(egressDist, this.cs_conf.getEgressWalkCalcRoute());
+			final double distance = CarsharingUtils.distanceBeeline(egressDist, this.cs_conf.getEgressWalkCalcRoute());
+			
 			CarsharingBookingStation bs = manager.booking().track(station);
 			int nPark = bs.parkingAvailability();
 			if(nPark >= demand.getNbrOfVeh()) { // success
@@ -303,21 +301,19 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 	 * @return
 	 */
 	public ArrayList<SelectedStation> getClosestStationToDepartureLink(CarsharingDemand demand) {
-
+		double real_distance = manager.getConfig().getSearchDistance()/this.cs_conf.getAccessWalkCalcRoute().getBeelineDistanceFactor();
 		Collection<CarsharingStationMobsim> stations = manager.getStations().qtree().getDisk(
-							demand.getOrigin().getCoord().getX(), 
-							demand.getOrigin().getCoord().getY(), 
-							manager.getConfig().getSearchDistance());
+							demand.getOrigin().getCoord().getX(), demand.getOrigin().getCoord().getY(), 
+							real_distance);
 		
-		if(stations.isEmpty()) {
-			return null;
-		} 
+		if(stations.isEmpty()) return null;
 		
 		ArrayList<SelectedStation> closestStations = new ArrayList<SelectedStation>();
 		for(CarsharingStationMobsim station: stations) {
 			final double accessDist = NetworkUtils.getEuclideanDistance(demand.getOrigin().getCoord(), station.facility().getCoord());
-			final double traveltime = accessDist * this.beelineWalkSpeed;
-			final double distance = accessDist * this.beelineDistanceFactor;	
+			final double traveltime = CarsharingUtils.travelTimeBeeline(accessDist, this.cs_conf.getAccessWalkCalcRoute());
+			final double distance = CarsharingUtils.distanceBeeline(accessDist, this.cs_conf.getAccessWalkCalcRoute());
+			
 			CarsharingBookingStation bs = manager.booking().track(station);
 			int nVeh = bs.vehicleAvailability();
 			if(nVeh >= demand.getNbrOfVeh()) { // success

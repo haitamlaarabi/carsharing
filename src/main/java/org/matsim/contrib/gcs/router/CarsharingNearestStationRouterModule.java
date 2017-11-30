@@ -25,15 +25,11 @@ import org.matsim.facilities.Facility;
 
 public class CarsharingNearestStationRouterModule extends CarsharingDefaultRouterModule {
 
-	final double beelineWalkSpeed;
-	final double beelineDistanceFactor;
 	final double searchDistance;
 	final QuadTree<CarsharingStationMobsim> qt;
 	
 	public CarsharingNearestStationRouterModule(Scenario scenario, CarsharingManager manager, String cssMode) {
 		super(scenario, manager, cssMode);
-		this.beelineWalkSpeed = manager.getConfig().getAccessWalkCalcRoute().getTeleportedModeSpeed();
-		this.beelineDistanceFactor = manager.getConfig().getAccessWalkCalcRoute().getBeelineDistanceFactor();
 		this.searchDistance = manager.getConfig().getSearchDistance();
 		this.qt = manager.getStations().qtree();
 	}
@@ -122,8 +118,8 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 		if(hasAccessStation) { 
 			for(CarsharingStationMobsim station: this.qt.getDisk(fromFacility.getCoord().getX(), fromFacility.getCoord().getY(), this.searchDistance)) {
 				final double accessDist = NetworkUtils.getEuclideanDistance(fromFacility.getCoord(), station.facility().getCoord());
-				final double deptime = accessDist * this.beelineWalkSpeed;
-				final double distance = accessDist * this.beelineDistanceFactor;	
+				final double distance = CarsharingUtils.distanceBeeline(accessDist, this.manager.getConfig().getAccessWalkCalcRoute());
+				final double deptime = CarsharingUtils.travelTimeBeeline(accessDist, this.manager.getConfig().getAccessWalkCalcRoute());
 				if(nearestStation == null || td > distance) {
 					nearestStation = station;
 					td = distance;
@@ -158,9 +154,9 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 				if(excludedDepartureStation.station != null && excludedDepartureStation.station.equals(station)) {
 					continue;
 				}
-				final double accessDist = NetworkUtils.getEuclideanDistance(toFacility.getCoord(), station.facility().getCoord());
-				final double arrtime = accessDist * this.beelineWalkSpeed;
-				final double distance = accessDist * this.beelineDistanceFactor;	
+				final double egressDist = NetworkUtils.getEuclideanDistance(toFacility.getCoord(), station.facility().getCoord());
+				final double distance = CarsharingUtils.distanceBeeline(egressDist, this.manager.getConfig().getEgressWalkCalcRoute());
+				final double arrtime = CarsharingUtils.travelTimeBeeline(egressDist, this.manager.getConfig().getEgressWalkCalcRoute());
 				if(nearestStation == null || td > distance) {
 					nearestStation = station;
 					td = distance;
