@@ -109,6 +109,8 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 		final String dst_date;
 		final String dst_offset;
 		
+		final String comment;
+		
 		
 		BookLog(CarsharingBookingRecord r) {
 			this.trip_index = String.valueOf(r.getDemand().getTripIndex());
@@ -159,6 +161,14 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 			this.dst_type = "END";
 			this.src_date = String.valueOf(r.getDepartureTime());
 			this.dst_date = String.valueOf(r.getArrivalTime());
+			if(r.betterWalk()) {
+				this.comment = "WALK";
+			} else if(!r.vehicleOffer() || !r.parkingOffer()) {
+				this.comment = "PT";
+			} else {
+				this.comment = "CS";
+			}
+			
 		}
 	}
 	
