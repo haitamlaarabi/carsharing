@@ -80,8 +80,7 @@ public class CarsharingOffer {
 		}
 		
 		public void setDrive(int nVEH, List<? extends PlanElement> route) {
-			setDrive(nVEH);
-			drive.route = route;
+			drive = new DriveOffer(access.time+access.travelTime+access.offsetDur, route, nVEH);
 		}
 		
 		public void setCost(double cost) {
