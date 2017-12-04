@@ -82,7 +82,7 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 						final double walk_duration = CarsharingUtils.travelTimeBeeline(
 								NetworkUtils.getEuclideanDistance(demand.getOrigin().getCoord(), demand.getDestination().getCoord()), 
 								this.scenario.getConfig().plansCalcRoute().getModeRoutingParams().get(TransportMode.walk));*/
-						if(walk_distance <= trip_distance) {
+						if(trip_distance <= walk_distance) {
 							better_walk = true;
 						} else {
 							offers.add(arrOffer);
