@@ -74,19 +74,15 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 			if(depOffer.hasValidAccess()) {
 				for(CarsharingOffer arrOffer : calculateArrivalOffers(depOffer)) {
 					if(arrOffer.hasValidEgress()) {
-						final double trip_distance = arrOffer.getAccess().getDistance() + arrOffer.getDrive().getDistance() + arrOffer.getEgress().getDistance();
+						/*final double trip_distance = arrOffer.getAccess().getDistance() + arrOffer.getDrive().getDistance() + arrOffer.getEgress().getDistance();
 						final double walk_distance = CarsharingUtils.distanceBeeline(
 								NetworkUtils.getEuclideanDistance(demand.getOrigin().getCoord(), demand.getDestination().getCoord()), 
 								this.scenario.getConfig().plansCalcRoute().getModeRoutingParams().get(TransportMode.walk));
-						/*final double trip_duration = arrOffer.getAccess().getTravelTime() + arrOffer.getDrive().getTravelTime() + arrOffer.getEgress().getTravelTime();
-						final double walk_duration = CarsharingUtils.travelTimeBeeline(
-								NetworkUtils.getEuclideanDistance(demand.getOrigin().getCoord(), demand.getDestination().getCoord()), 
-								this.scenario.getConfig().plansCalcRoute().getModeRoutingParams().get(TransportMode.walk));*/
 						if(trip_distance <= walk_distance + 1000.0) {
 							better_walk = true;
-						} else {
+						} else {*/
 							offers.add(arrOffer);
-						}
+						//}
 					} else {
 						failedoffers.add(arrOffer);
 					}
