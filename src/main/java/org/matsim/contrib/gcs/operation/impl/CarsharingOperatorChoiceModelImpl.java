@@ -59,8 +59,8 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 		CarsharingStationMobsim here = task.getStation();
 		CarsharingVehicleMobsim VEH = this.op.getVehicle();
 		
-		if(!task.getStation().equals(op.getLocation())) {
-			logger.warn("[R-DO-WRONG-LOCATION] T:" + (int)time + " |tId:"+task.getId()+" |staId:"+task.getStation().getId()+" |locationId:"+op.getLocation().getId()+" |agentId:"+task.getAgent().getId());
+		if(task.getStation().equals(op.getLocation())) {
+			logger.warn("[R-DO-SAME-LOCATION] T:" + (int)time + " |tId:"+task.getId()+" |staId:"+task.getStation().getId()+" |locationId:"+op.getLocation().getId()+" |agentId:"+task.getAgent().getId());
 		} else {
 			if(task.getSize() > 0 && VEH != null) {
 				this.canpickup = true;
@@ -84,6 +84,7 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 					}
 				}
 			}
+			this.op.setLocation(here);
 		}
 		op.endTask();
 		return false;
