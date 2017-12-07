@@ -88,39 +88,34 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 			CarsharingRelocationTask task = this.relocationEventsQueue.poll();
 			CarsharingOperatorMobsim op = (CarsharingOperatorMobsim) task.getAgent();
 			Queue<CarsharingVehicleMobsim> roadTrain = null;
-			op.setLocation(task.getStation()); // move to station
-			if(task.getSize() == 0) {
-				// do nothing
-			} else {
-				boolean flag =false;
-				if(task.getType().equals("START")) { 
-					flag = op.decision().processPickup(time, task);
-					if(op.getVehicle() != null) { roadTrain = op.getVehicle().roadTrain(); } // pick-up
-				}  else {
-					if(op.getVehicle() != null) { 
-						roadTrain = op.getVehicle().roadTrain();
-						double distance = task.getDistance();
-						double avgspeed = task.getDistance()/task.getTravelTime();
-						double maxspeed = op.getVehicle().vehicle().getType().getMaximumVelocity();
-						op.getVehicle().drive(distance, avgspeed, maxspeed);
-						for(CarsharingVehicleMobsim v : roadTrain) { // teleport
-							logger.info("[DRIVING] T:" + (int)time + 
-									" |taskId:"+task.getId()+ 
-									" |vehId"+v.vehicle().getId()+ 
-									" |soc:" + v.battery().getSoC() + 
-									" |dist:" + distance + 
-									" |tt:" + task.getTravelTime() + 
-									" |avgspd:" + avgspeed + 
-									" |maxspd:" + maxspeed);
-							qSim.createAndParkVehicleOnLink(v.vehicle(), task.getStation().facility().getLinkId());
-						}
-						flag = op.decision().processDropoff(time, task);
+						
+			boolean flag =false;
+			if(task.getType().equals("START")) { 
+				flag = op.decision().processPickup(time, task);
+				if(op.getVehicle() != null) { roadTrain = op.getVehicle().roadTrain(); } // pick-up
+			}  else {
+				if(op.getVehicle() != null) { 
+					roadTrain = op.getVehicle().roadTrain();
+					double distance = task.getDistance();
+					double avgspeed = task.getDistance()/task.getTravelTime();
+					double maxspeed = op.getVehicle().vehicle().getType().getMaximumVelocity();
+					op.getVehicle().drive(distance, avgspeed, maxspeed);
+					for(CarsharingVehicleMobsim v : roadTrain) { // teleport
+						logger.info("[DRIVING] T:" + (int)time + 
+								" |taskId:"+task.getId()+ 
+								" |vehId"+v.vehicle().getId()+ 
+								" |soc:" + v.battery().getSoC() + 
+								" |dist:" + distance + 
+								" |tt:" + task.getTravelTime() + 
+								" |avgspd:" + avgspeed + 
+								" |maxspd:" + maxspeed);
+						qSim.createAndParkVehicleOnLink(v.vehicle(), task.getStation().facility().getLinkId());
 					}
-					if(flag)
-						this.m.booking().track(task.getStation()).confirm(task.getBooking(), roadTrain.peek());
+					flag = op.decision().processDropoff(time, task);
 				}
+				if(flag)
+					this.m.booking().track(task.getStation()).confirm(task.getBooking(), roadTrain.peek());
 			}
-			op.endTask();
 			
 			if(task.getType().equals("START")) { 
 				qSim.getEventsManager().processEvent(

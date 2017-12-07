@@ -29,52 +29,63 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 	public boolean processPickup(double time, CarsharingRelocationTask task) {
 		CarsharingStationMobsim here = task.getStation();
 		
-		if(this.canpickup) { // if agent can pick up and there are vehicles to pick up
-			if(!ENERGY(task, time)) {
-				logger.warn("[RPickupENERGY-KO] T:" + (int)time + "|tId:"+task.getId()+"|staId:"+task.getStation().getId()+"|linkId:"+task.getStation().facility().getLinkId()+"|agentId:"+task.getAgent().getId());
-			} else {
-				this.op.setVehicle(here.pickup(this.op, task.getSize(), time)); // pickup
-				if(this.op.getVehicle() != null) { 
-					this.canpickup = false;
-					return true;
+		if(!task.getStation().equals(op.getLocation())) {
+			logger.warn("[R-PU-WRONG-LOCATION] T:" + (int)time + " |tId:"+task.getId()+" |staId:"+task.getStation().getId()+" |locationId:"+op.getLocation().getId()+" |agentId:"+task.getAgent().getId());
+		} else {
+			if(this.canpickup) { // if agent can pick up and there are vehicles to pick up
+				if(!ENERGY(task, time)) {
+					logger.warn("[RPickupENERGY-KO] T:" + (int)time + "|tId:"+task.getId()+"|staId:"+task.getStation().getId()+"|linkId:"+task.getStation().facility().getLinkId()+"|agentId:"+task.getAgent().getId());
 				} else {
-					logger.warn("[R-PU-KO] T:" + (int)time + " |tId:"+task.getId()+" |staId:"+task.getStation().getId()+" |linkId:"+task.getStation().facility().getLinkId()+" |agentId:"+task.getAgent().getId());
+					int rt_size = Math.min(this.m.booking().track(here).vehicleAvailability(), task.getSize());
+					this.op.setVehicle(here.pickup(this.op, rt_size, time)); // pickup
+					if(this.op.getVehicle() != null) { 
+						this.canpickup = false;
+						return true;
+					} else if(task.getSize() != 0) {
+						logger.warn("[R-PU-KO] T:" + (int)time + " |tId:"+task.getId()+" |staId:"+task.getStation().getId()+" |linkId:"+task.getStation().facility().getLinkId()+" |agentId:"+task.getAgent().getId());
+					}
 				}
+			} else if(this.op.getVehicle() != null) { // otherwise, if operator already have vehicles
+				this.op.getVehicle().startTrip(this.op, this.op.getLocation(), time); // start a new trip
+				this.canpickup = false;
 			}
-		} else if(this.op.getVehicle() != null) { // otherwise, if operator already have vehicles
-			this.op.getVehicle().startTrip(this.op, this.op.getLocation(), time); // start a new trip
-			this.canpickup = false;
 		}
+		op.endTask();
 		return false;
 	}
 	
 	@Override
 	public boolean processDropoff(double time, CarsharingRelocationTask task) {
 		CarsharingStationMobsim here = task.getStation();
-		
-		// DROPOFF FIRST
 		CarsharingVehicleMobsim VEH = this.op.getVehicle();
-		this.canpickup = true;
-		Queue<CarsharingVehicleMobsim> q = VEH.roadTrain();
-		CarsharingVehicleTrip trip = VEH.status().getTrip();
-		if(here.dropoff(this.op, VEH, time)) {
-			this.op.setVehicle(null);
-			this.canpickup = true;
-			return true;
+		
+		if(!task.getStation().equals(op.getLocation())) {
+			logger.warn("[R-DO-WRONG-LOCATION] T:" + (int)time + " |tId:"+task.getId()+" |staId:"+task.getStation().getId()+" |locationId:"+op.getLocation().getId()+" |agentId:"+task.getAgent().getId());
 		} else {
-			this.canpickup = false;
-			for(CarsharingVehicleMobsim v : q) {
-				logger.error("[R-DO-KO] T:" + (int)time + 
-						" |vehId:"+v.vehicle().getId() + 
-						" |tId:"+task.getId()+
-						" |staId:"+task.getStation().getId()+
-						" |linkId:"+task.getStation().facility().getLinkId()+
-						" |agentId:"+task.getAgent().getId() + 
-						" |status:"+trip.getStatus()+
-						" |SoC:"+v.battery().getSoC());
+			if(task.getSize() > 0 && VEH != null) {
+				this.canpickup = true;
+				Queue<CarsharingVehicleMobsim> q = VEH.roadTrain();
+				CarsharingVehicleTrip trip = VEH.status().getTrip();
+				if(here.dropoff(this.op, VEH, time)) {
+					this.op.setVehicle(null);
+					this.canpickup = true;
+					return true;
+				} else {
+					this.canpickup = false;
+					for(CarsharingVehicleMobsim v : q) {
+						logger.error("[R-DO-KO] T:" + (int)time + 
+								" |vehId:"+v.vehicle().getId() + 
+								" |tId:"+task.getId()+
+								" |staId:"+task.getStation().getId()+
+								" |linkId:"+task.getStation().facility().getLinkId()+
+								" |agentId:"+task.getAgent().getId() + 
+								" |status:"+trip.getStatus()+
+								" |SoC:"+v.battery().getSoC());
+					}
+				}
 			}
-			//throw new RuntimeException("OPERATOR FAILED AT DROPPING OFF THE VEHICLE");
 		}
+		op.endTask();
 		return false;
 	}
 
