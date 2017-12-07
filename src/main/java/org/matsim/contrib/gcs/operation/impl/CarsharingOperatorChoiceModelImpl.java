@@ -30,19 +30,30 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 		CarsharingStationMobsim here = task.getStation();
 		
 		if(!task.getStation().equals(op.getLocation())) {
-			logger.warn("[R-PU-WRONG-LOCATION] T:" + (int)time + " |tId:"+task.getId()+" |staId:"+task.getStation().getId()+" |locationId:"+op.getLocation().getId()+" |agentId:"+task.getAgent().getId());
+			logger.warn("[R-PU-WRONG-LOCATION] T:" + (int)time + 
+					" |tId:"+task.getId()+
+					" |staId:"+task.getStation().getId()+
+					" |locationId:"+op.getLocation().getId()+
+					" |agentId:"+task.getAgent().getId());
 		} else {
 			if(this.canpickup) { // if agent can pick up and there are vehicles to pick up
 				if(!ENERGY(task, time)) {
-					logger.warn("[RPickupENERGY-KO] T:" + (int)time + "|tId:"+task.getId()+"|staId:"+task.getStation().getId()+"|linkId:"+task.getStation().facility().getLinkId()+"|agentId:"+task.getAgent().getId());
+					logger.warn("[RPickupENERGY-KO] T:" + (int)time + 
+							"|tId:"+task.getId()+
+							"|staId:"+task.getStation().getId()+
+							"|linkId:"+task.getStation().facility().getLinkId()+
+							"|agentId:"+task.getAgent().getId());
 				} else {
 					int rt_size = Math.min(this.m.booking().track(here).vehicleAvailability(), task.getSize());
 					this.op.setVehicle(here.pickup(this.op, rt_size, time)); // pickup
 					if(this.op.getVehicle() != null) { 
 						this.canpickup = false;
-						return true;
 					} else if(task.getSize() != 0) {
-						logger.warn("[R-PU-KO] T:" + (int)time + " |tId:"+task.getId()+" |staId:"+task.getStation().getId()+" |linkId:"+task.getStation().facility().getLinkId()+" |agentId:"+task.getAgent().getId());
+						logger.warn("[R-PU-KO] T:" + (int)time + 
+								" |tId:"+task.getId()+
+								" |staId:"+task.getStation().getId()+
+								" |linkId:"+task.getStation().facility().getLinkId()+
+								" |agentId:"+task.getAgent().getId());
 					}
 				}
 			} else if(this.op.getVehicle() != null) { // otherwise, if operator already have vehicles
@@ -51,7 +62,7 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 			}
 		}
 		op.endTask();
-		return false;
+		return !this.canpickup;
 	}
 	
 	@Override
@@ -60,18 +71,19 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 		CarsharingVehicleMobsim VEH = this.op.getVehicle();
 		
 		if(task.getStation().equals(op.getLocation())) {
-			logger.warn("[R-DO-SAME-LOCATION] T:" + (int)time + " |tId:"+task.getId()+" |staId:"+task.getStation().getId()+" |locationId:"+op.getLocation().getId()+" |agentId:"+task.getAgent().getId());
+			logger.warn("[R-DO-SAME-LOCATION] T:" + (int)time + 
+					" |tId:"+task.getId()+" |staId:"+task.getStation().getId()+
+					" |locationId:"+op.getLocation().getId()+
+					" |agentId:"+task.getAgent().getId());
 		} else {
 			if(task.getSize() > 0 && VEH != null) {
-				this.canpickup = true;
+				this.canpickup = false;
 				Queue<CarsharingVehicleMobsim> q = VEH.roadTrain();
 				CarsharingVehicleTrip trip = VEH.status().getTrip();
 				if(here.dropoff(this.op, VEH, time)) {
 					this.op.setVehicle(null);
 					this.canpickup = true;
-					return true;
 				} else {
-					this.canpickup = false;
 					for(CarsharingVehicleMobsim v : q) {
 						logger.error("[R-DO-KO] T:" + (int)time + 
 								" |vehId:"+v.vehicle().getId() + 
@@ -87,7 +99,7 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 			this.op.setLocation(here);
 		}
 		op.endTask();
-		return false;
+		return this.canpickup && VEH !=null;
 	}
 
 	@Override

@@ -98,7 +98,7 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 				} 				
 				event = new CarsharingPickupVehicleEvent(
 								task.getTime(), qSim.getScenario(), 
-								this.m, task.getAgent(), task.getStation(), 
+								m, task.getAgent(), task.getStation(), 
 								train, task.getBooking());
 				
 			}  else {
@@ -108,7 +108,7 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 				book = op.decision().processDropoff(time, task);
 				event = new CarsharingDropoffVehicleEvent(
 								task.getTime(), qSim.getScenario(), 
-								this.m, task.getAgent(), task.getStation(), 
+								m, task.getAgent(), task.getStation(), 
 								train, task.getBooking());
 			}
 			
