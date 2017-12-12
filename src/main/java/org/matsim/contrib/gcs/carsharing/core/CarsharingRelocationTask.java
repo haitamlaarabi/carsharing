@@ -10,7 +10,7 @@ public class CarsharingRelocationTask implements Comparable<CarsharingRelocation
 	final private CarsharingAgent agent;
 	final private CarsharingStationMobsim station;
 	final private double time;
-	final private int size;
+	private int size;
 	final private String id;
 	final private double distance;
 	final private double tt;
@@ -69,6 +69,10 @@ public class CarsharingRelocationTask implements Comparable<CarsharingRelocation
 
 	public int getSize() {
 		return size;
+	}
+	
+	public void setSize(int s) {
+		this.size = s;
 	}
 	
 	public void setBooking(CarsharingBookingRecord b) {

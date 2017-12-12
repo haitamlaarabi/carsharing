@@ -45,7 +45,9 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 							"|agentId:"+task.getAgent().getId());
 				} else {
 					int rt_size = Math.min(this.m.booking().track(here).vehicleAvailability(), task.getSize());
-					this.op.setVehicle(here.pickup(this.op, rt_size, time)); // pickup
+					task.setSize(rt_size);
+					task.getBooking().setNbrOfVeh(rt_size);
+					this.op.setVehicle(here.pickup(this.op, task.getSize(), time)); // pickup
 					if(this.op.getVehicle() != null) { 
 						this.canpickup = false;
 					} else if(task.getSize() != 0) {
