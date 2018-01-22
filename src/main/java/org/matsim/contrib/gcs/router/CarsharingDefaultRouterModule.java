@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingOffer;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.RouteUtils;
@@ -44,6 +46,7 @@ public class CarsharingDefaultRouterModule implements RoutingModule {
 		
 		return trip;
 	}
+	
 
 	@Override
 	public StageActivityTypes getStageActivityTypes() {

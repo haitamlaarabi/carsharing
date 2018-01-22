@@ -187,8 +187,8 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 		if(arrival.station != null){
 			end = arrival.station.facility();
 		}
-		List<? extends PlanElement> elements = 
-				this.tripRouter.calcRoute(TransportMode.car, start, end, deptime, this.customerAgentMemory.getPerson());
+		List<? extends PlanElement> elements = this.tripRouter.calcRoute(
+				CarsharingRouterModeCst.cs_drive, start, end, deptime, this.customerAgentMemory.getPerson());
 		double tt = CarsharingUtils.calcDuration(elements);
 		Boolean novehiclefound = true;
 		Boolean noparkingfound = true;

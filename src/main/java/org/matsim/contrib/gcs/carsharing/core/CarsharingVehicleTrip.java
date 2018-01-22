@@ -13,7 +13,7 @@ public class CarsharingVehicleTrip {
 	private double departureSoC;
 	private double travelDistance;
 	private double rentalDuration;
-	private double energyConsumed;
+	//private double energyConsumed;
 	private double rentalCost;
 	private String status;
 	private boolean asTrailer;
@@ -31,9 +31,9 @@ public class CarsharingVehicleTrip {
 		this.departureTime = departureTime;
 		this.departureSoC = this.vehicle.battery().getSoC();						
 		this.destinationStation = null;
-		this.travelDistance = Double.NaN;
-		this.rentalDuration = Double.NaN;
-		this.energyConsumed = Double.NaN;
+		this.travelDistance = 0;
+		this.rentalDuration = 0;
+		//this.energyConsumed = 0;
 		this.asTrailer = asTrailer;
 		this.status = "START";
 		this.id = idperson + "@" + String.valueOf((int)departureTime); 
@@ -57,11 +57,9 @@ public class CarsharingVehicleTrip {
 	 * 
 	 * @param travelDistance
 	 */
-	public void increment(double travelDistance, double energyConsumed) {
-		if(Double.isNaN(this.travelDistance)) {	this.travelDistance = 0; }
-		if(Double.isNaN(this.energyConsumed)) { this.energyConsumed = 0; }
+	public void increment(double travelDistance) {
 		this.travelDistance += travelDistance;
-		this.energyConsumed -= energyConsumed;
+		//this.energyConsumed -= energyConsumed;
 	}
 	
 	public void setDepartureTime(double time) { this.departureTime = time; }
@@ -76,7 +74,7 @@ public class CarsharingVehicleTrip {
 	public CarsharingStationMobsim getDestinationStation() { return destinationStation; }
 	public double getTravelDistance() { return travelDistance; }
 	public double getRentalDuration() { return rentalDuration; }
-	public double getEnergyConsumed() { return energyConsumed; }
+	//public double getEnergyConsumed() { return energyConsumed; }
 	public double getRentalCost() { return rentalCost; }
 	public String getStatus() { return status; }
 	public CarsharingVehicleMobsim getVehicle() { return this.vehicle; }

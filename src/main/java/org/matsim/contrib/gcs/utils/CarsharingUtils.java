@@ -15,6 +15,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingOffer;
 import org.matsim.contrib.gcs.replanning.CarsharingPlanModeCst;
 import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
@@ -24,6 +25,7 @@ import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
+import org.matsim.core.router.TripRouter;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.Facility;
@@ -34,6 +36,16 @@ public final class CarsharingUtils {
 	static String ACCESS_STATION = "access_station";
 	static String EGRESS_STATION = "egress_station";
 	
+	
+	public static List<? extends PlanElement> calcRoute(TripRouter r, CarsharingOffer o, ActivityFacility dest) {
+		List<? extends PlanElement> elements = r.calcRoute(
+				CarsharingRouterModeCst.cs_drive, 
+				o.getAccess().getStation().facility(), 
+				dest, 
+				o.getDepartureTime() + o.getAccess().getTravelTime() + o.getAccess().getOffsetDur(), 
+				o.getDemand().getAgent().getPerson());
+		return elements;
+	}
 	
 	public static double distanceBeeline(double euc_distance, ModeRoutingParams r_param) {
 		double distance = euc_distance * r_param.getBeelineDistanceFactor();
@@ -226,13 +238,13 @@ public final class CarsharingUtils {
 	 * @param endExclusive
 	 * @return
 	 */
-	public static double calcDuration(final List<? extends PlanElement> trip, PlanElement endExclusive) {
+	public static double calcDuration(final List<? extends PlanElement> trip) {
 		double tt = 0;
 
 		for ( PlanElement pe : trip ) {
 			
-			if(endExclusive != null && pe.equals(endExclusive))
-				break;
+			/*if(endExclusive != null && pe.equals(endExclusive))
+				break;*/
 			
 			if ( pe instanceof Leg ) {
 				final double curr = ((Leg) pe).getTravelTime();
@@ -241,12 +253,12 @@ public final class CarsharingUtils {
 				tt += curr;
 			}
 
-			if ( pe instanceof Activity ) {
+			/*if ( pe instanceof Activity ) {
 				final double dur = ((Activity) pe).getEndTime();
 				if ( dur != Time.UNDEFINED_TIME ) {
 					tt = dur;
 				}
-			}
+			}*/
 
 		}
 
@@ -273,9 +285,9 @@ public final class CarsharingUtils {
 	 * @param trip
 	 * @return
 	 */
-	public static double calcDuration(final List<? extends PlanElement> trip) {
+	/*public static double calcDuration(final List<? extends PlanElement> trip) {
 		return calcDuration(trip, null);
-	}
+	}*/
 	
 	/**
 	 * 

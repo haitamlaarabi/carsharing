@@ -18,6 +18,7 @@ import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
+import org.matsim.core.config.groups.QSimConfigGroup.VehiclesSource;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.facilities.ActivityFacility;
@@ -111,6 +112,7 @@ public class CarsharingScenario {
 		mainmodes.add(CarsharingRouterModeCst.cs_drive);
 		config.qsim().setMainModes(mainmodes);
 		
+		config.qsim().setVehiclesSource(VehiclesSource.modeVehicleTypesFromVehiclesData);
 		
 		/*scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_walk).setMonetaryDistanceRate(0.0);
 		scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_walk).setMarginalUtilityOfTraveling(-0.6*60+6);

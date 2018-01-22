@@ -100,7 +100,8 @@ public class CarsharingVehicleImpl implements CarsharingVehicleMobsim {
 	@Override
 	public void drive(double distance, double speed, double freespeed) {
 		for(CarsharingVehicleMobsim  v : this.roadTrain()) {
-			v.status().getTrip().increment(distance, v.battery().consumeBattery(distance, speed, freespeed));
+			v.battery().consumeBattery(distance, speed, freespeed);
+			v.status().getTrip().increment(distance);
 			if(v.battery().getSoC() <= 0) {
 				logger.error("[DRIVING-KO] tripId:" + v.status().getTrip().getId()  + " |vehId:" + v.vehicle().getId() + " |soc:" + v.battery().getSoC());
 			}

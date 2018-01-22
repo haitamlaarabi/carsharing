@@ -61,7 +61,7 @@ public class CarsharingVehicleFactory {
 		CarsharingVehicleImpl carsharing;
 		private CarsharingVehicleBuilder(Scenario scenario, String id) {
 			VehicleType vehicleType = VehicleUtils.getDefaultVehicleType();
-			vehicleType.setMaximumVelocity(6.94444);
+			//vehicleType.setMaximumVelocity(6.94444);
 			if(!scenario.getVehicles().getVehicleTypes().containsKey(vehicleType.getId())){
 				scenario.getVehicles().addVehicleType(vehicleType);
 			}

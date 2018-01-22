@@ -19,6 +19,8 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingStation;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
 import org.matsim.contrib.gcs.carsharing.impl.CarsharingStationFactory;
 import org.matsim.contrib.gcs.operation.model.CarsharingOfferModel;
+import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
+import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.TripRouter;
@@ -181,12 +183,7 @@ public class CarsharingOfferModelImpl implements CarsharingOfferModel  {
 	 */
 	public CarsharingOffer getEgressStationStandardOffer(CarsharingOffer o, SelectedStation s) {
 		
-		List<? extends PlanElement> elements = this.router.calcRoute(
-				TransportMode.car, 
-				o.getAccess().getStation().facility(), 
-				s.station.facility(), 
-				o.getDepartureTime() + o.getAccess().getTravelTime() + o.getAccess().getOffsetDur(), 
-				o.getDemand().getAgent().getPerson());
+		List<? extends PlanElement> elements = CarsharingUtils.calcRoute(this.router, o, s.station.facility());
 		
 		CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromOffer(o, CarsharingOffer.SUCCESS_STANDARDOFFER);
 		builder.setDrive(o.getNbOfVehicles(), elements);
@@ -225,12 +222,7 @@ public class CarsharingOfferModelImpl implements CarsharingOfferModel  {
 			final double duration = egressDist * this.beelineWalkSpeed;
 			final double distance = egressDist * this.beelineDistanceFactor;	
 			
-			List<? extends PlanElement> elements = this.router.calcRoute(
-					TransportMode.car, 
-					offer.getAccess().getStation().facility(), 
-					newFS.facility(), 
-					offer.getDepartureTime() + offer.getAccess().getTravelTime() + offer.getAccess().getOffsetDur(), 
-					offer.getDemand().getAgent().getPerson());
+			List<? extends PlanElement> elements = CarsharingUtils.calcRoute(this.router, offer, newFS.facility());
 			CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromOffer(offer, CarsharingOffer.SUCCESS_FREEFLOATINGOFFER);
 			builder.setDrive(offer.getNbOfVehicles(), elements);
 			builder.setEgress((CarsharingStationMobsim) newFS, duration, distance, this.manager.getConfig().getInteractionOffset());

@@ -116,8 +116,10 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 		int j = task.getSize();
 		for(CarsharingVehicleMobsim v : s.parking()) {
 			if(j <= 0) break;
-			double maxspeed = v.vehicle().getType().getMaximumVelocity();
-			double avgspeed = v.vehicle().getType().getMaximumVelocity();
+			//double maxspeed = v.vehicle().getType().getMaximumVelocity();
+			//double avgspeed = v.vehicle().getType().getMaximumVelocity();
+			double maxspeed = distance/task.getTravelTime();
+			double avgspeed = distance/task.getTravelTime();
 			double eng = v.battery().getEnergyForConsumption(distance, maxspeed, avgspeed);
 			double psoc = v.battery().getSoC();
 			boolean chargedenough = v.battery().isChargedEnough(distance, maxspeed, avgspeed);

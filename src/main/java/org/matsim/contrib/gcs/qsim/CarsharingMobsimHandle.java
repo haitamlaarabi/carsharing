@@ -127,7 +127,8 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 		Queue<CarsharingVehicleMobsim> rt = op.getVehicle().roadTrain();
 		double distance = task.getDistance();
 		double avgspeed = task.getDistance()/task.getTravelTime();
-		double maxspeed = op.getVehicle().vehicle().getType().getMaximumVelocity();
+		double maxspeed = task.getDistance()/task.getTravelTime();
+		//double maxspeed = op.getVehicle().vehicle().getType().getMaximumVelocity();
 		op.getVehicle().drive(distance, avgspeed, maxspeed);
 		for(CarsharingVehicleMobsim v : rt) { // teleport
 			logger.info("[DRIVING] T:" + (int)time + 

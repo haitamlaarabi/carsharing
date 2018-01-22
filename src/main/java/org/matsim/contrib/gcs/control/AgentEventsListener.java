@@ -74,8 +74,8 @@ public class AgentEventsListener implements PersonLeavesVehicleEventHandler,
 			Link link = this.network.getLinks().get(event.getLinkId());
 			
 			double mobsimTravelTime = event.getTime() - linktimeMap.get(event.getVehicleId());
-			//double vehMaxSpeed = link.getFreespeed();
-			double vehMaxSpeed = carsharingVeh.vehicle().getType().getMaximumVelocity();
+			double vehMaxSpeed = link.getFreespeed();
+			//double vehMaxSpeed = carsharingVeh.vehicle().getType().getMaximumVelocity();
 			double minTravelTime = link.getLength()/vehMaxSpeed;
 			
 			if(mobsimTravelTime < minTravelTime) {
