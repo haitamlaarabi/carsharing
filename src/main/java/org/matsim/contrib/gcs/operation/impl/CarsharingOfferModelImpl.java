@@ -186,8 +186,8 @@ public class CarsharingOfferModelImpl implements CarsharingOfferModel  {
 		List<? extends PlanElement> elements = CarsharingUtils.calcRoute(this.router, o, s.station.facility());
 		
 		CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromOffer(o, CarsharingOffer.SUCCESS_STANDARDOFFER);
-		builder.setDrive(o.getNbOfVehicles(), elements);
 		builder.setEgress(s.station, s.traveltime, s.distance, this.manager.getConfig().getInteractionOffset());
+		builder.setDrive(o.getNbOfVehicles(), elements);
 		return builder.build();
 	}
 	
@@ -224,8 +224,8 @@ public class CarsharingOfferModelImpl implements CarsharingOfferModel  {
 			
 			List<? extends PlanElement> elements = CarsharingUtils.calcRoute(this.router, offer, newFS.facility());
 			CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromOffer(offer, CarsharingOffer.SUCCESS_FREEFLOATINGOFFER);
-			builder.setDrive(offer.getNbOfVehicles(), elements);
 			builder.setEgress((CarsharingStationMobsim) newFS, duration, distance, this.manager.getConfig().getInteractionOffset());
+			builder.setDrive(offer.getNbOfVehicles(), elements);
 			return builder.build();
 	}
 	

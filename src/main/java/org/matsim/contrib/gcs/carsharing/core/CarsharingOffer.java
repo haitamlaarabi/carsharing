@@ -77,7 +77,6 @@ public class CarsharingOffer {
 				drive = new DriveOffer(access.time+access.travelTime, null, nVEH);
 			}
 			drive.nVEH = nVEH;
-			drive.travelTime =+ access.offsetDur + egress.offsetDur;
 		}
 		
 		public void setDrive(int nVEH, List<? extends PlanElement> route) {
