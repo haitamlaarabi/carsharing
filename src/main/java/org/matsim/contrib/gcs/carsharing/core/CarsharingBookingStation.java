@@ -32,10 +32,12 @@ public class CarsharingBookingStation {
 		public BookingRecordWrapper(CarsharingBookingRecord record) {
 			if(record.getOriginStation() != null && record.getOriginStation().equals(station)) {
 				this.isDemand = true;
-				this.time = record.departureTime + record.getRelatedOffer().getAccess().getTravelTime();
+				//this.time = record.departureTime + record.getRelatedOffer().getAccess().getTravelTime();
+				this.time = record.getRelatedOffer().getDrive().getTime();
 			} else if(record.getDestinationStation() != null && record.getDestinationStation().equals(station)) {
 				this.isDemand = false;
-				this.time = record.arrivalTime - record.getRelatedOffer().getEgress().getTravelTime();
+				//this.time = record.arrivalTime - record.getRelatedOffer().getEgress().getTravelTime();
+				this.time = record.getRelatedOffer().getEgress().getTime();
 			} else {
 				throw new RuntimeException("Wrong Booking Wrapper !!");
 			}

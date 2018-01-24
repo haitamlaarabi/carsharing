@@ -42,7 +42,7 @@ public final class CarsharingUtils {
 				CarsharingRouterModeCst.cs_drive, 
 				o.getAccess().getStation().facility(), 
 				dest, 
-				o.getDepartureTime() + o.getAccess().getTravelTime() + o.getAccess().getOffsetDur(), 
+				o.getAccess().getTime() + o.getAccess().getTravelTime() + o.getAccess().getOffsetDur(), 
 				o.getDemand().getAgent().getPerson());
 		return elements;
 	}

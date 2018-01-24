@@ -39,7 +39,7 @@ public class CarsharingUserChoiceModelImpl2 implements CarsharingUserChoiceModel
 		double minTotCost = Double.MAX_VALUE;
 		for(CarsharingOffer o : offers) {
 			if(o.hasValidAccess() && o.hasValidEgress()) {
-				final double trip_cost = o.getCost() * (o.getAccess().getOffsetDur() + o.getDrive().getTravelTime() + o.getEgress().getOffsetDur());
+				final double trip_cost = o.getCost() * (o.getDrive().getRentalTime());
 				if(minCostOffer == null || minTotCost > trip_cost)
 					minCostOffer = o;
 					minTotCost = trip_cost;

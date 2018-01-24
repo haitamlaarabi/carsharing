@@ -74,13 +74,15 @@ public class CarsharingOffer {
 		
 		public void setDrive(int nVEH) {
 			if(this.drive == null) {
-				drive = new DriveOffer(access.time+access.travelTime+access.offsetDur, null, nVEH);
+				drive = new DriveOffer(access.time+access.travelTime, null, nVEH);
 			}
 			drive.nVEH = nVEH;
+			drive.travelTime =+ access.offsetDur + egress.offsetDur;
 		}
 		
 		public void setDrive(int nVEH, List<? extends PlanElement> route) {
-			drive = new DriveOffer(access.time+access.travelTime+access.offsetDur, route, nVEH);
+			drive = new DriveOffer(access.time+access.travelTime, route, nVEH);
+			drive.travelTime =+ access.offsetDur + egress.offsetDur;
 		}
 		
 		public void setCost(double cost) {
@@ -200,7 +202,7 @@ public class CarsharingOffer {
 			this.distance = d.distance;
 			this.travelTime = d.travelTime;
 		}
-		public double getTravelTime() { return travelTime; }
+		public double getRentalTime() { return travelTime; }
 		public double getDistance() { return distance; }
 		public List<? extends PlanElement> getRoute() { return this.route; }
 		public double getTime() { return this.time; }
@@ -242,7 +244,8 @@ public class CarsharingOffer {
 	public CarsharingAgent getAgent() { return this.agent; }
 	public double getCost() { return this.cost; }
 	public double getDepartureTime() { return this.access.time; }
-	public double getArrivalTime() { return this.egress.time + this.egress.travelTime + this.egress.offsetDur; }
+	public double getArrivalTime() { return this.egress.time + this.egress.travelTime; }
+	
 	
 	
 	public void setCost(double c) { this.cost = c; }
