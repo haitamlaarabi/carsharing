@@ -81,7 +81,7 @@ public class CarsharingOffer {
 		
 		public void setDrive(int nVEH, List<? extends PlanElement> route) {
 			drive = new DriveOffer(access.time+access.travelTime, route, nVEH);
-			drive.travelTime =+ access.offsetDur + egress.offsetDur;
+			drive.travelTime += access.offsetDur + egress.offsetDur;
 		}
 		
 		public void setCost(double cost) {
