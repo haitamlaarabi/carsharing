@@ -79,6 +79,10 @@ public class CarsharingOffer {
 			drive.nVEH = nVEH;
 		}
 		
+		public void setDrive(int nVEH, double tt, double dt) {
+			drive = new DriveOffer(access.time+access.travelTime, tt, dt, nVEH);
+		}
+		
 		public void setDrive(int nVEH, List<? extends PlanElement> route) {
 			drive = new DriveOffer(access.time+access.travelTime, route, nVEH);
 			drive.travelTime += access.offsetDur + egress.offsetDur;
@@ -193,6 +197,12 @@ public class CarsharingOffer {
 			this.time = depTime;
 			this.nVEH = nVEH;
 			setRoute(route);
+		}
+		public DriveOffer(double depTime, double tt, double dt, int nVEH){
+			this.time = depTime;
+			this.nVEH = nVEH;
+			this.travelTime = tt;
+			this.distance = dt;
 		}
 		DriveOffer(DriveOffer d) {
 			this.time = d.time;
