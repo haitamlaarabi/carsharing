@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
@@ -17,7 +16,6 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
 import org.matsim.contrib.gcs.carsharing.impl.CarsharingStationFactory;
 import org.matsim.contrib.gcs.config.CarsharingConfigGroup;
 import org.matsim.contrib.gcs.operation.model.CarsharingOfferModel;
-import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.network.NetworkUtils;
@@ -260,23 +258,23 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 	 * @return
 	 */
 	public ArrayList<SelectedStation> getClosestStationToArrivalLink(CarsharingDemand demand, CarsharingStationMobsim excludedDepartureStation) {
-		double real_distance = manager.getConfig().getSearchDistance()/this.cs_conf.getEgressWalkCalcRoute().getBeelineDistanceFactor();
+		double euc_distance = manager.getConfig().getSearchDistance()/this.cs_conf.getEgressWalkCalcRoute().getBeelineDistanceFactor();
 		Collection<CarsharingStationMobsim> stations = manager.getStations().qtree().getDisk(
 							demand.getDestination().getCoord().getX(), demand.getDestination().getCoord().getY(), 
-							real_distance);
+							euc_distance);
 		
 		if(stations.isEmpty()) return null;
 		
 		ArrayList<SelectedStation> closestStations = new ArrayList<SelectedStation>();
 		for(CarsharingStationMobsim station: stations) {
 			if(station.equals(excludedDepartureStation) || station.getType().equals(FLOATING_STATION)) continue;
-			final double egressDist = NetworkUtils.getEuclideanDistance(demand.getDestination().getCoord(), station.facility().getCoord());
-			final double traveltime = CarsharingUtils.travelTimeBeeline(egressDist, this.cs_conf.getEgressWalkCalcRoute());
-			final double distance = CarsharingUtils.distanceBeeline(egressDist, this.cs_conf.getEgressWalkCalcRoute());
+			final double egress_euc_dist = NetworkUtils.getEuclideanDistance(demand.getDestination().getCoord(), station.facility().getCoord());
 			
 			CarsharingBookingStation bs = manager.booking().track(station);
 			int nPark = bs.parkingAvailability();
 			if(nPark >= demand.getNbrOfVeh()) { // success
+				final double traveltime = CarsharingUtils.travelTimeBeeline(egress_euc_dist, this.cs_conf.getEgressWalkCalcRoute());
+				final double distance = CarsharingUtils.distanceBeeline(egress_euc_dist, this.cs_conf.getEgressWalkCalcRoute());
 				closestStations.add(new SelectedStation(station, traveltime, distance, false));
 			} else { // Failure
 				closestStations.add(new SelectedStation(true));
@@ -293,22 +291,22 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 	 * @return
 	 */
 	public ArrayList<SelectedStation> getClosestStationToDepartureLink(CarsharingDemand demand) {
-		double real_distance = manager.getConfig().getSearchDistance()/this.cs_conf.getAccessWalkCalcRoute().getBeelineDistanceFactor();
+		double euc_distance = manager.getConfig().getSearchDistance()/this.cs_conf.getAccessWalkCalcRoute().getBeelineDistanceFactor();
 		Collection<CarsharingStationMobsim> stations = manager.getStations().qtree().getDisk(
 							demand.getOrigin().getCoord().getX(), demand.getOrigin().getCoord().getY(), 
-							real_distance);
+							euc_distance);
 		
 		if(stations.isEmpty()) return null;
 		
 		ArrayList<SelectedStation> closestStations = new ArrayList<SelectedStation>();
 		for(CarsharingStationMobsim station: stations) {
-			final double accessDist = NetworkUtils.getEuclideanDistance(demand.getOrigin().getCoord(), station.facility().getCoord());
-			final double traveltime = CarsharingUtils.travelTimeBeeline(accessDist, this.cs_conf.getAccessWalkCalcRoute());
-			final double distance = CarsharingUtils.distanceBeeline(accessDist, this.cs_conf.getAccessWalkCalcRoute());
-			
+			final double access_euc_dist = NetworkUtils.getEuclideanDistance(demand.getOrigin().getCoord(), station.facility().getCoord());
+
 			CarsharingBookingStation bs = manager.booking().track(station);
 			int nVeh = bs.vehicleAvailability();
 			if(nVeh >= demand.getNbrOfVeh()) { // success
+				final double traveltime = CarsharingUtils.travelTimeBeeline(access_euc_dist, this.cs_conf.getAccessWalkCalcRoute());
+				final double distance = CarsharingUtils.distanceBeeline(access_euc_dist, this.cs_conf.getAccessWalkCalcRoute());
 				closestStations.add(new SelectedStation(station, traveltime, distance, station.getType().equals(FLOATING_STATION)));
 			} else { // Failure
 				closestStations.add(new SelectedStation(true));
