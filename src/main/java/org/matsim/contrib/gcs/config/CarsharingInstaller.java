@@ -40,7 +40,7 @@ import org.matsim.contrib.gcs.qsim.CarsharingQsimFactory;
 import org.matsim.contrib.gcs.replanning.CarsharingMainModeIdentifier;
 import org.matsim.contrib.gcs.replanning.CarsharingPlanModeCst;
 import org.matsim.contrib.gcs.router.CarsharingDirectRouterModule;
-import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
 import org.matsim.contrib.gcs.scoring.CarsharingScoringFunctionFactory;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.AbstractModule;
@@ -164,16 +164,16 @@ public abstract class CarsharingInstaller extends AbstractModule {
         addRoutingModuleBinding(CarsharingPlanModeCst.directTrip).to(CarsharingDirectRouterModule.class);
         bind(MainModeIdentifier.class).to(CarsharingMainModeIdentifier.class);
         
-      	addTravelTimeBinding(CarsharingRouterModeCst.cs_drive).to(networkTravelTime());
-    	addTravelDisutilityFactoryBinding(CarsharingRouterModeCst.cs_drive).to(carTravelDisutilityFactoryKey());
-    	addRoutingModuleBinding(CarsharingRouterModeCst.cs_drive).to(Key.get(RoutingModule.class, Names.named(TransportMode.car)));
+      	addTravelTimeBinding(CarsharingRouterUtils.cs_drive).to(networkTravelTime());
+    	addTravelDisutilityFactoryBinding(CarsharingRouterUtils.cs_drive).to(carTravelDisutilityFactoryKey());
+    	addRoutingModuleBinding(CarsharingRouterUtils.cs_drive).to(Key.get(RoutingModule.class, Names.named(TransportMode.car)));
     	
     	
-    	//addTravelDisutilityFactoryBinding(CarsharingRouterModeCst.cs_pt).to(Key.get(TravelDisutilityFactory.class, Names.named(TransportMode.pt)));
-    	addRoutingModuleBinding(CarsharingRouterModeCst.cs_pt).to(Key.get(RoutingModule.class, Names.named(TransportMode.pt)));
+    	//addTravelDisutilityFactoryBinding(CarsharingRouterUtils.cs_pt).to(Key.get(TravelDisutilityFactory.class, Names.named(TransportMode.pt)));
+    	addRoutingModuleBinding(CarsharingRouterUtils.cs_pt).to(Key.get(RoutingModule.class, Names.named(TransportMode.pt)));
     	
-    	//addTravelDisutilityFactoryBinding(CarsharingRouterModeCst.cs_walk).to(Key.get(TravelDisutilityFactory.class, Names.named(TransportMode.walk)));
-    	addRoutingModuleBinding(CarsharingRouterModeCst.cs_walk).to(Key.get(RoutingModule.class, Names.named(TransportMode.walk)));
+    	//addTravelDisutilityFactoryBinding(CarsharingRouterUtils.cs_walk).to(Key.get(TravelDisutilityFactory.class, Names.named(TransportMode.walk)));
+    	addRoutingModuleBinding(CarsharingRouterUtils.cs_walk).to(Key.get(RoutingModule.class, Names.named(TransportMode.walk)));
     	
     	addControlerListenerBinding().to(ControllerListener.class);
     	

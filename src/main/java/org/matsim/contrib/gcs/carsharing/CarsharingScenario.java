@@ -14,7 +14,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStation;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicle;
 import org.matsim.contrib.gcs.config.CarsharingConfigGroup;
-import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
@@ -103,32 +103,32 @@ public class CarsharingScenario {
 		
 		config.addModule(csConf);
 		// matsim config
-		ActivityParams station = new ActivityParams(CarsharingRouterModeCst.ACTIVITY_TYPE_NAME);
+		ActivityParams station = new ActivityParams(CarsharingRouterUtils.ACTIVITY_TYPE_NAME);
 		station.setClosingTime(CarsharingUtils.toSecond(23,59,59));
 		station.setOpeningTime(CarsharingUtils.toSecond(0,0,0));
 		station.setTypicalDuration(CarsharingUtils.toSecond(0,1,0));
 		config.planCalcScore().addActivityParams(station);
 		ArrayList<String> mainmodes = new ArrayList<String>(config.qsim().getMainModes());
-		mainmodes.add(CarsharingRouterModeCst.cs_drive);
+		mainmodes.add(CarsharingRouterUtils.cs_drive);
 		config.qsim().setMainModes(mainmodes);
 		
 		config.qsim().setVehiclesSource(VehiclesSource.modeVehicleTypesFromVehiclesData);
 		
-		/*scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_walk).setMonetaryDistanceRate(0.0);
-		scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_walk).setMarginalUtilityOfTraveling(-0.6*60+6);
-		scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_walk).setMarginalUtilityOfDistance(0.0);
-		scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_walk).setConstant(11.29);*/
+		/*scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterUtils.cs_walk).setMonetaryDistanceRate(0.0);
+		scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterUtils.cs_walk).setMarginalUtilityOfTraveling(-0.6*60+6);
+		scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterUtils.cs_walk).setMarginalUtilityOfDistance(0.0);
+		scenario.getConfig().planCalcScore().getOrCreateModeParams(CarsharingRouterUtils.cs_walk).setConstant(11.29);*/
 		
 		scenario.getConfig().transit().setUseTransit(true);
 		HashSet<String> tmodes = new HashSet<String>(scenario.getConfig().transit().getTransitModes());
-		tmodes.add(CarsharingRouterModeCst.cs_pt);
+		tmodes.add(CarsharingRouterUtils.cs_pt);
 		scenario.getConfig().transit().setTransitModes(tmodes);
 		scenario.getConfig().transitRouter().setAdditionalTransferTime(2*60.0);
 		scenario.getConfig().transitRouter().setExtensionRadius(200.0);
 		scenario.getConfig().transitRouter().setMaxBeelineWalkConnectionDistance(100.0);
 		scenario.getConfig().transitRouter().setSearchRadius(1000.0);
 		ArrayList<String> subModes = new ArrayList<String>(Arrays.asList(scenario.getConfig().subtourModeChoice().getModes()));
-		subModes.add(CarsharingRouterModeCst.cs_pt);
+		subModes.add(CarsharingRouterUtils.cs_pt);
 		scenario.getConfig().subtourModeChoice().setModes(subModes.toArray(new String[0]));
 		return csConf;
 	}

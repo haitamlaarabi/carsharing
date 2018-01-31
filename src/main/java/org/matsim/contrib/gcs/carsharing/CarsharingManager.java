@@ -40,8 +40,11 @@ import org.matsim.contrib.gcs.operation.model.CarsharingRelocationModel;
 import org.matsim.contrib.gcs.operation.model.CarsharingUserChoiceModel;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.MatsimServices;
+import org.matsim.core.router.TripRouter;
+import org.matsim.core.router.util.TravelTime;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.withinday.mobsim.MobsimDataProvider;
+import org.matsim.withinday.trafficmonitoring.TravelTimeCollector;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -61,6 +64,8 @@ public class CarsharingManager {
 	// others
 	@Inject private Set<CarsharingDataProvider> dataProviders;
 	@Inject private CarsharingPreprocessedData data;
+	@Inject private TravelTime tt;
+	@Inject private Provider<TripRouter> tripRouterProvider;
 
 	
 	
@@ -92,6 +97,8 @@ public class CarsharingManager {
 		stop_deployment_at_iteration = 0;
 	}
 	
+	public TripRouter router() { return tripRouterProvider.get(); }
+	public TravelTimeCollector ttc() { return (TravelTimeCollector)this.tt; }
 	public CarsharingRelocationModel relocation() { return this.relocation; }
 	public Network getCarNetwork() { return this.carsharing.getCarNetwork(); }
 	public Scenario getScenario() { return this.carsharing.getScenario(); }

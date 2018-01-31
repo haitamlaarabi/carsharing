@@ -16,7 +16,7 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingRecord;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingCustomerMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicleMobsim;
 import org.matsim.contrib.gcs.replanning.CarsharingPlanModeCst;
-import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.mobsim.framework.HasPerson;
 import org.matsim.core.mobsim.framework.MobsimAgent;
@@ -215,15 +215,15 @@ public abstract class AbstractCarsharingAgentBehaviour implements 	VehicleUsingA
 		List<PlanElement> new_trip = new ArrayList<PlanElement>();
 		//Leg new_leg = null;
 		if(this.currBookingRecord.betterWalk()) {
-			//new_leg = PopulationUtils.createLeg(CarsharingRouterModeCst.cs_walk);
+			//new_leg = PopulationUtils.createLeg(CarsharingRouterUtils.cs_walk);
 			new_trip.addAll(this.tripRouter.calcRoute(
-					CarsharingRouterModeCst.cs_walk, 
+					CarsharingRouterUtils.cs_walk, 
 					CarsharingUtils.getDummyFacility(O), CarsharingUtils.getDummyFacility(D), 
 					now, this.basicAgentDelegate.getPerson()));
 		} else {
-			//new_leg = PopulationUtils.createLeg(CarsharingRouterModeCst.cs_pt);
+			//new_leg = PopulationUtils.createLeg(CarsharingRouterUtils.cs_pt);
 			new_trip.addAll(this.tripRouter.calcRoute(
-					CarsharingRouterModeCst.cs_pt, 
+					CarsharingRouterUtils.cs_pt, 
 					CarsharingUtils.getDummyFacility(O), CarsharingUtils.getDummyFacility(D), 
 					now, this.basicAgentDelegate.getPerson()));
 		}

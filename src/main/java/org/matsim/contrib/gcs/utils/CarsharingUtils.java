@@ -12,12 +12,14 @@ import java.util.Map;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingOffer;
 import org.matsim.contrib.gcs.replanning.CarsharingPlanModeCst;
-import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup.ModeRoutingParams;
@@ -30,6 +32,7 @@ import org.matsim.core.utils.misc.Time;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.Facility;
 import org.matsim.vehicles.Vehicle;
+import org.matsim.withinday.trafficmonitoring.TravelTimeCollector;
 
 public final class CarsharingUtils {
 	
@@ -37,16 +40,7 @@ public final class CarsharingUtils {
 	static String EGRESS_STATION = "egress_station";
 	
 	
-	public static List<? extends PlanElement> calcRoute(TripRouter r, CarsharingOffer o, ActivityFacility dest) {
-		List<? extends PlanElement> elements = r.calcRoute(
-				CarsharingRouterModeCst.cs_drive, 
-				o.getAccess().getStation().facility(), 
-				dest, 
-				o.getAccess().getTime() + o.getAccess().getTravelTime() + o.getAccess().getOffsetDur(), 
-				o.getDemand().getAgent().getPerson());
-		return elements;
-	}
-	
+
 	public static double distanceBeeline(double euc_distance, ModeRoutingParams r_param) {
 		double distance = euc_distance * r_param.getBeelineDistanceFactor();
 		return distance;
@@ -69,13 +63,13 @@ public final class CarsharingUtils {
 	
 	public static boolean isRoutedCarsharingLeg(PlanElement pe) {
 		if(pe instanceof Leg) {
-			if(	((Leg)pe).getMode().equals(CarsharingRouterModeCst.cs_access_walk) || 
-				((Leg)pe).getMode().equals(CarsharingRouterModeCst.cs_drive) ||
-				((Leg)pe).getMode().equals(CarsharingRouterModeCst.cs_egress_walk)) {
+			if(	((Leg)pe).getMode().equals(CarsharingRouterUtils.cs_access_walk) || 
+				((Leg)pe).getMode().equals(CarsharingRouterUtils.cs_drive) ||
+				((Leg)pe).getMode().equals(CarsharingRouterUtils.cs_egress_walk)) {
 				return true;
 			}
 		} else {
-			if(((Activity)pe).getType().equals(CarsharingRouterModeCst.ACTIVITY_TYPE_NAME)) {
+			if(((Activity)pe).getType().equals(CarsharingRouterUtils.ACTIVITY_TYPE_NAME)) {
 				return true;
 			}
 		}
@@ -84,14 +78,14 @@ public final class CarsharingUtils {
 	
 	public static boolean isCarsharingElement(PlanElement pe) {
 		if(pe instanceof Leg) {
-			if(	((Leg)pe).getMode().equals(CarsharingRouterModeCst.cs_access_walk) || 
-				((Leg)pe).getMode().equals(CarsharingRouterModeCst.cs_drive) ||
-				((Leg)pe).getMode().equals(CarsharingRouterModeCst.cs_egress_walk) ||
+			if(	((Leg)pe).getMode().equals(CarsharingRouterUtils.cs_access_walk) || 
+				((Leg)pe).getMode().equals(CarsharingRouterUtils.cs_drive) ||
+				((Leg)pe).getMode().equals(CarsharingRouterUtils.cs_egress_walk) ||
 				((Leg)pe).getMode().equals(CarsharingPlanModeCst.directTrip) ) {
 				return true;
 			}
 		} else {
-			if(((Activity)pe).getType().equals(CarsharingRouterModeCst.ACTIVITY_TYPE_NAME)) {
+			if(((Activity)pe).getType().equals(CarsharingRouterUtils.ACTIVITY_TYPE_NAME)) {
 				return true;
 			}
 		}
@@ -99,26 +93,26 @@ public final class CarsharingUtils {
 	}
 	
 	public static boolean isAccessWalk(PlanElement pe) {
-		return (pe instanceof Leg && ((Leg)pe).getMode().equals(CarsharingRouterModeCst.cs_access_walk));
+		return (pe instanceof Leg && ((Leg)pe).getMode().equals(CarsharingRouterUtils.cs_access_walk));
 	}
 	
 	public static boolean isDrive(PlanElement pe) {
-		return (pe instanceof Leg && ((Leg)pe).getMode().equals(CarsharingRouterModeCst.cs_drive));
+		return (pe instanceof Leg && ((Leg)pe).getMode().equals(CarsharingRouterUtils.cs_drive));
 	}
 	
 	public static boolean isEgressWalk(PlanElement pe) {
-		return (pe instanceof Leg && ((Leg)pe).getMode().equals(CarsharingRouterModeCst.cs_egress_walk));
+		return (pe instanceof Leg && ((Leg)pe).getMode().equals(CarsharingRouterUtils.cs_egress_walk));
 	}
 	
 	public static boolean isAccessStation(PlanElement pe) {
 		return (pe instanceof Activity && 
-				((Activity)pe).getType().equals(CarsharingRouterModeCst.ACTIVITY_TYPE_NAME) &&
+				((Activity)pe).getType().equals(CarsharingRouterUtils.ACTIVITY_TYPE_NAME) &&
 				((Activity)pe).getAttributes().getAttribute(ACCESS_STATION) != null);
 	} 
 	
 	public static boolean isEgressStation(PlanElement pe) {
 		return (pe instanceof Activity && 
-				((Activity)pe).getType().equals(CarsharingRouterModeCst.ACTIVITY_TYPE_NAME) &&
+				((Activity)pe).getType().equals(CarsharingRouterUtils.ACTIVITY_TYPE_NAME) &&
 				((Activity)pe).getAttributes().getAttribute(EGRESS_STATION) != null);
 	} 
 	
@@ -136,7 +130,7 @@ public final class CarsharingUtils {
 	}
 	
 	private static Activity createStationActivity(Facility facility, double time, double offset) {
-		Activity act = PopulationUtils.createActivityFromCoord(CarsharingRouterModeCst.ACTIVITY_TYPE_NAME, facility.getCoord());
+		Activity act = PopulationUtils.createActivityFromCoord(CarsharingRouterUtils.ACTIVITY_TYPE_NAME, facility.getCoord());
 		act.setStartTime(time);
 		act.setMaximumDuration(offset);
 		act.setFacilityId(facility.getId());
@@ -149,7 +143,7 @@ public final class CarsharingUtils {
 		dRoute.setDistance(CarsharingUtils.calcDistance(peroute));
 		dRoute.setTravelTime(CarsharingUtils.calcDuration(peroute));
 		dRoute.setVehicleId(idVehicle);
-		Leg driveLeg = PopulationUtils.createLeg(CarsharingRouterModeCst.cs_drive);
+		Leg driveLeg = PopulationUtils.createLeg(CarsharingRouterUtils.cs_drive);
 		driveLeg.setTravelTime(dRoute.getTravelTime());
 		driveLeg.setRoute(dRoute);
 		return driveLeg;
@@ -288,6 +282,7 @@ public final class CarsharingUtils {
 	/*public static double calcDuration(final List<? extends PlanElement> trip) {
 		return calcDuration(trip, null);
 	}*/
+	
 	
 	/**
 	 * 

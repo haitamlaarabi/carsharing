@@ -62,16 +62,16 @@ public class AgentEventsListener implements PersonLeavesVehicleEventHandler,
 		if(this.trips.containsKey(event.getVehicleId())) {
 			LinkTracker lt = this.trips.get(event.getVehicleId());
 			lt.time = event.getTime();
-			lt.dist = this.net.getLinks().get(event.getLinkId()).getLength();
+			lt.link = this.net.getLinks().get(event.getLinkId());
 		}
 	}
 
 	@Override
 	public void handleEvent(LinkLeaveEvent event) {
-		if(this.trips.containsKey(event.getVehicleId())) {
-			LinkTracker lt = this.trips.get(event.getVehicleId());
+		LinkTracker lt = this.trips.get(event.getVehicleId());
+		if(lt != null && lt.link != null) {
 			double traveltime = event.getTime() - lt.time;
-			double traveldist = lt.dist;
+			double traveldist = lt.link.getLength();
 			double speed = traveldist/traveltime;
 			this.mng.vehicles().map().get(event.getVehicleId()).drive(speed, traveldist);
 			lt.rt.trip_dist += traveldist;
@@ -86,17 +86,16 @@ public class AgentEventsListener implements PersonLeavesVehicleEventHandler,
 			RentalTracker rt = this.rentals.get(event.getPersonId());
 			rt.idv = event.getVehicleId();
 			LinkTracker lt = new LinkTracker(event.getTime(), rt);
-			lt.dist = rt.start_link.getLength()/2; // half distance, started
 			this.trips.put(lt.rt.idv, lt);
 		}
 	}
 
 	@Override
 	public void handleEvent(PersonLeavesVehicleEvent event) {
-		if(this.trips.containsKey(event.getVehicleId())) {
-			LinkTracker lt = this.trips.get(event.getVehicleId());
+		LinkTracker lt = this.trips.get(event.getVehicleId());
+		if(lt != null && lt.link != null) {
 			double traveltime = event.getTime() - lt.time;
-			double traveldist = lt.dist/2; // half distance, arrived
+			double traveldist = lt.link.getLength(); // half distance, arrived
 			double speed = traveldist/traveltime;
 			this.mng.vehicles().map().get(event.getVehicleId()).drive(speed, traveldist);
 			lt.rt.trip_dist += traveldist;
@@ -123,14 +122,11 @@ public class AgentEventsListener implements PersonLeavesVehicleEventHandler,
 	public void handleEvent(ActivityEndEvent event) {
 		ActivityFacility f = this.sc.getActivityFacilities().getFacilities().get(event.getFacilityId());
 		if(f != null && this.mng.getStations().map().containsKey(f.getId())) { 
-			// car sharing station
 			RentalTracker rt = this.rentals.get(event.getPersonId());
 			if(rt != null && rt.idv != null) {
 				// egress station			
 				rt.end_time = event.getTime();
 				rt.end_link = this.net.getLinks().get(event.getLinkId());
-
-				
 				// CONCLUDING RENTAL
 				
 				this.trips.remove(rt.idv);
@@ -154,7 +150,6 @@ public class AgentEventsListener implements PersonLeavesVehicleEventHandler,
 	public void handleEvent(VehicleAbortsEvent event) {
 	}
 
-		
 	private final Network net;
 	private final Scenario sc;
 	private final CarsharingManager mng;
@@ -173,8 +168,8 @@ public class AgentEventsListener implements PersonLeavesVehicleEventHandler,
 	
 	class LinkTracker {
 		RentalTracker rt;
+		public Link link = null;
 		public double time;
-		public double dist;
 		public LinkTracker(double time, RentalTracker rt) {
 			this.time = time;
 			this.rt = rt;

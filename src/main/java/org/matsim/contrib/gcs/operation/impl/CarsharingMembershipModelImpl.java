@@ -10,7 +10,7 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
 import org.matsim.contrib.gcs.carsharing.impl.CarsharingCustomerFactory;
 import org.matsim.contrib.gcs.operation.model.CarsharingMembershipModel;
 import org.matsim.contrib.gcs.operation.model.CarsharingUserChoiceModel;
-import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.utils.collections.QuadTree;
 import org.matsim.facilities.ActivityFacility;
@@ -73,7 +73,7 @@ public class CarsharingMembershipModelImpl implements CarsharingMembershipModel 
 			return true;
 		
 		if(af != null && 
-				(!act.getType().equals(CarsharingRouterModeCst.ACTIVITY_TYPE_NAME) && 
+				(!act.getType().equals(CarsharingRouterUtils.ACTIVITY_TYPE_NAME) && 
 				!act.getType().equals(PtConstants.TRANSIT_ACTIVITY_TYPE))) {
 				return true;
 		} 

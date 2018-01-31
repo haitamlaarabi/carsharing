@@ -7,7 +7,7 @@ import java.util.HashSet;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.gcs.config.CarsharingInstaller;
-import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.controler.Controler;
 
@@ -38,14 +38,14 @@ public class CarsharingInstallerDefault extends CarsharingInstaller {
 		manager.getConfig().getEgressWalkCalcScore().setConstant(11.29);
 		
 		scenario.getConfig().transit().setUseTransit(true);
-		scenario.getConfig().transit().setTransitModes(new HashSet<String>(Arrays.asList(TransportMode.pt, CarsharingRouterModeCst.cs_pt)));
+		scenario.getConfig().transit().setTransitModes(new HashSet<String>(Arrays.asList(TransportMode.pt, CarsharingRouterUtils.cs_pt)));
 		scenario.getConfig().transitRouter().setAdditionalTransferTime(2*60.0);
 		scenario.getConfig().transitRouter().setExtensionRadius(200.0);
 		scenario.getConfig().transitRouter().setMaxBeelineWalkConnectionDistance(100.0);
 		scenario.getConfig().transitRouter().setSearchRadius(1000.0);
 		ArrayList<String> subModes = new ArrayList<String>(Arrays.asList(scenario.getConfig().subtourModeChoice().getModes()));
 		subModes.add(TransportMode.pt);
-		subModes.add(CarsharingRouterModeCst.cs_pt);
+		subModes.add(CarsharingRouterUtils.cs_pt);
 		scenario.getConfig().subtourModeChoice().setModes(subModes.toArray(new String[0]));
 		
 		scenario.getConfig().plansCalcRoute().addModeRoutingParams(CarsharingUtils.createModeRouting(TransportMode.walk, 1.3, 3.0)); // 3.0 km/h

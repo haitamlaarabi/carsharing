@@ -3,6 +3,7 @@ package org.matsim.contrib.gcs.carsharing.core;
 import java.util.List;
 
 import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils.RouteData;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 
 
@@ -52,20 +53,20 @@ public class CarsharingOffer {
 			this.cost = 0;
 		}
 
-		public void setAccess(double depTime, CarsharingStationMobsim aStation, double aTT, double aDist, double aOffset) {
-			access = new AccessOffer(depTime, aStation, aTT, aDist, aOffset);
+		public void setAccess(double depTime, CarsharingStationMobsim aStation, double aTT, double aDist) {
+			access = new AccessOffer(depTime, aStation, aTT, aDist);
 		}
 		
 		public void setAccess(String failureMsg) {
 			access = new AccessOffer(failureMsg);
 		}
 		
-		public void setEgress(CarsharingStationMobsim eStation, double eTT, double eDist, double eOffset) {
-			egress = new EgressOffer(drive.time+drive.travelTime, eStation, eTT, eDist, eOffset);
+		public void setEgress(CarsharingStationMobsim eStation, double eTT, double eDist) {
+			egress = new EgressOffer(drive.time+drive.travelTime, eStation, eTT, eDist);
 		}
 		
-		public void setEgress(double deptime, CarsharingStationMobsim eStation, double eTT, double eDist, double eOffset) {
-			egress = new EgressOffer(deptime, eStation, eTT, eDist, eOffset);
+		public void setEgress(double deptime, CarsharingStationMobsim eStation, double eTT, double eDist) {
+			egress = new EgressOffer(deptime, eStation, eTT, eDist);
 		}
 		
 		public void setEgress(String failureMsg) {
@@ -74,18 +75,13 @@ public class CarsharingOffer {
 		
 		public void setDrive(int nVEH) {
 			if(this.drive == null) {
-				drive = new DriveOffer(access.time+access.travelTime, null, nVEH);
+				drive = new DriveOffer(access.time+access.travelTime, nVEH, null);
 			}
 			drive.nVEH = nVEH;
 		}
 		
-		public void setDrive(int nVEH, double tt, double dt) {
-			drive = new DriveOffer(access.time+access.travelTime, tt, dt, nVEH);
-		}
-		
-		public void setDrive(int nVEH, List<? extends PlanElement> route) {
-			drive = new DriveOffer(access.time+access.travelTime, route, nVEH);
-			drive.travelTime += access.offsetDur + egress.offsetDur;
+		public void setDrive(int nVEH, RouteData rd) {
+			drive = new DriveOffer(access.time+access.travelTime, nVEH, rd);
 		}
 		
 		public void setCost(double cost) {
@@ -93,9 +89,9 @@ public class CarsharingOffer {
 		}
 						
 		public CarsharingOffer build(){
-			if(drive == null) drive = new DriveOffer(0, null, 0);
-			if(egress == null) egress = new EgressOffer(0, null, 0, 0, 0);
-			if(access == null) access = new AccessOffer(0, null, 0, 0, 0);
+			if(drive == null) drive = new DriveOffer(0, 0, null);
+			if(egress == null) egress = new EgressOffer(0, null, 0, 0);
+			if(access == null) access = new AccessOffer(0, null, 0, 0);
 			CarsharingOffer o = new CarsharingOffer(this);
 			o.setCost(this.cost);
 			return o;
@@ -115,17 +111,15 @@ public class CarsharingOffer {
 		private double distance;
 		private double time;
 		private String status;
-		private double offsetDur;
 		public AccessOffer(String failureMsg) {
 			this.status = failureMsg;
 		}
-		public AccessOffer(double depTime, CarsharingStationMobsim aStation, double aDur, double aDist, double aOffset) {
+		public AccessOffer(double depTime, CarsharingStationMobsim aStation, double aDur, double aDist) {
 			this.station = aStation;
 			this.distance = aDist;
 			this.travelTime = aDur;
 			this.time = depTime;
 			this.status = null;
-			this.offsetDur = aOffset;
 		}
 		AccessOffer(AccessOffer a) {
 			this.station = a.station;
@@ -133,14 +127,12 @@ public class CarsharingOffer {
 			this.travelTime = a.travelTime;
 			this.time = a.time;
 			this.status = a.status;
-			this.offsetDur = a.offsetDur;
 		}
 		public CarsharingStationMobsim getStation() { return station; }
 		public double getTravelTime() {	return travelTime; }
 		public double getDistance() { return distance; }
 		public String getStatus() { return status; }
 		public double getTime() { return this.time; }
-		public double getOffsetDur() { return this.offsetDur; }
 	}
 	
 	/**
@@ -154,17 +146,15 @@ public class CarsharingOffer {
 		private double distance;
 		private String status;
 		private double time;
-		private double offsetDur;
 		public EgressOffer(String failureMsg) {
 			this.status = failureMsg;
 		}
-		public EgressOffer(double depTime, CarsharingStationMobsim eStation, double eDur, double eDist, double eOffset) {
+		public EgressOffer(double depTime, CarsharingStationMobsim eStation, double eDur, double eDist) {
 			this.station = eStation;
 			this.travelTime = eDur;
 			this.distance = eDist;
 			this.time = depTime;
 			this.status = null;
-			this.offsetDur = eOffset;
 		}
 		EgressOffer(EgressOffer e) {
 			this.station = e.station;
@@ -172,14 +162,12 @@ public class CarsharingOffer {
 			this.distance = e.distance;
 			this.time = e.time;
 			this.status = e.status;
-			this.offsetDur = e.offsetDur;
 		}
 		public CarsharingStationMobsim getStation() { return station; }
 		public double getTravelTime() { return travelTime; }
 		public double getDistance() { return distance; }
 		public String getStatus() { return status; }
 		public double getTime() { return this.time; }
-		public double getOffsetDur() { return this.offsetDur; }
 	}
 	
 	/**
@@ -189,20 +177,18 @@ public class CarsharingOffer {
 	 */
 	public static class DriveOffer {
 		private double time;
-		private double travelTime;
-		private double distance;
-		private List<? extends PlanElement> route;
+		private double travelTime = 0;
+		private double distance = 0;
+		private List<? extends PlanElement> route = null;
 		private int nVEH;
-		public DriveOffer(double depTime, List<? extends PlanElement> route, int nVEH){
+		public DriveOffer(double depTime, int nVEH, RouteData rd){
 			this.time = depTime;
 			this.nVEH = nVEH;
-			setRoute(route);
-		}
-		public DriveOffer(double depTime, double tt, double dt, int nVEH){
-			this.time = depTime;
-			this.nVEH = nVEH;
-			this.travelTime = tt;
-			this.distance = dt;
+			if(rd != null) {
+				this.route = rd.path; 
+				this.distance = rd.distance;
+				this.travelTime = rd.time;
+			}
 		}
 		DriveOffer(DriveOffer d) {
 			this.time = d.time;
@@ -216,16 +202,6 @@ public class CarsharingOffer {
 		public List<? extends PlanElement> getRoute() { return this.route; }
 		public double getTime() { return this.time; }
 		public int getNbVehicles() { return this.nVEH; }
-		public void setRoute(List<? extends PlanElement> route) {
-			this.route = route; 
-			if(this.route == null) {
-				this.distance = 0;
-				this.travelTime = 0;
-			} else {
-				this.distance = CarsharingUtils.calcDistance(route);
-				this.travelTime = CarsharingUtils.calcDuration(route);
-			}
-		}
 	}
 	
 	/**
@@ -254,7 +230,8 @@ public class CarsharingOffer {
 	public double getCost() { return this.cost; }
 	public double getDepartureTime() { return this.access.time; }
 	public double getArrivalTime() { return this.egress.time + this.egress.travelTime; }
-	
+	public double getAccessTime() { return this.access.time + this.access.travelTime; }
+	public double getEgressTime() { return this.egress.time; }
 	
 	
 	public void setCost(double c) { this.cost = c; }

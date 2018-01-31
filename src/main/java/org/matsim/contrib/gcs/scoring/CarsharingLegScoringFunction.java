@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.contrib.gcs.config.CarsharingConfigGroup;
-import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.scoring.functions.CharyparNagelLegScoring;
 import org.matsim.core.scoring.functions.ScoringParameters;
@@ -62,7 +62,7 @@ public class CarsharingLegScoringFunction extends CharyparNagelLegScoring {
 			
 			double fixedConstant = this.csConf.getConstantRate();
 			double monetaryTimeCostRate_s = this.csConf.getRentalRatePerMin() * 60.;
-			double monetaryDistanceCostRate_m = this.params.modeParams.get(CarsharingRouterModeCst.cs_drive).monetaryDistanceCostRate;
+			double monetaryDistanceCostRate_m = this.params.modeParams.get(CarsharingRouterUtils.cs_drive).monetaryDistanceCostRate;
 			
 			this.score += fixedConstant + distance * monetaryDistanceCostRate_m + time * monetaryTimeCostRate_s;
 		}

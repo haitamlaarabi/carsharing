@@ -13,8 +13,10 @@ import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
 import org.matsim.contrib.gcs.replanning.CarsharingPlanModeCst;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils.RouteData;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.DefaultRoutingModules;
 import org.matsim.core.router.costcalculators.OnlyTimeDependentTravelDisutilityFactory;
 import org.matsim.core.router.util.DijkstraFactory;
@@ -27,11 +29,13 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 
 	final double searchDistance;
 	final QuadTree<CarsharingStationMobsim> qt;
+	final CarsharingManager m;
 	
 	public CarsharingNearestStationRouterModule(Scenario scenario, CarsharingManager manager, String cssMode) {
 		super(scenario, manager, cssMode);
 		this.searchDistance = manager.getConfig().getSearchDistance();
 		this.qt = manager.getStations().qtree();
+		this.m = manager;
 	}
 	
 	
@@ -60,7 +64,7 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 		double routetime = departureTime;
 		// Walk
 		trip.add(CarsharingUtils.createWalkLeg(
-				CarsharingRouterModeCst.cs_access_walk, 
+				CarsharingRouterUtils.cs_access_walk, 
 				fromFacility, pickupLocation.facility, 
 				pickupLocation.traveltime, 
 				pickupLocation.distance));
@@ -73,15 +77,20 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 			routetime += a.getMaximumDuration();
 		}
 		
+		RouteData rd = CarsharingRouterUtils.calcTCC(m, pickupLocation.facility, dropoffLocation.facility, routetime, person);
 		// drive
-		List<? extends PlanElement> pes = DefaultRoutingModules.createPureNetworkRouter(
-				TransportMode.car, 
+		/*List<? extends PlanElement> pes = DefaultRoutingModules.createPureNetworkRouter(
+				CarsharingRouterUtils.cs_drive, 
 				scenario.getPopulation().getFactory(),
           		network,
           		leastCostAlgoFactory.createPathCalculator(network, disutilityFactory.createTravelDisutility(travelTime), travelTime)
-          		).calcRoute(pickupLocation.facility, dropoffLocation.facility, routetime, person);
-		trip.add(CarsharingUtils.createDriveLeg(pickupLocation.facility, dropoffLocation.facility, pes, null));
-		routetime += ((Leg)trip.get(trip.size()-1)).getTravelTime();
+          		).calcRoute(pickupLocation.facility, dropoffLocation.facility, routetime, person);*/
+		trip.add(CarsharingUtils.createDriveLeg(pickupLocation.facility, dropoffLocation.facility, rd.path, null));
+		NetworkRoute NR = ((NetworkRoute)((Leg)trip.get(trip.size()-1)).getRoute());
+		NR.setDistance(rd.distance);
+		NR.setTravelTime(rd.time);
+		routetime += NR.getTravelTime();
+		
 		
 		// Egress
 		if(eStation) {
@@ -92,7 +101,7 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 		
 		// Walk
 		trip.add(CarsharingUtils.createWalkLeg(
-				CarsharingRouterModeCst.cs_egress_walk, 
+				CarsharingRouterUtils.cs_egress_walk, 
 				dropoffLocation.facility, 
 				toFacility, 
 				dropoffLocation.traveltime, 

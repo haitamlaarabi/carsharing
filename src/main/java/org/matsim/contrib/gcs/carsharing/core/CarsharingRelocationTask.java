@@ -3,6 +3,7 @@ package org.matsim.contrib.gcs.carsharing.core;
 import java.util.List;
 
 import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils.RouteData;
 
 public class CarsharingRelocationTask implements Comparable<CarsharingRelocationTask> {
 	
@@ -15,7 +16,7 @@ public class CarsharingRelocationTask implements Comparable<CarsharingRelocation
 	final private double distance;
 	final private double tt;
 	private CarsharingBookingRecord booking = null;
-	private List<? extends PlanElement> route = null;
+	private RouteData route = null;
 	
 	public static CarsharingRelocationTask startTask(String id, double time, CarsharingAgent agent, CarsharingStationMobsim station, int size, double tt, double distance) {
 		CarsharingRelocationTask t = new CarsharingRelocationTask(id, time, agent, station, size, tt, distance);
@@ -83,11 +84,11 @@ public class CarsharingRelocationTask implements Comparable<CarsharingRelocation
 		return this.booking;
 	}
 
-	public void setRoute(List<? extends PlanElement> route) {
+	public void setRoute(RouteData route) {
 		this.route = route;
 	}
 	
-	public List<? extends PlanElement> getRoute() {
+	public RouteData getRoute() {
 		return this.route;
 	}
 	

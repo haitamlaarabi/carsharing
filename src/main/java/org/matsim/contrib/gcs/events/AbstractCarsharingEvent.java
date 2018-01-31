@@ -134,14 +134,14 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 				this.src_time_act = String.valueOf(r.getRelatedOffer().getAccess().getTravelTime());
 				this.src_distance_drive = String.valueOf(r.getRelatedOffer().getDrive().getDistance());
 				this.src_time_drive = String.valueOf(r.getRelatedOffer().getDrive().getRentalTime());
-				this.src_offset = String.valueOf(r.getRelatedOffer().getAccess().getOffsetDur());
+				this.src_offset = String.valueOf(manager.getConfig().getInteractionOffset());
 				
 				this.dst_station_log = new StationLog(r.getDestinationStation());
 				this.dst_distance_act = String.valueOf(r.getRelatedOffer().getEgress().getDistance());
 				this.dst_time_act = String.valueOf(r.getRelatedOffer().getEgress().getTravelTime());
 				this.dst_distance_drive = String.valueOf(r.getRelatedOffer().getDrive().getDistance());
 				this.dst_time_drive = String.valueOf(r.getRelatedOffer().getDrive().getRentalTime());
-				this.dst_offset = String.valueOf(r.getRelatedOffer().getEgress().getOffsetDur());
+				this.dst_offset = String.valueOf(manager.getConfig().getInteractionOffset());
 			} else {
 				this.src_station_log = new StationLog(null);
 				this.src_distance_act = "NA";

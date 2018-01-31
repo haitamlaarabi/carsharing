@@ -1,20 +1,8 @@
 package org.matsim.contrib.gcs.qsim;
 
-import java.util.Set;
-
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
-import org.matsim.contrib.gcs.carsharing.core.CarsharingDataCollector.CarsharingDataProvider;
 import org.matsim.contrib.gcs.config.CarsharingConfigGroup;
-import org.matsim.contrib.gcs.operation.model.CarsharingBatteryModel;
-import org.matsim.contrib.gcs.operation.model.CarsharingEnergyConsumptionModel;
-import org.matsim.contrib.gcs.operation.model.CarsharingMembershipModel;
-import org.matsim.contrib.gcs.operation.model.CarsharingOfferModel;
-import org.matsim.contrib.gcs.operation.model.CarsharingParkingModel;
-import org.matsim.contrib.gcs.operation.model.CarsharingPowerDistributionModel;
-import org.matsim.contrib.gcs.operation.model.CarsharingPowerSourceModel;
-import org.matsim.contrib.gcs.operation.model.CarsharingRelocationModel;
-import org.matsim.contrib.gcs.operation.model.CarsharingUserChoiceModel;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.Controler;
@@ -30,8 +18,6 @@ import org.matsim.core.mobsim.qsim.pt.ComplexTransitStopHandlerFactory;
 import org.matsim.core.mobsim.qsim.pt.TransitQSimEngine;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngineModule;
 import org.matsim.core.router.TripRouter;
-import org.matsim.core.router.util.TravelTime;
-import org.matsim.withinday.trafficmonitoring.TravelTimeCollector;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;

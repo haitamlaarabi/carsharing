@@ -16,6 +16,8 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
 import org.matsim.contrib.gcs.carsharing.impl.CarsharingStationFactory;
 import org.matsim.contrib.gcs.config.CarsharingConfigGroup;
 import org.matsim.contrib.gcs.operation.model.CarsharingOfferModel;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils.RouteData;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.network.NetworkUtils;
@@ -189,7 +191,7 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 			int roadTrainSize) {
 
 		CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromDemand(demand, CarsharingOffer.SUCCESS_STANDARDOFFER);
-		builder.setAccess(this.time, selectedStation.station, selectedStation.traveltime, selectedStation.distance, this.manager.getConfig().getInteractionOffset());
+		builder.setAccess(this.time, selectedStation.station, selectedStation.traveltime, selectedStation.distance);
 		builder.setCost(this.timeFeePerMinute);
 		builder.setDrive(roadTrainSize);
 		return builder.build();
@@ -204,11 +206,15 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 	 */
 	public CarsharingOffer getEgressStationStandardOffer(CarsharingOffer o, SelectedStation s) {
 		
-		List<? extends PlanElement> elements = CarsharingUtils.calcRoute(this.router, o, s.station.facility());
+		RouteData rd = CarsharingRouterUtils.calcTCC(manager, 
+				o.getAccess().getStation().facility(), 
+				s.station.facility(), 
+				o.getAccessTime(), 
+				o.getDemand().getAgent().getPerson());
 		
 		CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromOffer(o, CarsharingOffer.SUCCESS_STANDARDOFFER);
-		builder.setEgress(s.station, s.traveltime, s.distance, this.manager.getConfig().getInteractionOffset());
-		builder.setDrive(o.getNbOfVehicles(), elements);
+		builder.setEgress(s.station, s.traveltime, s.distance);
+		builder.setDrive(o.getNbOfVehicles(), rd);
 		return builder.build();
 	}
 	
@@ -241,11 +247,15 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 			final double traveltime = CarsharingUtils.travelTimeBeeline(egressDist, this.cs_conf.getEgressWalkCalcRoute());
 			final double distance = CarsharingUtils.distanceBeeline(egressDist, this.cs_conf.getEgressWalkCalcRoute());
 			
-			List<? extends PlanElement> elements = CarsharingUtils.calcRoute(this.router, offer, newFS.facility());
-
+			RouteData rd = CarsharingRouterUtils.calcTCC(manager, 
+					offer.getAccess().getStation().facility(), 
+					newFS.facility(), 
+					offer.getAccessTime(), 
+					offer.getDemand().getAgent().getPerson());
+			
 			CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromOffer(offer, CarsharingOffer.SUCCESS_FREEFLOATINGOFFER);
-			builder.setEgress((CarsharingStationMobsim) newFS, traveltime, distance, this.manager.getConfig().getInteractionOffset());
-			builder.setDrive(offer.getNbOfVehicles(), elements);
+			builder.setEgress((CarsharingStationMobsim) newFS, traveltime, distance);
+			builder.setDrive(offer.getNbOfVehicles(), rd);
 			return builder.build();
 	}
 	

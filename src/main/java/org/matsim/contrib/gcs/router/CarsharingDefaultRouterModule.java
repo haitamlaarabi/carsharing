@@ -32,7 +32,7 @@ public class CarsharingDefaultRouterModule implements RoutingModule {
 		this.scenario = scenario;
 		this.manager = manager;
 		this.cssMode = cssMode;
-		this.stageActivityTypes =  new StageActivityTypesImpl(CarsharingRouterModeCst.ACTIVITY_TYPE_NAME);
+		this.stageActivityTypes =  new StageActivityTypesImpl(CarsharingRouterUtils.ACTIVITY_TYPE_NAME);
 	}
 	
 	@Override

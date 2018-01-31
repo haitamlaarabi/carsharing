@@ -20,7 +20,7 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingStationPowerController;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStations;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicle;
 import org.matsim.contrib.gcs.operation.model.CarsharingParkingModel;
-import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
@@ -114,7 +114,7 @@ public class CarsharingStationFactory {
 				facility = scenario.getActivityFacilities().getFactory().
 						createActivityFacility(idf, coord, link.getId());
 				ActivityOption actopt = scenario.getActivityFacilities().getFactory().
-						createActivityOption(CarsharingRouterModeCst.ACTIVITY_TYPE_NAME);
+						createActivityOption(CarsharingRouterUtils.ACTIVITY_TYPE_NAME);
 				actopt.addOpeningTime(
 						new OpeningTimeImpl(CarsharingUtils.toSecond(0,0,0), CarsharingUtils.toSecond(23,59,59)));
 				facility.addActivityOption(actopt);

@@ -114,8 +114,8 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		reloDstActivity.setStartTime(eTask.getTime());
 		CarsharingDemand d = new CarsharingDemand(reloLeg, eTask.getAgent(), reloSrcActivity, reloDstActivity, eTask.getSize());
 		CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromDemand(d, "OPERATOR_RELOCATION");
-		builder.setAccess(sTask.getTime(), sTask.getStation(), aTime, aDist, m.getConfig().getInteractionOffset());
-		builder.setEgress(eTask.getTime(), eTask.getStation(), 0, 0, m.getConfig().getInteractionOffset());
+		builder.setAccess(sTask.getTime(), sTask.getStation(), aTime, aDist);
+		builder.setEgress(eTask.getTime(), eTask.getStation(), 0, 0);
 		builder.setDrive(eTask.getSize(), eTask.getRoute());
 		builder.setCost(0);
 		CarsharingBookingRecord booking = CarsharingBookingRecord.constructAndGetBookingRec(time_step.step(), builder.build());

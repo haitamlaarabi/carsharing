@@ -3,7 +3,7 @@ package org.matsim.contrib.gcs.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ReflectiveConfigGroup.StringGetter;
@@ -51,23 +51,23 @@ public class CarsharingConfigGroup extends ConfigGroup {
 	
 	
 	public PlanCalcScoreConfigGroup.ModeParams getDriveCalcScore() {
-		return config.planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_drive);
+		return config.planCalcScore().getOrCreateModeParams(CarsharingRouterUtils.cs_drive);
 	}
 	
 	public PlanCalcScoreConfigGroup.ModeParams getAccessWalkCalcScore() {
-		return config.planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_access_walk);
+		return config.planCalcScore().getOrCreateModeParams(CarsharingRouterUtils.cs_access_walk);
 	} 
 	
 	public PlanCalcScoreConfigGroup.ModeParams getEgressWalkCalcScore() {
-		return config.planCalcScore().getOrCreateModeParams(CarsharingRouterModeCst.cs_egress_walk);
+		return config.planCalcScore().getOrCreateModeParams(CarsharingRouterUtils.cs_egress_walk);
 	}
 	
 	public PlansCalcRouteConfigGroup.ModeRoutingParams getAccessWalkCalcRoute() {
-		return config.plansCalcRoute().getOrCreateModeRoutingParams(CarsharingRouterModeCst.cs_access_walk);
+		return config.plansCalcRoute().getOrCreateModeRoutingParams(CarsharingRouterUtils.cs_access_walk);
 	}
 	
 	public PlansCalcRouteConfigGroup.ModeRoutingParams getEgressWalkCalcRoute() {
-		return config.plansCalcRoute().getOrCreateModeRoutingParams(CarsharingRouterModeCst.cs_egress_walk);
+		return config.plansCalcRoute().getOrCreateModeRoutingParams(CarsharingRouterUtils.cs_egress_walk);
 	}
 	
 	

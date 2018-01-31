@@ -22,8 +22,10 @@ import org.matsim.contrib.gcs.events.CarsharingBookingEvent;
 import org.matsim.contrib.gcs.events.CarsharingChargingEndEvent;
 import org.matsim.contrib.gcs.events.CarsharingDropoffVehicleEvent;
 import org.matsim.contrib.gcs.events.CarsharingPickupVehicleEvent;
+import org.matsim.contrib.gcs.replanning.CarsharingPlanModeCst;
 import org.matsim.contrib.gcs.router.CarsharingNearestStationRouterModule;
-import org.matsim.contrib.gcs.router.CarsharingRouterModeCst;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils.RouteData;
 import org.matsim.contrib.gcs.router.CarsharingNearestStationRouterModule.CarsharingLocationInfo;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.mobsim.qsim.interfaces.Netsim;
@@ -187,9 +189,14 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 		if(arrival.station != null){
 			end = arrival.station.facility();
 		}
-		List<? extends PlanElement> elements = this.tripRouter.calcRoute(
-				CarsharingRouterModeCst.cs_drive, start, end, deptime, this.customerAgentMemory.getPerson());
-		double tt = CarsharingUtils.calcDuration(elements);
+		
+		/*CarsharingNearestStationRouterModule csrouter = 
+				new CarsharingNearestStationRouterModule(
+						this.basicAgentDelegate.getScenario(), 
+						this.carsharingSystemDelegate, 
+						CarsharingPlanModeCst.directTrip);
+		List<? extends PlanElement> default_route = csrouter.calcRoute(start, end, deptime, this.customerAgentMemory.getPerson());*/
+		//RouteData rd = CarsharingRouterUtils.calcTCC(this.carsharingSystemDelegate, start, end, deptime, this.customerAgentMemory.getPerson());
 		Boolean novehiclefound = true;
 		Boolean noparkingfound = true;
 		boolean betterWalk = false;
@@ -204,8 +211,8 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 		}
 		CarsharingBookingRecord booking = CarsharingBookingRecord.constructAndGetFailedBookingRec(
 				now, demand, betterWalk,
-				novehiclefound,	departure.station, now,
-				noparkingfound,	arrival.station, deptime + tt);
+				novehiclefound,	departure.station, deptime,
+				noparkingfound,	arrival.station, Double.NaN);
 		return booking;
 	}
 	
@@ -213,7 +220,7 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 	@Override
 	public Leg prepareAccessWalk(double now) {
 		return CarsharingUtils.createWalkLeg(
-				CarsharingRouterModeCst.cs_access_walk, 
+				CarsharingRouterUtils.cs_access_walk, 
 				CarsharingUtils.getDummyFacility(this.currBookingRecord.getRelatedOffer().getDemand().getOrigin()), 
 				this.currBookingRecord.getRelatedOffer().getAccess().getStation().facility(), 
 				this.currBookingRecord.getRelatedOffer().getAccess().getTravelTime(), 
@@ -223,7 +230,7 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 	@Override
 	public Leg prepareEgressWalk(double now) {
 		return CarsharingUtils.createWalkLeg(
-				CarsharingRouterModeCst.cs_egress_walk, 
+				CarsharingRouterUtils.cs_egress_walk, 
 				this.currBookingRecord.getRelatedOffer().getEgress().getStation().facility(), 
 				CarsharingUtils.getDummyFacility(this.currBookingRecord.getRelatedOffer().getDemand().getDestination()), 
 				this.currBookingRecord.getRelatedOffer().getEgress().getTravelTime(), 
@@ -234,13 +241,13 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 	@Override
 	public Activity prepareAccessStation(double now) {
 		return CarsharingUtils.createAccessStationActivity(
-				this.currBookingRecord.getOriginStation().facility(), now, this.currBookingRecord.getRelatedOffer().getAccess().getOffsetDur());
+				this.currBookingRecord.getOriginStation().facility(), now, this.carsharingSystemDelegate.getConfig().getInteractionOffset());
 	}
 
 	@Override
 	public Activity prepareEgressStation(double now) {
 		return CarsharingUtils.createEgressStationActivity(
-				this.currBookingRecord.getDestinationStation().facility(), now, this.currBookingRecord.getRelatedOffer().getEgress().getOffsetDur());
+				this.currBookingRecord.getDestinationStation().facility(), now, this.carsharingSystemDelegate.getConfig().getInteractionOffset());
 	}
 	
 	@Override
