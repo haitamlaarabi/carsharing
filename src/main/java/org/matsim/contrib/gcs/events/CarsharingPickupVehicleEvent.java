@@ -10,7 +10,6 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingAgent;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingRecord;
-import org.matsim.contrib.gcs.carsharing.core.CarsharingCustomerMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicleMobsim;
 

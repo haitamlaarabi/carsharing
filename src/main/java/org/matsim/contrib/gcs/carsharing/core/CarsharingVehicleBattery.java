@@ -24,15 +24,15 @@ public class CarsharingVehicleBattery {
 	
 	public double getSoC() { return this.SoC; }
 
-	public double getEnergyForConsumption(double drivenDistanceInMeters, double maxSpeedOnLink,	double averageSpeedDriven) {
-		return consumption.getEnergyConsumptionForLinkInJoule(drivenDistanceInMeters, maxSpeedOnLink, averageSpeedDriven);
+	public double energyConsumptionQty(double speedInMetersPerSecond, double distanceInMeters) {
+		return consumption.calculateEnergyConsumptionInJoule(speedInMetersPerSecond, distanceInMeters);
+	}
+	
+	public double energySupplyQty(double powerInJoules, double durationInSeconds) {
+		return battery.calculateChargingRateInJoule(getSoC(), powerInJoules, durationInSeconds);
 	}
 
-	public double getEnergyForCharging(double powerInJoules, double durationInSeconds) {
-		return battery.calculateChargingRate(getSoC(), powerInJoules, durationInSeconds);
-	}
-
-	public double getEnergyForBalancing(double durationInSeconds) {
+	public double energyBalancingQty(double durationInSeconds) {
 		if(durationInSeconds == Double.NaN) {
 			return battery.getBalancingEnergy(getSoC());
 		}
@@ -87,7 +87,7 @@ public class CarsharingVehicleBattery {
 	}
 
 	public double chargeBattery(double power, double duration) {
-		double energyCharged = getEnergyForCharging(power, duration);
+		double energyCharged = energySupplyQty(power, duration);
 		chargeBattery(energyCharged);
 		return energyCharged;
 	}
@@ -101,8 +101,8 @@ public class CarsharingVehicleBattery {
 		}
 	}
 
-	public double consumeBattery(double distance, double maxspeed, double averageSpeed) {
-		double energyConsumed = getEnergyForConsumption(distance, maxspeed, averageSpeed);
+	public double consumeBattery(double speedInMetersPerSecond, double distanceInMeters) {
+		double energyConsumed = energyConsumptionQty(speedInMetersPerSecond, distanceInMeters);
 		incrementSoC(-1 * energyConsumed);
 		if (!MathLib.equals(
 				getSoC(), 0, GeneralLib.EPSILON * 100) && getSoC() < 0) {
@@ -112,8 +112,8 @@ public class CarsharingVehicleBattery {
 		return energyConsumed;
 	}
 	
-	public boolean isChargedEnough(double distance, double maxspeed, double averageSpeed) {
-		double energyConsumed = getEnergyForConsumption(distance, maxspeed, averageSpeed);
+	public boolean checkBattery(double speedInMetersPerSecond, double distanceInMeters) {
+		double energyConsumed = energyConsumptionQty(speedInMetersPerSecond, distanceInMeters);
 		double estimatedSoc = this.SoC - energyConsumed;
 		if (!MathLib.equals(
 				estimatedSoc, 0, GeneralLib.EPSILON * 100) && estimatedSoc < 0) {

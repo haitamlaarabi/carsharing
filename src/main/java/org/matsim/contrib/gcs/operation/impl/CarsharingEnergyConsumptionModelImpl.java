@@ -50,6 +50,11 @@ public class CarsharingEnergyConsumptionModelImpl implements CarsharingEnergyCon
 		queue.add(new EnergyConsumption(33.33333333, 8.46E+02));
 	}
 	
+	@Override
+	public double calculateEnergyConsumptionInJoule(double speedInMetersPerSecond, double distanceInMeters) {
+		return getInterpolatedEnergyConsumption(speedInMetersPerSecond, distanceInMeters);
+	}
+	
 	
 	/**
 	 * 
@@ -133,15 +138,15 @@ public class CarsharingEnergyConsumptionModelImpl implements CarsharingEnergyCon
 		return currentAverageConsumption.getSpeed() >= speedInMetersPerSecond;
 	}
 	
-	@Override
+	/*@Override
 	public double getEnergyConsumptionForLinkInJoule(Link link, double averageSpeedDriven) {
 		return getEnergyConsumptionForLinkInJoule(link.getLength(), link.getFreespeed(), averageSpeedDriven);
-	}
+	}*/
 
-	@Override
+	/*@Override
 	public double getEnergyConsumptionForLinkInJoule(double drivenDistanceInMeters, double maxSpeedOnLink, double averageSpeedDriven) {
 		return getInterpolatedEnergyConsumption(averageSpeedDriven, drivenDistanceInMeters);
-	}
+	}*/
 	
 	
 	public class EnergyConsumption implements Comparable<EnergyConsumption> {

@@ -14,7 +14,7 @@ public interface CarsharingBatteryModel extends CarsharingOperationModel {
 	
 	
 	// calculate charging rate and duration required for charging
-	public abstract double calculateChargingRate(double SoC, double powerInJoules, double durationInSeconds);
+	public abstract double calculateChargingRateInJoule(double SoC, double powerInJoules, double durationInSeconds);
 	
 	// calculate the amount of energy to be balanced 
 	//public abstract PowerPerDurationLabel calculateBalancingRate(double SoC, double durationInSeconds);

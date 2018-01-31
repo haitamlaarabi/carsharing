@@ -14,7 +14,7 @@ public interface CarsharingVehicleMobsim extends CarsharingVehicle {
 	void startPark(CarsharingAgent agent, CarsharingStationMobsim station, double time);
 	void endPark(double time);
 	CarsharingVehicleStatus status();
-	void drive(double distance, double speed, double freespeed);
+	void drive(double speed, double distance);
 	
 	public static class CarsharingVehicleStatus {
 		String type;

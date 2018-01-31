@@ -126,10 +126,9 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 		CarsharingOperatorMobsim op = (CarsharingOperatorMobsim) task.getAgent();
 		Queue<CarsharingVehicleMobsim> rt = op.getVehicle().roadTrain();
 		double distance = task.getDistance();
-		double avgspeed = task.getDistance()/task.getTravelTime();
-		double maxspeed = task.getDistance()/task.getTravelTime();
+		double speed = task.getDistance()/task.getTravelTime();
 		//double maxspeed = op.getVehicle().vehicle().getType().getMaximumVelocity();
-		op.getVehicle().drive(distance, avgspeed, maxspeed);
+		op.getVehicle().drive(speed, distance);
 		for(CarsharingVehicleMobsim v : rt) { // teleport
 			logger.info("[DRIVING] T:" + (int)time + 
 					" |taskId:"+task.getId()+ 
@@ -137,8 +136,7 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 					" |soc:" + v.battery().getSoC() + 
 					" |dist:" + distance + 
 					" |tt:" + task.getTravelTime() + 
-					" |avgspd:" + avgspeed + 
-					" |maxspd:" + maxspeed);
+					" |maxspd:" + speed);
 			qSim.createAndParkVehicleOnLink(v.vehicle(), task.getStation().facility().getLinkId());
 		}
 		return rt;

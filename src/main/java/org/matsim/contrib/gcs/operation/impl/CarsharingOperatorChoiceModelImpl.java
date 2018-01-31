@@ -118,19 +118,17 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 			if(j <= 0) break;
 			//double maxspeed = v.vehicle().getType().getMaximumVelocity();
 			//double avgspeed = v.vehicle().getType().getMaximumVelocity();
-			double maxspeed = distance/task.getTravelTime();
-			double avgspeed = distance/task.getTravelTime();
-			double eng = v.battery().getEnergyForConsumption(distance, maxspeed, avgspeed);
+			double speed = distance/task.getTravelTime();
+			double eng = v.battery().energyConsumptionQty(speed, distance);
 			double psoc = v.battery().getSoC();
-			boolean chargedenough = v.battery().isChargedEnough(distance, maxspeed, avgspeed);
+			boolean chargedenough = v.battery().checkBattery(speed, distance);
 			logger.info(
 					"[ENERGY] |T:" + time + 
 					" |staId:" + s.getId() + 
 					" |agent:" + agent.getId() + 
 					" |vehId:" + v.vehicle().getId() + 
 					" |soc:" + v.battery().getSoC() + 
-					" |maxspeed: " + maxspeed + 
-					" |avgspeed: " + avgspeed + 
+					" |maxspeed: " + speed + 
 					" |distance:" + distance + 
 					" |consume:" + eng + 
 					" |xSoc:" + psoc);

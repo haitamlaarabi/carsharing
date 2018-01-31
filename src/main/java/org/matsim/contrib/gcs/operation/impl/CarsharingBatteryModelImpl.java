@@ -58,7 +58,7 @@ public class CarsharingBatteryModelImpl implements CarsharingBatteryModel {
 	 * @param durationInSeconds
 	 */
 	@Override
-	public double calculateChargingRate(double SoC, double powerInJoules, double durationInSeconds) {
+	public double calculateChargingRateInJoule(double SoC, double powerInJoules, double durationInSeconds) {
 		double energyRequired = safeCapacity() - SoC;
 		double energyToCharge = powerInJoules * durationInSeconds;
 		return Math.min(energyToCharge, energyRequired);

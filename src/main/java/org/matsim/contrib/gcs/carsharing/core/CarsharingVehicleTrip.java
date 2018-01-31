@@ -57,9 +57,8 @@ public class CarsharingVehicleTrip {
 	 * 
 	 * @param travelDistance
 	 */
-	public void increment(double travelDistance) {
+	public void incDist(double travelDistance) {
 		this.travelDistance += travelDistance;
-		//this.energyConsumed -= energyConsumed;
 	}
 	
 	public void setDepartureTime(double time) { this.departureTime = time; }

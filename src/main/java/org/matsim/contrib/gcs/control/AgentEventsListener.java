@@ -24,10 +24,9 @@ import org.matsim.api.core.v01.events.handler.PersonLeavesVehicleEventHandler;
 import org.matsim.api.core.v01.events.handler.VehicleAbortsEventHandler;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
-import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingRecord;
-import org.matsim.contrib.gcs.carsharing.core.CarsharingCustomerMobsim;
-import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicleMobsim;
+import org.matsim.facilities.ActivityFacility;
 import org.matsim.vehicles.Vehicle;
 
 
@@ -43,52 +42,104 @@ public class AgentEventsListener implements PersonLeavesVehicleEventHandler,
 {
 
 	public AgentEventsListener(Scenario sc, CarsharingManager manager) {
-		this.manager = manager;
-		this.scenario = sc;
-		this.network = this.scenario.getNetwork();
-		this.linktimeMap = new HashMap<Id<Vehicle>, Double>();
+		this.mng = manager;
+		this.sc = sc;
+		this.net = this.sc.getNetwork();
+		this.rentals = new HashMap<Id<Person>, RentalTracker>();
+		this.trips = new HashMap<Id<Vehicle>, LinkTracker>(); 
 	}
 	
 	@Override
 	public void reset(int iteration) {
-		this.linktimeMap.clear();
+		this.rentals.clear();
+		this.trips.clear();
 	}
 
 	/* ****** LINK EVENTS ****** */
 
 	@Override
 	public void handleEvent(LinkEnterEvent event) {
-		CarsharingVehicleMobsim carsharingVeh = manager.vehicles().map().get(event.getVehicleId());
-		if (carsharingVeh != null) {
-			linktimeMap.put(event.getVehicleId(), event.getTime());
+		if(this.trips.containsKey(event.getVehicleId())) {
+			LinkTracker lt = this.trips.get(event.getVehicleId());
+			lt.time = event.getTime();
+			lt.dist = this.net.getLinks().get(event.getLinkId()).getLength();
 		}
 	}
 
 	@Override
 	public void handleEvent(LinkLeaveEvent event) {
-		
-		CarsharingVehicleMobsim carsharingVeh = manager.vehicles().map().get(event.getVehicleId());
-		if (carsharingVeh != null) {
-			double realspeed = 0;
-			double realdistance = 0;
-			Link link = this.network.getLinks().get(event.getLinkId());
-			
-			double mobsimTravelTime = event.getTime() - linktimeMap.get(event.getVehicleId());
-			double vehMaxSpeed = link.getFreespeed();
-			//double vehMaxSpeed = carsharingVeh.vehicle().getType().getMaximumVelocity();
-			double minTravelTime = link.getLength()/vehMaxSpeed;
-			
-			if(mobsimTravelTime < minTravelTime) {
-				realspeed = vehMaxSpeed;
-				realdistance = realspeed * mobsimTravelTime;
-			} else {
-				realdistance = link.getLength();
-				realspeed = realdistance/mobsimTravelTime;
-			}
-			
-			carsharingVeh.drive(realdistance, realspeed, vehMaxSpeed);
+		if(this.trips.containsKey(event.getVehicleId())) {
+			LinkTracker lt = this.trips.get(event.getVehicleId());
+			double traveltime = event.getTime() - lt.time;
+			double traveldist = lt.dist;
+			double speed = traveldist/traveltime;
+			this.mng.vehicles().map().get(event.getVehicleId()).drive(speed, traveldist);
+			lt.rt.trip_dist += traveldist;
 		}
 	}
+
+
+	/* ****** VEHICLE EVENTS ****** */
+	@Override
+	public void handleEvent(PersonEntersVehicleEvent event) {
+		if(this.rentals.containsKey(event.getPersonId())) {
+			RentalTracker rt = this.rentals.get(event.getPersonId());
+			rt.idv = event.getVehicleId();
+			LinkTracker lt = new LinkTracker(event.getTime(), rt);
+			lt.dist = rt.start_link.getLength()/2; // half distance, started
+			this.trips.put(lt.rt.idv, lt);
+		}
+	}
+
+	@Override
+	public void handleEvent(PersonLeavesVehicleEvent event) {
+		if(this.trips.containsKey(event.getVehicleId())) {
+			LinkTracker lt = this.trips.get(event.getVehicleId());
+			double traveltime = event.getTime() - lt.time;
+			double traveldist = lt.dist/2; // half distance, arrived
+			double speed = traveldist/traveltime;
+			this.mng.vehicles().map().get(event.getVehicleId()).drive(speed, traveldist);
+			lt.rt.trip_dist += traveldist;
+		}
+	}
+
+	@Override
+	public void handleEvent(ActivityStartEvent event) {
+		ActivityFacility f = this.sc.getActivityFacilities().getFacilities().get(event.getFacilityId());
+		if(f != null && this.mng.getStations().map().containsKey(f.getId())) { 
+			// car sharing station
+			if(!this.rentals.containsKey(event.getPersonId())) {
+				// access station
+				RentalTracker rt = new RentalTracker();
+				rt.idp = event.getPersonId();
+				rt.start_link = this.net.getLinks().get(event.getLinkId());
+				rt.start_time = event.getTime();
+				this.rentals.put(event.getPersonId(), rt);
+			}
+		}
+	}
+
+	@Override
+	public void handleEvent(ActivityEndEvent event) {
+		ActivityFacility f = this.sc.getActivityFacilities().getFacilities().get(event.getFacilityId());
+		if(f != null && this.mng.getStations().map().containsKey(f.getId())) { 
+			// car sharing station
+			RentalTracker rt = this.rentals.get(event.getPersonId());
+			if(rt != null && rt.idv != null) {
+				// egress station			
+				rt.end_time = event.getTime();
+				rt.end_link = this.net.getLinks().get(event.getLinkId());
+
+				
+				// CONCLUDING RENTAL
+				
+				this.trips.remove(rt.idv);
+				this.rentals.remove(rt.idp);
+				
+			}
+		}
+	}
+	
 
 	/* ****** PERSON EVENTS ****** */
 	@Override
@@ -98,39 +149,36 @@ public class AgentEventsListener implements PersonLeavesVehicleEventHandler,
 	@Override
 	public void handleEvent(PersonArrivalEvent event) {
 	}
-
-	/* ****** VEHICLE EVENTS ****** */
-	@Override
-	public void handleEvent(PersonEntersVehicleEvent event) {
-	}
-
-	@Override
-	public void handleEvent(PersonLeavesVehicleEvent event) {
-	}
-
+	
 	@Override
 	public void handleEvent(VehicleAbortsEvent event) {
 	}
 
-	@Override
-	public void handleEvent(ActivityStartEvent event) {
-
+		
+	private final Network net;
+	private final Scenario sc;
+	private final CarsharingManager mng;
+	private final HashMap<Id<Person>, RentalTracker> rentals;
+	private final HashMap<Id<Vehicle>, LinkTracker> trips;
+	
+	class RentalTracker {
+		public double trip_dist = 0;
+		public double start_time;
+		public double end_time;
+		public Link start_link;
+		public Link end_link;
+		public Id<Person> idp;
+		public Id<Vehicle> idv = null;
 	}
-
-	@Override
-	public void handleEvent(ActivityEndEvent event) {
-		CarsharingCustomerMobsim carsharingCustomer = manager.customers().map().get(event.getPersonId());
-		if(carsharingCustomer != null) {
-			CarsharingBookingRecord bookRec = carsharingCustomer.status().getOngoingRental();
-			if(bookRec != null && bookRec.getVehicle() != null) {
-				linktimeMap.put(bookRec.getVehicle().vehicle().getId(), event.getTime());
-			}
+	
+	class LinkTracker {
+		RentalTracker rt;
+		public double time;
+		public double dist;
+		public LinkTracker(double time, RentalTracker rt) {
+			this.time = time;
+			this.rt = rt;
 		}
 	}
-		
-	private final Network network;
-	private final Scenario scenario;
-	private final CarsharingManager manager;
-	private final HashMap<Id<Vehicle>, Double> linktimeMap;
 	
 }
