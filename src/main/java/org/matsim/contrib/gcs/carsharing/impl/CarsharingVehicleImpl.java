@@ -66,7 +66,7 @@ public class CarsharingVehicleImpl implements CarsharingVehicleMobsim {
 	@Override 
 	public void startTrip(CarsharingAgent agent, CarsharingStationMobsim station, double time) {
 		for(CarsharingVehicleMobsim v : this.roadTrain()) {
-			v.status().setTrip(new CarsharingVehicleTrip(this, agent.getId(), station, time, true));
+			v.status().setTrip(new CarsharingVehicleTrip(this, agent.getId(), station, time));
 		}
 	}
 	
@@ -98,10 +98,10 @@ public class CarsharingVehicleImpl implements CarsharingVehicleMobsim {
 	}
 	
 	@Override
-	public void drive(double speed, double distance) {
+	public void drive(double traveltime, double traveldistance) {
 		for(CarsharingVehicleMobsim  v : this.roadTrain()) {
-			v.battery().consumeBattery(speed, distance);
-			v.status().getTrip().incDist(distance);
+			v.battery().consumeBattery(traveldistance/traveltime, traveldistance);
+			v.status().getTrip().add(traveltime, traveldistance);
 			if(v.battery().getSoC() <= 0) {
 				logger.error("[DRIVING-KO] tripId:" + v.status().getTrip().getId()  + " |vehId:" + v.vehicle().getId() + " |soc:" + v.battery().getSoC());
 			}

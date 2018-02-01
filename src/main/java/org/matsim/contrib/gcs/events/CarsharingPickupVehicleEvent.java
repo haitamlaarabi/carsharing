@@ -59,6 +59,7 @@ public class CarsharingPickupVehicleEvent extends AbstractCarsharingEvent {
 			logRow.put("fuel", t.vehicle_fuel);
 			logRow.put("global.id", t.trip_id);
 			logRow.put("trip.distance", t.trip_distance);
+			logRow.put("trip.time", t.trip_time);
 			logRow.put("rental.cost", t.rental_cost);
 			logRow.put("type", "START");
 			logRow.put("booking.id", this.booking_id);				

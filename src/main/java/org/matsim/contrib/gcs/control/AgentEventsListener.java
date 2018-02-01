@@ -72,8 +72,7 @@ public class AgentEventsListener implements PersonLeavesVehicleEventHandler,
 		if(lt != null && lt.link != null) {
 			double traveltime = event.getTime() - lt.time;
 			double traveldist = lt.link.getLength();
-			double speed = traveldist/traveltime;
-			this.mng.vehicles().map().get(event.getVehicleId()).drive(speed, traveldist);
+			this.mng.vehicles().map().get(event.getVehicleId()).drive(traveltime, traveldist);
 			lt.rt.trip_dist += traveldist;
 		}
 	}
@@ -96,8 +95,7 @@ public class AgentEventsListener implements PersonLeavesVehicleEventHandler,
 		if(lt != null && lt.link != null) {
 			double traveltime = event.getTime() - lt.time;
 			double traveldist = lt.link.getLength(); // half distance, arrived
-			double speed = traveldist/traveltime;
-			this.mng.vehicles().map().get(event.getVehicleId()).drive(speed, traveldist);
+			this.mng.vehicles().map().get(event.getVehicleId()).drive(traveltime, traveldist);
 			lt.rt.trip_dist += traveldist;
 		}
 	}

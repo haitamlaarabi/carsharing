@@ -197,6 +197,7 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 	class TripLog {
 		String trip_id;
 		String trip_distance;
+		String trip_time;
 		String rental_cost; 
 		String vehicle_id;
 		String vehicle_fuel;
@@ -215,6 +216,7 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 			if(t != null) {
 				this.trip_id = String.valueOf(t.getId());
 				this.trip_distance = String.valueOf(t.getTravelDistance());
+				this.trip_time = String.valueOf(t.getTravelTime());
 				this.rental_cost = String.valueOf(t.getRentalCost());
 				this.vehicle_id = String.valueOf(v.vehicle().getId());
 				int fuel_percentage = (int) (100 * v.battery().getSoC()/v.battery().getSafeBatteryCapacity());
@@ -224,6 +226,7 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 					this.vehicle_id = v.vehicle().getId().toString();
 					this.trip_id = station_log.station_id+"@0";
 					this.trip_distance = "0";
+					this.trip_time = "0";
 					this.rental_cost = "0";
 					int fuel_percentage = (int) (100 * v.battery().getSoC()/v.battery().getSafeBatteryCapacity());
 					this.vehicle_fuel = String.valueOf(fuel_percentage);
@@ -231,6 +234,7 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 					this.vehicle_id = "NA";
 					this.trip_id = "NA";
 					this.trip_distance = "NA";
+					this.trip_time = "NA";
 					this.rental_cost = "NA";
 					this.vehicle_fuel = "NA";
 				}

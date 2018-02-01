@@ -12,11 +12,10 @@ public class CarsharingVehicleTrip {
 	private double departureTime;
 	private double departureSoC;
 	private double travelDistance;
+	private double travelTime;
 	private double rentalDuration;
-	//private double energyConsumed;
 	private double rentalCost;
 	private String status;
-	private boolean asTrailer;
 	private String id;
 	
 	/**
@@ -25,16 +24,15 @@ public class CarsharingVehicleTrip {
 	 * @param sourceStation
 	 * @param departureTime
 	 */
-	public CarsharingVehicleTrip(CarsharingVehicleMobsim vehicle, String idperson, CarsharingStationMobsim sourceStation, double departureTime, boolean asTrailer) {
+	public CarsharingVehicleTrip(CarsharingVehicleMobsim vehicle, String idperson, CarsharingStationMobsim sourceStation, double departureTime) {
 		this.vehicle = vehicle;
 		this.sourceStation = sourceStation;
 		this.departureTime = departureTime;
 		this.departureSoC = this.vehicle.battery().getSoC();						
 		this.destinationStation = null;
 		this.travelDistance = 0;
+		this.travelTime = 0;
 		this.rentalDuration = 0;
-		//this.energyConsumed = 0;
-		this.asTrailer = asTrailer;
 		this.status = "START";
 		this.id = idperson + "@" + String.valueOf((int)departureTime); 
 	}
@@ -57,12 +55,15 @@ public class CarsharingVehicleTrip {
 	 * 
 	 * @param travelDistance
 	 */
-	public void incDist(double travelDistance) {
+	public void add(double traveltime, double travelDistance) {
+		this.travelTime += traveltime;
 		this.travelDistance += travelDistance;
 	}
 	
+	
 	public void setDepartureTime(double time) { this.departureTime = time; }
 	public void setRentalCost(Double cost) { this.rentalCost = cost; }
+	
 	
 	public String getId() { return this.id; }
 	public String getSourceStationName() { return sourceStation.getName(); }
@@ -71,12 +72,11 @@ public class CarsharingVehicleTrip {
 	public double getDepartureSoC() { return departureSoC; }
 	public String getDestinationStationName() { return destinationStation.getName(); }
 	public CarsharingStationMobsim getDestinationStation() { return destinationStation; }
+	public double getTravelTime() { return this.travelTime; }
 	public double getTravelDistance() { return travelDistance; }
 	public double getRentalDuration() { return rentalDuration; }
-	//public double getEnergyConsumed() { return energyConsumed; }
 	public double getRentalCost() { return rentalCost; }
 	public String getStatus() { return status; }
 	public CarsharingVehicleMobsim getVehicle() { return this.vehicle; }
-	
 
 }
