@@ -55,14 +55,14 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	}
 	
 	@Override
-	public void updateRelocationList(double time) {
+	public void updateRelocationList(int time) {
 		if(this.time_step.check((int) time)) {
 			this.update();
 		}
 	}
 	
 	@Override
-	public List<CarsharingOffer> relocationList(double time, CarsharingDemand demand, List<CarsharingOffer> offers) {
+	public List<CarsharingOffer> relocationList(int time, CarsharingDemand demand, List<CarsharingOffer> offers) {
 		if(this.iter >= this.iter_activation) {
 			return this.usrelocate(demand, offers);
 		}
@@ -70,7 +70,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	}
 	
 	@Override
-	public List<CarsharingRelocationTask> relocationList(double time) {
+	public List<CarsharingRelocationTask> relocationList(int time) {
 		List<CarsharingRelocationTask> booked_tasks = new ArrayList<CarsharingRelocationTask>();
 		if(this.iter >= this.iter_activation) {
 			List<CarsharingRelocationTask> tasks = this.oprelocate();

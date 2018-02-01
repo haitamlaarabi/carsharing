@@ -4,13 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingStation;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingDemand;
@@ -21,7 +18,6 @@ import org.matsim.contrib.gcs.carsharing.impl.CarsharingStationFactory;
 import org.matsim.contrib.gcs.operation.model.CarsharingOfferModel;
 import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
 import org.matsim.contrib.gcs.router.CarsharingRouterUtils.RouteData;
-import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.TripRouter;
@@ -43,7 +39,7 @@ public class CarsharingOfferModelImpl implements CarsharingOfferModel  {
 	double tau = 2.0 * 3600.0;
 	double alpha = 0.7;
 	private double timeFeePerMinute; // 1 euro per minute
-	private double time;
+	private int time;
 	
 	protected static String STANDARD_STATION = "STANDARD";
 	protected static String FLOATING_STATION = "FLOATING";
@@ -67,7 +63,7 @@ public class CarsharingOfferModelImpl implements CarsharingOfferModel  {
 	}
 	
 	@Override
-	public ArrayList<CarsharingOffer> computeRentalOffers(double time, CarsharingDemand demand) {
+	public ArrayList<CarsharingOffer> computeRentalOffers(int time, CarsharingDemand demand) {
 		this.time = time;
 		ArrayList<CarsharingOffer> offers = new ArrayList<CarsharingOffer>();
 		ArrayList<CarsharingOffer> failedoffers = new ArrayList<CarsharingOffer>();

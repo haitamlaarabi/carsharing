@@ -28,7 +28,7 @@ public final class CarsharingRouterUtils {
 	public static class RouteData {
 		public List<? extends PlanElement> path = null;
 		public double distance = 0;
-		public double time = 0;
+		public int time = 0;
 	}
 	
 	public static RouteData calcTCC(CarsharingManager m, Facility o, Facility d, double deptime, Person p) {

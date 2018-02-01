@@ -39,7 +39,7 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 	double tau = 2.0 * 3600.0;
 	double alpha = 0.7;
 	private double timeFeePerMinute; // 1 euro per minute
-	private double time;
+	private int time;
 	
 	protected static String STANDARD_STATION = "STANDARD";
 	protected static String FLOATING_STATION = "FLOATING";
@@ -66,7 +66,7 @@ public class CarsharingOfferModelImpl2 implements CarsharingOfferModel  {
 	}
 	
 	@Override
-	public ArrayList<CarsharingOffer> computeRentalOffers(double time, CarsharingDemand demand) {
+	public ArrayList<CarsharingOffer> computeRentalOffers(int time, CarsharingDemand demand) {
 		this.time = time;
 		ArrayList<CarsharingOffer> offers = new ArrayList<CarsharingOffer>();
 		ArrayList<CarsharingOffer> failedoffers = new ArrayList<CarsharingOffer>();

@@ -10,8 +10,8 @@ import org.matsim.contrib.gcs.operation.CarsharingOperationModel;
 public interface CarsharingRelocationModel extends CarsharingOperationModel {
 	
 	
-	List<CarsharingOffer> relocationList(double time, CarsharingDemand demand, List<CarsharingOffer> offers);
-	List<CarsharingRelocationTask> relocationList(double time);
+	List<CarsharingOffer> relocationList(int time, CarsharingDemand demand, List<CarsharingOffer> offers);
+	List<CarsharingRelocationTask> relocationList(int time);
 	void reset(int iteration);
-	void updateRelocationList(double time);
+	void updateRelocationList(int time);
 }

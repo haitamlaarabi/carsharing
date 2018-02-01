@@ -10,7 +10,7 @@ public class CarsharingRelocationTask implements Comparable<CarsharingRelocation
 	private String type;
 	final private CarsharingAgent agent;
 	final private CarsharingStationMobsim station;
-	final private double time;
+	final private int time;
 	private int size;
 	final private String id;
 	final private double distance;
@@ -18,19 +18,19 @@ public class CarsharingRelocationTask implements Comparable<CarsharingRelocation
 	private CarsharingBookingRecord booking = null;
 	private RouteData route = null;
 	
-	public static CarsharingRelocationTask startTask(String id, double time, CarsharingAgent agent, CarsharingStationMobsim station, int size, double tt, double distance) {
+	public static CarsharingRelocationTask startTask(String id, int time, CarsharingAgent agent, CarsharingStationMobsim station, int size, double tt, double distance) {
 		CarsharingRelocationTask t = new CarsharingRelocationTask(id, time, agent, station, size, tt, distance);
 		t.type = "START";
 		return t;
 	}
 	
-	public static CarsharingRelocationTask endTask(String id, double time, CarsharingAgent agent, CarsharingStationMobsim station, int size, double tt, double distance) {
+	public static CarsharingRelocationTask endTask(String id, int time, CarsharingAgent agent, CarsharingStationMobsim station, int size, double tt, double distance) {
 		CarsharingRelocationTask t = new CarsharingRelocationTask(id, time, agent, station, size, tt, distance);
 		t.type = "END";
 		return t;
 	}
 		
-	private CarsharingRelocationTask(String id, double time, CarsharingAgent agent, CarsharingStationMobsim station, int size, double tt, double distance) {
+	private CarsharingRelocationTask(String id, int time, CarsharingAgent agent, CarsharingStationMobsim station, int size, double tt, double distance) {
 		this.agent = agent;
 		this.station = station;
 		this.size = size;

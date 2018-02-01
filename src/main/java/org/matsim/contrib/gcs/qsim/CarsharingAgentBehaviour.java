@@ -147,7 +147,7 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 		demand = this.customerAgentMemory.decision().getOrConstructDemand(accessWalkLeg, this.basicAgentDelegate.getCurrentPlan());
 		
 		// [SYSTEM] Get Full Trips Offers
-		ArrayList<CarsharingOffer> offers = this.carsharingSystemDelegate.booking().offer().computeRentalOffers(now, demand);
+		ArrayList<CarsharingOffer> offers = this.carsharingSystemDelegate.booking().offer().computeRentalOffers((int)now, demand);
 		
 		// [CUSTOMER] Choose an Offer
 		CarsharingOffer selectedOffer = this.customerAgentMemory.decision().selectOffer(offers);

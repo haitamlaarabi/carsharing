@@ -47,8 +47,8 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 	
 	@Override
 	public void doSimStep(double time) {
-		this.relocation.updateRelocationList(time);
-		this.relocationEventsQueue.addAll(this.relocation.relocationList(time));
+		this.relocation.updateRelocationList((int)time);
+		this.relocationEventsQueue.addAll(this.relocation.relocationList((int)time));
 		if ((this.relocationEventsQueue != null) && (this.relocationEventsQueue.size() > 0)) {
 			handleRelocationEvents(time);
 		}
