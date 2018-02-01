@@ -187,8 +187,8 @@ public class CarsharingOfferModelImpl implements CarsharingOfferModel  {
 				o.getDemand().getAgent().getPerson());
 	
 		CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromOffer(o, CarsharingOffer.SUCCESS_STANDARDOFFER);
-		builder.setEgress(s.station, s.traveltime, s.distance);
 		builder.setDrive(o.getNbOfVehicles(), rd);
+		builder.setEgress(s.station, s.traveltime, s.distance);
 		return builder.build();
 	}
 	
@@ -230,8 +230,8 @@ public class CarsharingOfferModelImpl implements CarsharingOfferModel  {
 					offer.getDemand().getAgent().getPerson());
 			
 			CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromOffer(offer, CarsharingOffer.SUCCESS_FREEFLOATINGOFFER);
-			builder.setEgress((CarsharingStationMobsim) newFS, duration, distance);
 			builder.setDrive(offer.getNbOfVehicles(), rd);
+			builder.setEgress((CarsharingStationMobsim) newFS, duration, distance);
 			return builder.build();
 	}
 	
