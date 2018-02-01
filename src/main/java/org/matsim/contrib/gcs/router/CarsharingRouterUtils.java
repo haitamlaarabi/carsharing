@@ -50,7 +50,7 @@ public final class CarsharingRouterUtils {
 	public static RouteData calcTCCNoOffset(CarsharingManager m, Facility o, Facility d, double deptime, Person p) {
 		RouteData rd = new RouteData();
 		rd.path = m.router().calcRoute(CarsharingRouterUtils.cs_drive, o, d, deptime, p);
-		NetworkRoute nr = ((NetworkRoute)((Leg)rd.path.get(0)));
+		NetworkRoute nr = ((NetworkRoute)((Leg)rd.path.get(0)).getRoute());
 		for(Id<Link> linkid : nr.getLinkIds()) {
 			Link tempL = m.getCarNetwork().getLinks().get(linkid);
 			rd.time += m.ttc().getLinkTravelTime(tempL, deptime + rd.time, null, null);
