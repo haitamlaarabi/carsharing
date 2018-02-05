@@ -7,6 +7,7 @@ import org.matsim.contrib.gcs.events.CarsharingChargingEndEvent;
 import org.matsim.contrib.gcs.events.CarsharingChargingStartEvent;
 import org.matsim.contrib.gcs.events.CarsharingDropoffVehicleEvent;
 import org.matsim.contrib.gcs.events.CarsharingEventsHandler;
+import org.matsim.contrib.gcs.events.CarsharingOperatorEvent;
 import org.matsim.contrib.gcs.events.CarsharingPickupVehicleEvent;
 
 
@@ -49,6 +50,11 @@ public class CarsharingEventsListener implements CarsharingEventsHandler {
 
 	@Override
 	public void handleEvent(CarsharingBookingEvent event) {
+		LOG(event);
+	}
+
+	@Override
+	public void handleEvent(CarsharingOperatorEvent event) {
 		LOG(event);
 	}
 

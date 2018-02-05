@@ -15,6 +15,7 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicleMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingDataCollector.CarsharingDataProvider;
 import org.matsim.contrib.gcs.events.AbstractCarsharingEvent;
 import org.matsim.contrib.gcs.events.CarsharingDropoffVehicleEvent;
+import org.matsim.contrib.gcs.events.CarsharingOperatorEvent;
 import org.matsim.contrib.gcs.events.CarsharingPickupVehicleEvent;
 import org.matsim.contrib.gcs.operation.model.CarsharingRelocationModel;
 import org.matsim.core.api.internal.MatsimExtensionPoint;
@@ -95,27 +96,31 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 				book = op.decision().processPickup(time, task);
 				if(op.getVehicle() != null) {  // vehicles picked up
 					train = op.getVehicle().roadTrain(); 
-				} 				
-				event = new CarsharingPickupVehicleEvent(
-								task.getTime(), qSim.getScenario(), 
-								m, task.getAgent(), task.getStation(), 
-								train, task.getBooking());
-				
+				} 
+				if(task.getSize() != 0) {
+					event = new CarsharingPickupVehicleEvent(
+									task.getTime(), qSim.getScenario(), 
+									m, task.getAgent(), task.getStation(), 
+									train, task.getBooking());
+				}
 			}  else {
 				if(op.getVehicle() != null) {  // vehicles to move
 					train = moveVehicles(time, task);
 				}
 				book = op.decision().processDropoff(time, task);
-				event = new CarsharingDropoffVehicleEvent(
-								task.getTime(), qSim.getScenario(), 
-								m, task.getAgent(), task.getStation(), 
-								train, task.getBooking());
+				if(task.getSize() != 0) {
+					event = new CarsharingDropoffVehicleEvent(
+									task.getTime(), qSim.getScenario(), 
+									m, task.getAgent(), task.getStation(), 
+									train, task.getBooking());
+				}
 			}
-			
 			if(book) { 
 				this.m.booking().track(task.getStation()).confirm(task.getBooking(), train.peek());
+			} else if(task.getSize() == 0) {
+				event = new CarsharingOperatorEvent(task.getTime(), qSim.getScenario(), m, task.getAgent(), task.getStation(), task);
 			}
-			
+
 			qSim.getEventsManager().processEvent(event);
 								
 		}
