@@ -3,6 +3,8 @@ package org.matsim.contrib.gcs.qsim;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+import javax.management.RuntimeErrorException;
+
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -90,39 +92,24 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 			CarsharingRelocationTask task = this.relocationEventsQueue.poll();
 			CarsharingOperatorMobsim op = (CarsharingOperatorMobsim) task.getAgent();
 			Queue<CarsharingVehicleMobsim> train = null;
-			AbstractCarsharingEvent event = null;
 			boolean book = false;
 			if(task.getType().equals("START")) { 
 				book = op.decision().processPickup(time, task);
 				if(op.getVehicle() != null) {  // vehicles picked up
 					train = op.getVehicle().roadTrain(); 
-				} 
-				if(task.getSize() != 0) {
-					event = new CarsharingPickupVehicleEvent(
-									task.getTime(), qSim.getScenario(), 
-									m, task.getAgent(), task.getStation(), 
-									train, task.getBooking());
 				}
 			}  else {
 				if(op.getVehicle() != null) {  // vehicles to move
 					train = moveVehicles(time, task);
 				}
 				book = op.decision().processDropoff(time, task);
-				if(task.getSize() != 0) {
-					event = new CarsharingDropoffVehicleEvent(
-									task.getTime(), qSim.getScenario(), 
-									m, task.getAgent(), task.getStation(), 
-									train, task.getBooking());
-				}
 			}
 			if(book) { 
 				this.m.booking().track(task.getStation()).confirm(task.getBooking(), train.peek());
-			} else if(task.getSize() == 0) {
-				event = new CarsharingOperatorEvent(task.getTime(), qSim.getScenario(), m, task.getAgent(), task.getStation(), task);
-			}
-
-			qSim.getEventsManager().processEvent(event);
-								
+			} 
+			if(train == null && task.getSize() > 0)
+				throw new RuntimeException("FAILED RELOCATION - type: " + task.getType() + " agent: " + task.getAgent() + " station: " + task.getStation());
+			qSim.getEventsManager().processEvent(new CarsharingOperatorEvent(task.getTime(), qSim.getScenario(), m, task, train));
 		}
 	}
 	
