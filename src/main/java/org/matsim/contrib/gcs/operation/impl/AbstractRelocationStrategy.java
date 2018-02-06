@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
@@ -22,6 +23,7 @@ import com.google.inject.Provider;
 
 public abstract class AbstractRelocationStrategy implements CarsharingRelocationModel {
 
+	private static Logger logger = Logger.getLogger(AbstractRelocationStrategy.class);
 	protected final CarsharingManager m;
 	protected final TripRouter router;
 	protected final CarsharingPreprocessedData pp_data;
@@ -94,6 +96,8 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 								booked_tasks.add(t2);
 								op.addTask(t2);
 							}
+						} else {
+							logger.warn("BOOKING FAILURE - " + b.getAgent().getId());
 						}
 						sTask = null;
 						accessTime = 0;
