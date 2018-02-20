@@ -30,7 +30,6 @@ public class CarsharingBookingManager {
 	synchronized public boolean process(CarsharingBookingRecord br) {
 		
 		CarsharingDemand demand = br.getDemand();
-		CarsharingAgent agent = br.getAgent();
 		CarsharingStationMobsim So = br.getOriginStation();
 		CarsharingStationMobsim Sd = br.getDestinationStation();
 
@@ -38,17 +37,16 @@ public class CarsharingBookingManager {
 		if(demand != null)
 			this.demandBookingMap.put(demand.getID(), br);
 		
-		if(So == null || Sd == null) {
+		if(So == null || Sd == null || br.relatedOffer == null) {
 			logger.warn("[B-KO] Agent:" + br.getAgent().getId());
 			return false;
 		}
 		
-		if(br.relatedOffer == null) return false;
 		br.noVehicleOffer = !this.stationBookingMap.get(So).add(br);
-		if(br.noVehicleOffer) return false;	
 		br.noParkingOffer = !this.stationBookingMap.get(Sd).add(br);
-		if(br.noParkingOffer) return false;
-		
+		if(br.noVehicleOffer || br.noParkingOffer) {
+			return false;	
+		}
 		return true;
 	}
 
