@@ -67,9 +67,11 @@ public class CarsharingBookingRecord {
 		}
 		
 		public static CarsharingBookingRecord constructAndGetFailedBookingRec(double bookingTime, CarsharingOffer offer) {
-			return constructAndGetFailedBookingRec(bookingTime, offer.getDemand(), false, false, 
+			CarsharingBookingRecord b = constructAndGetFailedBookingRec(bookingTime, offer.getDemand(), false, false, 
 					offer.getAccess().getStation(), offer.getDepartureTime(),
 					false, offer.getEgress().getStation(), offer.getArrivalTime());
+			b.relatedOffer = offer;
+			return b;
 		}
 		
 		public static CarsharingBookingRecord constructAndGetBookingRec(double bookingTime, CarsharingOffer offer) {
@@ -77,6 +79,7 @@ public class CarsharingBookingRecord {
 					offer.getAccess().getStation(), offer.getDepartureTime(),
 					false, offer.getEgress().getStation(), offer.getArrivalTime());
 			b.id = ((b.person == null)?"NA":b.person.getId()) + "-" + b.sourceStation.getId() + "@" + (int)bookingTime;
+			b.relatedOffer = offer;
 			return b;
 		}
 		
