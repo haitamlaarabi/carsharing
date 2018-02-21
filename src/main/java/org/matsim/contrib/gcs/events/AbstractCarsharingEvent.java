@@ -161,14 +161,7 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 			this.dst_type = "END";
 			this.src_date = String.valueOf(r.getDepartureTime());
 			this.dst_date = String.valueOf(r.getArrivalTime());
-			if(r.betterWalk()) {
-				this.comment = "WALK";
-			} else if(!r.vehicleOffer() || !r.parkingOffer()) {
-				this.comment = "PT";
-			} else {
-				this.comment = "CS";
-			}
-			
+			this.comment = r.getComment();
 		}
 	}
 	

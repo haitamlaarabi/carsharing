@@ -14,6 +14,7 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingDemand;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingOffer;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingOperatorMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingRelocationTask;
+import org.matsim.contrib.gcs.events.CarsharingBookingEvent;
 import org.matsim.contrib.gcs.operation.model.CarsharingOperatorChoiceModel;
 import org.matsim.contrib.gcs.operation.model.CarsharingRelocationModel;
 import org.matsim.core.population.PopulationUtils;
@@ -80,6 +81,10 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 			double accessTime = 0, accessDistance = 0;
 			List<CarsharingRelocationTask> temp_tasks = new ArrayList<CarsharingRelocationTask>();
 			for(CarsharingRelocationTask t : tasks) {
+				CarsharingOperatorMobsim op = (CarsharingOperatorMobsim) t.getAgent();
+				if(!op.available()) {
+					throw new RuntimeException("Adding tasks to busy operator");
+				}
 				temp_tasks.add(t);
 				if(t.getSize() == 0) {
 					accessTime = t.getTravelTime();
@@ -90,15 +95,20 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 					} else {
 						CarsharingBookingRecord b = constructBookingRecord(sTask, t, accessTime, accessDistance);
 						if(this.m.booking().process(b)) { // **** BOOKING 
-							CarsharingOperatorMobsim op = (CarsharingOperatorMobsim) t.getAgent();
-							for(CarsharingRelocationTask t2 : temp_tasks) {
-								t2.setBooking(b);
-								booked_tasks.add(t2);
-								op.addTask(t2);
+							for(CarsharingRelocationTask new_task : temp_tasks) {
+								new_task.setBooking(b);
+								booked_tasks.add(new_task);
+								op.addTask(new_task);
 							}
 						} else {
 							logger.warn("BOOKING FAILURE - " + b.getAgent().getId());
+							if(!b.vehicleOffer()) {
+								b.setComment("NO_VEHICLE_TO_RELOCATE");
+							} else if(!b.parkingOffer()) {
+								b.setComment("NO_PARKING_SPACE");
+							}
 						}
+						m.events().processEvent(new CarsharingBookingEvent(time, m.getScenario(), m, b.getDemand(), b));
 						sTask = null;
 						accessTime = 0;
 						accessDistance = 0;
@@ -125,6 +135,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		CarsharingBookingRecord booking = CarsharingBookingRecord.constructAndGetBookingRec(time_step.step(), builder.build());
 		return booking;
 	}
+	
 	
 	@Override
 	public void reset(int iteration) {

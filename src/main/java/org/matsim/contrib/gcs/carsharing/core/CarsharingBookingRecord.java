@@ -19,8 +19,21 @@ public class CarsharingBookingRecord {
 		boolean noParkingOffer;
 		boolean betterWalk;
 		String id;
+		String comment = null;
 		
 		CarsharingBookingRecord() {}
+		
+		static CarsharingBookingRecord init() {
+			CarsharingBookingRecord b = new CarsharingBookingRecord();
+			if(b.betterWalk()) {
+				b.comment = "WALK";
+			} else if(!b.vehicleOffer() || !b.parkingOffer()) {
+				b.comment = "PT";
+			} else {
+				b.comment = "CS";
+			}
+			return b;
+		}
 		
 		public static CarsharingBookingRecord constructAndGetFailedBookingRec(
 				double bookingTime, 
@@ -40,45 +53,28 @@ public class CarsharingBookingRecord {
 			b.noParkingOffer = noParkingOffer;
 			b.destinationStation = arrStation;
 			b.arrivalTime = arrTime;
-			b.id = ((b.person == null)?"NA":b.person.getId()) + "-FAILED@" + (int)bookingTime;
+			b.id = ((b.person == null)?"NA":b.person.getId()) + "@" + (int)bookingTime + "-FAILED";
 			b.betterWalk = betterWalk;
+			if(b.betterWalk()) {
+				b.comment = "WALK";
+			} else if(!b.vehicleOffer() || !b.parkingOffer()) {
+				b.comment = "PT";
+			} else {
+				b.comment = "CS";
+			}
 			return b;
 		}
 		
 		public static CarsharingBookingRecord constructAndGetFailedBookingRec(double bookingTime, CarsharingOffer offer) {
-			CarsharingBookingRecord b = new CarsharingBookingRecord();
-			b.bookingTime = bookingTime;
-			b.relatedOffer = offer;
-			b.sourceStation = offer.getAccess().getStation();
-			b.departureTime = offer.getDepartureTime();
-			b.arrivalTime = offer.getArrivalTime();
-			b.demand = offer.getDemand();
-			b.person = offer.getAgent();
-			b.numberOfVehicles = offer.getNbOfVehicles();
-			b.destinationStation = offer.getEgress().getStation();
-			b.trip = null;
-			b.park = null;
-			b.noParkingOffer = false;
-			b.noVehicleOffer = false;
-			b.id = ((b.person == null)?"NA":b.person.getId()) + "-FAILED@" + (int)bookingTime;
-			return b;
+			return constructAndGetFailedBookingRec(bookingTime, offer.getDemand(), false, false, 
+					offer.getAccess().getStation(), offer.getDepartureTime(),
+					false, offer.getEgress().getStation(), offer.getArrivalTime());
 		}
 		
 		public static CarsharingBookingRecord constructAndGetBookingRec(double bookingTime, CarsharingOffer offer) {
-			CarsharingBookingRecord b = new CarsharingBookingRecord();
-			b.bookingTime = bookingTime;
-			b.relatedOffer = offer;
-			b.sourceStation = offer.getAccess().getStation();
-			b.departureTime = offer.getDepartureTime();
-			b.arrivalTime = offer.getArrivalTime();
-			b.demand = offer.getDemand();
-			b.person = offer.getAgent();
-			b.numberOfVehicles = offer.getNbOfVehicles();
-			b.destinationStation = offer.getEgress().getStation();
-			b.trip = null;
-			b.park = null;
-			b.noParkingOffer = false;
-			b.noVehicleOffer = false;
+			CarsharingBookingRecord b = constructAndGetFailedBookingRec(bookingTime, offer.getDemand(), false, false, 
+					offer.getAccess().getStation(), offer.getDepartureTime(),
+					false, offer.getEgress().getStation(), offer.getArrivalTime());
 			b.id = ((b.person == null)?"NA":b.person.getId()) + "-" + b.sourceStation.getId() + "@" + (int)bookingTime;
 			return b;
 		}
@@ -95,7 +91,9 @@ public class CarsharingBookingRecord {
 		public void setNbrOfVeh(int nbreveh) { this.numberOfVehicles = nbreveh; }
 		public void setRelatedOffer(CarsharingOffer offer) { this.relatedOffer = offer; }
 		public void setAgent(CarsharingAgent a) { this.person = a; }
+		public void setComment(String s) { this.comment = s; }
 		
+		public String getComment() { return this.comment; }
 		public String getId() {	return this.id;	}
 		public double getDepartureTime() { return this.departureTime; }
 		public double getArrivalTime() { return this.arrivalTime; }

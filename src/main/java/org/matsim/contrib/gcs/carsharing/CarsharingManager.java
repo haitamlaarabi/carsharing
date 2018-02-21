@@ -38,6 +38,7 @@ import org.matsim.contrib.gcs.operation.model.CarsharingPowerDistributionModel;
 import org.matsim.contrib.gcs.operation.model.CarsharingPowerSourceModel;
 import org.matsim.contrib.gcs.operation.model.CarsharingRelocationModel;
 import org.matsim.contrib.gcs.operation.model.CarsharingUserChoiceModel;
+import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.MatsimServices;
 import org.matsim.core.router.TripRouter;
@@ -97,7 +98,8 @@ public class CarsharingManager {
 		stop_deployment_at_iteration = 0;
 	}
 	
-	public TripRouter router() { return tripRouterProvider.get(); }
+	public EventsManager events() { return this.services.getEvents(); }
+ 	public TripRouter router() { return tripRouterProvider.get(); }
 	public TravelTimeCollector ttc() { return (TravelTimeCollector)this.tt; }
 	public CarsharingRelocationModel relocation() { return this.relocation; }
 	public Network getCarNetwork() { return this.carsharing.getCarNetwork(); }
@@ -123,7 +125,7 @@ public class CarsharingManager {
 		for(CarsharingStationMobsim station: this.stations) { 
 			station.reset(iteration);
 			if(station.parking().getFleetSize() > 0)
-				this.services.getEvents().processEvent(
+				events().processEvent(
 					new CarsharingDropoffVehicleEvent(1.0, this.getScenario(), this, null, station, station.parking().getAll(),	null));
 		}		
 	}
