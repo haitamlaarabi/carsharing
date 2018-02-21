@@ -44,7 +44,8 @@ public class CarsharingBookingRecord {
 			CarsharingBookingRecord b = new CarsharingBookingRecord();
 			b.bookingTime = bookingTime;
 			b.demand = demand;
-			b.person = demand.getAgent();
+			if(demand != null)	b.person = demand.getAgent();
+			else b.person = null;
 			b.trip = null;
 			b.park = null;
 			b.noVehicleOffer = noVehicleOffer;
