@@ -70,8 +70,7 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 			}*/
 			
 		} else {
-			logger.warn("FAILURE TO PICKUP ... ABORTING...");
-			this.setStateToAbort(now);
+			throw new RuntimeException("The agent failed to pickup, but no default alternative behaviour is implemented.. ABORTING...");
 		}
 		
 		this.basicAgentDelegate.getEvents().processEvent(
