@@ -37,7 +37,7 @@ public class CarsharingBookingManager {
 		if(demand != null)
 			this.demandBookingMap.put(demand.getID(), br);
 		
-		if(So == null || Sd == null || br.relatedOffer == null) {
+		/*if(So == null || Sd == null || br.relatedOffer == null) {
 			logger.warn("[B-KO] Agent:" + br.getAgent().getId());
 			return false;
 		}
@@ -47,6 +47,19 @@ public class CarsharingBookingManager {
 		if(br.noVehicleOffer || br.noParkingOffer) {
 			return false;	
 		}
+		return true;*/
+		
+		if(So == null || Sd == null) {
+			logger.warn("[B-KO] Agent:" + br.getAgent().getId());
+			return false;
+		}
+		
+		if(br.relatedOffer == null) return false;
+		br.noVehicleOffer = !this.stationBookingMap.get(So).add(br);
+		if(br.noVehicleOffer) return false;	
+		br.noParkingOffer = !this.stationBookingMap.get(Sd).add(br);
+		if(br.noParkingOffer) return false;
+		
 		return true;
 	}
 
