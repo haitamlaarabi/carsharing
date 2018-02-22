@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.gcs.router.CarsharingRouterUtils.RouteData;
-import org.matsim.contrib.gcs.utils.CarsharingUtils;
 
 
 public class CarsharingOffer {
@@ -179,6 +178,7 @@ public class CarsharingOffer {
 		private double time;
 		private double travelTime = 0;
 		private double distance = 0;
+		private double offset = 0;
 		private List<? extends PlanElement> route = null;
 		private int nVEH;
 		public DriveOffer(double depTime, int nVEH, RouteData rd){
@@ -188,6 +188,7 @@ public class CarsharingOffer {
 				this.route = rd.path; 
 				this.distance = rd.distance;
 				this.travelTime = rd.time;
+				this.offset = rd.offset;
 			}
 		}
 		DriveOffer(DriveOffer d) {
@@ -196,11 +197,13 @@ public class CarsharingOffer {
 			this.route = d.route;
 			this.distance = d.distance;
 			this.travelTime = d.travelTime;
+			this.offset = d.offset;
 		}
-		public double getRentalTime() { return travelTime; }
+		public double getRentalTime() { return travelTime + 2*this.offset; }
 		public double getDistance() { return distance; }
 		public List<? extends PlanElement> getRoute() { return this.route; }
 		public double getTime() { return this.time; }
+		public double getOffset() { return this.offset; }
 		public int getNbVehicles() { return this.nVEH; }
 	}
 	
@@ -243,6 +246,7 @@ public class CarsharingOffer {
 	private final EgressOffer egress;
 	private final DriveOffer drive;
 	private double cost;
+	private int offset;
 	
 	
 	// ***********

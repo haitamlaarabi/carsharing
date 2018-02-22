@@ -74,7 +74,6 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 		if(aStation) {
 			Activity a = CarsharingUtils.createAccessStationActivity(pickupLocation.facility, routetime, this.manager.getConfig().getInteractionOffset());
 			trip.add(a);
-			routetime += a.getMaximumDuration();
 		}
 		
 		RouteData rd = CarsharingRouterUtils.calcTCC(m, pickupLocation.facility, dropoffLocation.facility, routetime, person);
@@ -89,14 +88,13 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 		NetworkRoute NR = ((NetworkRoute)((Leg)trip.get(trip.size()-1)).getRoute());
 		NR.setDistance(rd.distance);
 		NR.setTravelTime(rd.time);
-		routetime += NR.getTravelTime();
+		routetime += NR.getTravelTime() + 2*rd.offset;
 		
 		
 		// Egress
 		if(eStation) {
 			Activity a = CarsharingUtils.createEgressStationActivity(dropoffLocation.facility, routetime, this.manager.getConfig().getInteractionOffset());
 			trip.add(a);		
-			routetime += a.getMaximumDuration();
 		}
 		
 		// Walk

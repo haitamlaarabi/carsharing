@@ -100,7 +100,13 @@ public abstract class CarsharingMobsimHandle implements MobsimEngine, DepartureH
 				book = op.decision().processDropoff(time, task);
 			}
 			if(book) { 
-				this.m.booking().track(task.getStation()).confirm(task.getBooking(), train.peek());
+				this.m.booking().track(task.getStation()).confirm(task.getBooking());
+				if(task.getType().equals("START")) { 
+					task.getBooking().setPark(train.peek().status().getPark().getId());
+				} else {
+					task.getBooking().setTrip(train.peek().status().getTrip().getId());
+					task.getBooking().setVehicle(train.peek());
+				}
 			} 
 			if(train == null && task.getSize() > 0)
 				throw new RuntimeException("FAILED RELOCATION - type: " + task.getType() + " agent: " + task.getAgent() + " station: " + task.getStation());

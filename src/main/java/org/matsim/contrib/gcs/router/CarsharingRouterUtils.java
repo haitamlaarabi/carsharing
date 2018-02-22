@@ -29,26 +29,12 @@ public final class CarsharingRouterUtils {
 		public List<? extends PlanElement> path = null;
 		public double distance = 0;
 		public int time = 0;
+		public int offset = 0;
 	}
 	
 	public static RouteData calcTCC(CarsharingManager m, Facility o, Facility d, double deptime, Person p) {
 		RouteData rd = new RouteData();
-		rd.path = m.router().calcRoute(CarsharingRouterUtils.cs_drive, o, d, deptime, p);
-		NetworkRoute nr = ((NetworkRoute)((Leg)rd.path.get(0)).getRoute());
-		for(Id<Link> linkid : nr.getLinkIds()) {
-			Link tempL = m.getCarNetwork().getLinks().get(linkid);
-			rd.time += m.ttc().getLinkTravelTime(tempL, deptime + rd.time, null, null);
-			rd.distance += tempL.getLength();
-		}
-		Link tempL = m.getCarNetwork().getLinks().get(d.getLinkId());
-		rd.time += m.ttc().getLinkTravelTime(tempL, deptime + rd.time, null, null);
-		rd.distance += tempL.getLength();
-		rd.time += 2*m.getConfig().getInteractionOffset();
-		return rd;
-	}
-	
-	public static RouteData calcTCCNoOffset(CarsharingManager m, Facility o, Facility d, double deptime, Person p) {
-		RouteData rd = new RouteData();
+		rd.offset = m.getConfig().getInteractionOffset();
 		rd.path = m.router().calcRoute(CarsharingRouterUtils.cs_drive, o, d, deptime, p);
 		NetworkRoute nr = ((NetworkRoute)((Leg)rd.path.get(0)).getRoute());
 		for(Id<Link> linkid : nr.getLinkIds()) {
@@ -61,4 +47,5 @@ public final class CarsharingRouterUtils {
 		rd.distance += tempL.getLength();
 		return rd;
 	}
+
 }

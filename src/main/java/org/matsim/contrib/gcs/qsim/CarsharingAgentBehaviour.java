@@ -61,10 +61,9 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 			}
 			
 			this.carsharingSystemDelegate.
-				booking().
-				track(accessStation).
-				confirm(this.currBookingRecord, vehicle);
-
+				booking().track(accessStation).confirm(this.currBookingRecord);
+			this.currBookingRecord.setVehicle(vehicle);
+			this.currBookingRecord.setPark(vehicle.status().getPark().getId());
 			/*for(CarsharingVehicleMobsim v : roadTrain) {
 				this.customerAgentMemory.status().getOngoingRental().setTrip(v.status().getTrip().getId());
 			}*/
@@ -100,9 +99,8 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 		
 		if(egressStation.dropoff(this.customerAgentMemory, vehicle, now)) {
 			this.carsharingSystemDelegate.
-			booking().
-			track(egressStation).
-			confirm(this.currBookingRecord, vehicle);
+			booking().track(egressStation).confirm(this.currBookingRecord);
+			this.currBookingRecord.setTrip(vehicle.status().getTrip().getId());
 			/*for(CarsharingVehicleMobsim v : roadTrain) {
 				this.customerAgentMemory.status().getOngoingRental().setPark(v.status().getPark().getId());
 			}*/
