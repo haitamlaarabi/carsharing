@@ -45,6 +45,8 @@ public class CarsharingBookingManager {
 		br.noVehicleOffer = !this.stationBookingMap.get(So).add(br);
 		br.noParkingOffer = !this.stationBookingMap.get(Sd).add(br);
 		if(br.noVehicleOffer || br.noParkingOffer) {
+			this.stationBookingMap.get(So).cancel(br);
+			this.stationBookingMap.get(Sd).cancel(br);
 			return false;	
 		}
 		return true;

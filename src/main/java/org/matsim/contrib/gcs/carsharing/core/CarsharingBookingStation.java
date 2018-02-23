@@ -21,6 +21,7 @@ public class CarsharingBookingStation {
 		public double time;
 		public int parking_availability_flag;
 		public int car_availability_flag;
+		public boolean status = false;
 		public BookingRecordWrapper(double t) {
 			this.time = t;
 		}
@@ -73,7 +74,8 @@ public class CarsharingBookingStation {
 	}
 	
 	public void confirm(CarsharingBookingRecord record) {
-		if(this.booking_wrapper.get(record).isDemand) {
+		BookingRecordWrapper w = this.booking_wrapper.get(record);
+		if(w.isDemand) {
 			// increase parking availability after the vehicle(s) left the station. We don't do this at the booking since the vehicle(s) are still parked
 			this.parking_availability_tracker += record.getNbrOfVeh(); 
 		} else {
@@ -82,18 +84,26 @@ public class CarsharingBookingStation {
 		}
 	}
 	
+	public void cancel(CarsharingBookingRecord record) {
+		BookingRecordWrapper w = this.booking_wrapper.get(record);
+		if(w.status) {
+			if(w.isDemand) {
+				this.car_availability_tracker += record.getNbrOfVeh();
+			} else {
+				this.parking_availability_tracker += record.getNbrOfVeh();
+			}
+		}
+	}
+	
 	public boolean add(CarsharingBookingRecord record) {
 		BookingRecordWrapper w = new BookingRecordWrapper(record);
-		boolean booking = true;
 		if(w.isDemand && record.getNbrOfVeh() <= this.car_availability_tracker) {
-			// decrease car availability, or in other words to book a vehicle
-			this.car_availability_tracker -= record.getNbrOfVeh(); 
+			this.car_availability_tracker -= record.getNbrOfVeh(); // decrease car availability, or in other words to book a vehicle
+			w.status = true;
 		} else if (!w.isDemand && record.getNbrOfVeh() <= this.parking_availability_tracker) {
-			// decrease parking availability, or in other words to book a parking slot
-			this.parking_availability_tracker -= record.getNbrOfVeh(); // INCREASE VEHICLE UPPER BOUND
-		} else {
-			booking = false;
-		}
+			this.parking_availability_tracker -= record.getNbrOfVeh(); // decrease parking availability, or in other words to book a parking slot
+			w.status = true;
+		} 
 		if(this.car_availability_tracker < 0 || this.parking_availability_tracker > this.station.parking().getCapacity()) {
 			throw new RuntimeException("Availability in station "+ this.station + " is " + this.car_availability_tracker);
 		}
@@ -101,7 +111,7 @@ public class CarsharingBookingStation {
 		w.parking_availability_flag = this.parking_availability_tracker;
 		this.activity.add(w);
 		this.booking_wrapper.put(record, w);
-		return booking;
+		return w.status;
 	}
 	
 	public CarsharingBookingRecord[] getDemand(double time) {
