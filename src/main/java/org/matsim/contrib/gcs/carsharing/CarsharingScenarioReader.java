@@ -251,6 +251,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	CarsharingStation newS = CarsharingStationFactory.
 						stationBuilder(scenario, arr[header.get("stat.id")], coord).
 						setCapacity(capacity).
+						setName(arr[header.get("stat.id")]).
 						build();
 		    	this.carsharing.getStations().put(newS.facility().getId(), newS);
 		    	k++;
@@ -265,6 +266,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	// Create Vehicle
 		    	CarsharingVehicle newV = CarsharingVehicleFactory.
 						vehicleBuilder(scenario, "veh.id." + i).
+						setName("veh.id." + i).
 						build();
 	    		this.carsharing.getVehicles().put(newV.vehicle().getId(), newV);
 	    		
