@@ -248,10 +248,12 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	if(header.get("capacity") != null) {
 					capacity = Integer.parseInt(arr[header.get("capacity")]);
 				}
+		    	String station_id = "stat.id." + arr[header.get("stat.id")];
+		    	String station_name = "stat.name." + arr[header.get("stat.id")];
 		    	CarsharingStation newS = CarsharingStationFactory.
-						stationBuilder(scenario, arr[header.get("stat.id")], coord).
+						stationBuilder(scenario, station_id, coord).
 						setCapacity(capacity).
-						setName(arr[header.get("stat.id")]).
+						setName(station_name).
 						build();
 		    	this.carsharing.getStations().put(newS.facility().getId(), newS);
 		    	k++;
@@ -264,9 +266,11 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    
 		    for(int i = 1; i <= nbrVeh; i++) {
 		    	// Create Vehicle
+		    	String veh_id = "veh.id." + i;
+		    	String veh_name = "veh.name." + i;
 		    	CarsharingVehicle newV = CarsharingVehicleFactory.
-						vehicleBuilder(scenario, "veh.id." + i).
-						setName("veh.id." + i).
+						vehicleBuilder(scenario, veh_id).
+						setName(veh_name).
 						build();
 	    		this.carsharing.getVehicles().put(newV.vehicle().getId(), newV);
 	    		
