@@ -65,7 +65,7 @@ public class CarsharingQsimFactory implements Provider<Netsim> {
 		
 		AgentFactory agentFactory = null;
 		CarsharingConfigGroup csconfig = (CarsharingConfigGroup) sc.getConfig().getModules().get(CarsharingConfigGroup.GROUP_NAME);
-		if(csconfig != null && csconfig.isActivated()) {
+		if(csconfig != null) {
 			// CARSHARING PART
 			TripRouter tripRouter = this.tripRouterProvider.get();
 			monitoringEngine.qSim = qSim;
