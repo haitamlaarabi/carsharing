@@ -50,6 +50,9 @@ public class CarsharingBookingEvent extends AbstractCarsharingEvent {
 		logRow.put("parked.at.stat", this.book_log.src_station_log.parked_at_stat);
 		logRow.put("capacity", this.book_log.src_station_log.capacity);
 		
+		logRow.put("facility.lng", this.book_log.src_lng);
+		logRow.put("facility.lat", this.book_log.src_lat);
+		
 		logRow.put("comment", this.book_log.comment);
 		return logRow;
 	}
@@ -78,6 +81,9 @@ public class CarsharingBookingEvent extends AbstractCarsharingEvent {
 		logRow.put("lat", this.book_log.dst_station_log.lat);
 		logRow.put("parked.at.stat", this.book_log.dst_station_log.parked_at_stat);
 		logRow.put("capacity", this.book_log.dst_station_log.capacity);
+		
+		logRow.put("facility.lng", this.book_log.dst_lng);
+		logRow.put("facility.lat", this.book_log.dst_lat);
 		
 		logRow.put("comment", this.book_log.comment);
 		return logRow;

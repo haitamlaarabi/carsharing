@@ -97,6 +97,8 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 		final String src_type;
 		final String src_date;
 		final String src_offset;
+		final String src_lng;
+		final String src_lat;
 		
 		// dst
 		final StationLog dst_station_log;
@@ -108,6 +110,8 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 		final String dst_type;
 		final String dst_date;
 		final String dst_offset;
+		final String dst_lng;
+		final String dst_lat;
 		
 		final String comment;
 		
@@ -135,7 +139,7 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 				this.src_distance_drive = String.valueOf(r.getRelatedOffer().getDrive().getDistance());
 				this.src_time_drive = String.valueOf(r.getRelatedOffer().getDrive().getRentalTime());
 				this.src_offset = String.valueOf(manager.getConfig().getInteractionOffset());
-				
+
 				this.dst_station_log = new StationLog(r.getDestinationStation());
 				this.dst_distance_act = String.valueOf(r.getRelatedOffer().getEgress().getDistance());
 				this.dst_time_act = String.valueOf(r.getRelatedOffer().getEgress().getTravelTime());
@@ -157,6 +161,10 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 				this.dst_time_drive = "NA";
 				this.dst_offset = "NA";
 			}
+			this.src_lng = String.valueOf(r.getDemand().getOrigin().getCoord().getX());
+			this.src_lat = String.valueOf(r.getDemand().getOrigin().getCoord().getY());
+			this.dst_lng = String.valueOf(r.getDemand().getDestination().getCoord().getX());
+			this.dst_lat = String.valueOf(r.getDemand().getDestination().getCoord().getY());
 			this.src_type = "START";
 			this.dst_type = "END";
 			this.src_date = String.valueOf(r.getDepartureTime());
