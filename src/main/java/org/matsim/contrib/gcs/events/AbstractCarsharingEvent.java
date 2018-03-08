@@ -161,10 +161,12 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 				this.dst_time_drive = "NA";
 				this.dst_offset = "NA";
 			}
-			this.src_lng = String.valueOf(r.getDemand().getOrigin().getCoord().getX());
-			this.src_lat = String.valueOf(r.getDemand().getOrigin().getCoord().getY());
-			this.dst_lng = String.valueOf(r.getDemand().getDestination().getCoord().getX());
-			this.dst_lat = String.valueOf(r.getDemand().getDestination().getCoord().getY());
+			Coord org = ct.transform(r.getDemand().getOrigin().getCoord());
+			Coord dst = ct.transform(r.getDemand().getDestination().getCoord());
+			this.src_lng = String.valueOf(org.getX());
+			this.src_lat = String.valueOf(org.getY());
+			this.dst_lng = String.valueOf(dst.getX());
+			this.dst_lat = String.valueOf(dst.getY());
 			this.src_type = "START";
 			this.dst_type = "END";
 			this.src_date = String.valueOf(r.getDepartureTime());
