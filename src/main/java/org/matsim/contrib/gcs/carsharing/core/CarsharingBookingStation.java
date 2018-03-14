@@ -44,8 +44,8 @@ public class CarsharingBookingStation {
 	
 	public CarsharingBookingStation(CarsharingBookingStation b) {
 		this(CarsharingStationFactory.getStationCopy(b.station));
-		this.car_availability_tracker = b.station.initialFleet().size();
-		this.parking_availability_tracker = b.station.parking().getCapacity() - b.station.initialFleet().size();
+		this.car_availability_tracker = b.station.deployment().size();
+		this.parking_availability_tracker = b.station.parking().getCapacity() - b.station.deployment().size();
 		for(BookingRecordWrapper w : b.activity) {
 			if(w.isDemand) {
 				w.record.setOriginStation(this.station);

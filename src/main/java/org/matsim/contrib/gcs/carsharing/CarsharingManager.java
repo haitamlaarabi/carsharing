@@ -169,12 +169,12 @@ public class CarsharingManager {
 			if(this.services.getIterationNumber() > 0 && this.services.getIterationNumber() <= stop_deployment_at_iteration ) {
 				Id<ActivityFacility> id = stationMobsim.facility().getId();
 				Collection<CarsharingVehicleMobsim> vehs = data.stationMap().get(id).getStation().parking().getAll();
-				stationMobsim.initialFleet().clear();
+				stationMobsim.deployment().clear();
 				for(CarsharingVehicleMobsim v : vehs) {
-					stationMobsim.initialFleet().put(v.vehicle().getId(), v);
+					stationMobsim.addToDeployment(v);
 				}
 			} 			
-			for(Object v: stationMobsim.initialFleet().values()) {
+			for(Object v: stationMobsim.deployment()) {
 				CarsharingVehicleMobsim vehicleMobsim = CarsharingVehicleFactory.
 						vehicleMobsimBuilder((CarsharingVehicle)v).
 						setBattery(new CarsharingVehicleBattery(battery_factory.get(), energy_factory.get())).

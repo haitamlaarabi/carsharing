@@ -46,7 +46,7 @@ public class CarsharingScenarioWriter extends MatsimXmlWriter {
 		if(this.cs != null) {
 			for (CarsharingStation station : this.cs.getStations().values()) {
 				appendStation(station);
-				for(CarsharingVehicle v : station.initialFleet().values()) {
+				for(CarsharingVehicle v : station.deployment()) {
 					this.stationVehicle.put(v.vehicle().getId(), station.facility().getId());
 				}
 			}

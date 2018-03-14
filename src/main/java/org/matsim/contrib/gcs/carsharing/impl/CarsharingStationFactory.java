@@ -47,8 +47,8 @@ public class CarsharingStationFactory {
 		station.setCapacity(s.getCapacity());
 		station.setType(s.getType());
 		station.setName(s.getName());
-		for(Entry<Id<Vehicle>, CarsharingVehicle> e : s.initialFleet().entrySet()) {
-			station.initialFleet().put(e.getKey(), e.getValue());
+		for(CarsharingVehicle e : s.deployment()) {
+			station.addToDeployment(e);
 		}
 		station.parking = s.parking();
 		return station;

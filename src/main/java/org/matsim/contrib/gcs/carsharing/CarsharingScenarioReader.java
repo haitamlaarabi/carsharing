@@ -89,7 +89,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 					build();
 			if(stations.get(atts.getValue(STATION)) != null) {
 				carsharing.getVehicles().put(newV.vehicle().getId(), newV);
-				stations.get(atts.getValue(STATION)).initialFleet().put(newV.vehicle().getId(), newV);
+				stations.get(atts.getValue(STATION)).addToDeployment(newV);
 			}
 		}
 
@@ -158,7 +158,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 							vehicleBuilder(scenario, "veh.id." + id + "." + k).
 							build();
 		    		this.carsharing.getVehicles().put(newV.vehicle().getId(), newV);
-		    		newS.initialFleet().put(newV.vehicle().getId(), newV);
+		    		newS.addToDeployment(newV);
 		    	}
 		    	this.carsharing.getStations().put(newS.facility().getId(), newS);
 		    }
@@ -211,9 +211,9 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 	    		
 	    		// Assign it with stations randomly
 		    	int index = CarsharingUtils.chooseProbability(probSet);
-		    	stations[index].initialFleet().put(newV.vehicle().getId(), newV);
+		    	stations[index].addToDeployment(newV);
 		    	
-		    	if(stations[index].initialFleet().size() >= stations[index].getCapacity()) {
+		    	if(stations[index].deployment().size() >= stations[index].getCapacity()) {
 		    		k--;
 		    	}
 		    	stations = new CarsharingStation[k];
@@ -276,9 +276,9 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 	    		
 	    		// Assign it with stations randomly
 		    	int index = CarsharingUtils.chooseProbability(probSet);
-		    	stations[index].initialFleet().put(newV.vehicle().getId(), newV);
+		    	stations[index].addToDeployment(newV);
 		    	
-		    	if(stations[index].initialFleet().size() >= stations[index].getCapacity()) {
+		    	if(stations[index].deployment().size() >= stations[index].getCapacity()) {
 		    		k--;
 		    	}
 		    	stations = new CarsharingStation[k];
@@ -293,18 +293,63 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 	}
 	
 	
+	public void readRawV3(String rawStationFile, String rawStationCRS, Map<String,Integer> header, String sep, int totVeh, int totPark) {
+		CoordinateTransformation CT = TransformationFactory.getCoordinateTransformation(rawStationCRS, scenario.getConfig().global().getCoordinateSystem());
+		try {
+			BufferedReader reader = IOUtils.getBufferedReader(rawStationFile);
+			String s = reader.readLine();
+			String[] arr = s.split(sep);	
+			
+		    while((s = reader.readLine()) != null) {
+		    	arr = s.split(sep);
+		    	double X = Double.parseDouble(arr[header.get("lng")]); // Longitude
+		    	double Y = Double.parseDouble(arr[header.get("lat")]); // Latitude
+		    	
+		    	double y_middle_avg = Double.parseDouble(arr[header.get("y_middle_avg")]);
+		    	double y_max_avg = Double.parseDouble(arr[header.get("y_max_avg")]);
+		    	String station_id = "stat.id." + arr[header.get("stat.id")];
+		    	String station_name = "stat.name." + arr[header.get("stat.id")];
+		    	
+		    	int capacity = (int)(y_max_avg*totPark);
+		    	Coord coord = CT.transform(new Coord(X, Y));
+		    	CarsharingStation newS = CarsharingStationFactory.
+						stationBuilder(scenario, station_id, coord).
+						setCapacity(capacity).
+						setName(station_name).
+						build();
+		    	this.carsharing.getStations().put(newS.facility().getId(), newS);
+		    	
+		    	// Create Vehicle
+		    	int fleet = (int)(y_max_avg*totVeh);
+		    	for(int i = 1; i <= fleet; i++) {
+			    	String veh_id = "veh.id." + i;
+			    	String veh_name = "veh.name." + i;
+			    	CarsharingVehicle newV = CarsharingVehicleFactory.
+							vehicleBuilder(scenario, veh_id).
+							setName(veh_name).
+							build();
+		    		this.carsharing.getVehicles().put(newV.vehicle().getId(), newV);
+		    		newS.addToDeployment(newV);
+		    	}
+		    }
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 	
 	private static double construct_prob_set(CarsharingStation[] stations, double[] probSet, Collection<CarsharingStation> allstation) {
 		double total_freespace = 0;
 		for(CarsharingStation sta : allstation) {
-			double freespace = sta.getCapacity() - sta.initialFleet().size();
+			double freespace = sta.getCapacity() - sta.deployment().size();
 			if(freespace > 0) {
 				total_freespace += freespace;
 			}
 		}
 		int i = 0;
 	    for(CarsharingStation sta : allstation) {
-	    	double freespace = sta.getCapacity() - sta.initialFleet().size();
+	    	double freespace = sta.getCapacity() - sta.deployment().size();
 	    	if(freespace > 0) {
 		    	stations[i] = sta;
 		    	probSet[i] = freespace / total_freespace;

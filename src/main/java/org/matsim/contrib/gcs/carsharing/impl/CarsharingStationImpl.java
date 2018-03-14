@@ -1,5 +1,6 @@
 package org.matsim.contrib.gcs.carsharing.impl;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -100,7 +101,7 @@ public class CarsharingStationImpl implements CarsharingStationMobsim {
 	public void reset(int iteration) {
 		parking().reset();
 		powerController.reset();
-		for(CarsharingVehicle v: initialFleet().values()) {
+		for(CarsharingVehicle v: deployment()) {
 			this.dropoff(null, (CarsharingVehicleMobsim)v, 0.0);
 		}
 	}
@@ -111,7 +112,6 @@ public class CarsharingStationImpl implements CarsharingStationMobsim {
 	@Override public String getName() { return (String) this.facility.getCustomAttributes().get("NAME"); }
 	
 	@Override public CarsharingStationPowerController powerController() { return this.powerController; }
-	@Override public Map<Id<Vehicle>, CarsharingVehicle> initialFleet() {	return this.fleet; }
 	@Override public CarsharingParkingModel parking() {	return this.parking; }
 	@Override public ActivityFacility facility() { return this.facility; }
 	
@@ -130,6 +130,20 @@ public class CarsharingStationImpl implements CarsharingStationMobsim {
 	@Override
 	public Id<ActivityFacility> getId() {
 		return this.facility.getId();
+	}
+
+	@Override
+	public void addToDeployment(CarsharingVehicle v) {
+		if(this.fleet.size() >= this.getCapacity()) {
+			throw new RuntimeException("station is already full " + this.facility.getId());
+		}
+		this.fleet.put(v.getId(), v);
+		
+	}
+
+	@Override
+	public Collection<CarsharingVehicle> deployment() {
+		return this.fleet.values();
 	}
 		
 }
