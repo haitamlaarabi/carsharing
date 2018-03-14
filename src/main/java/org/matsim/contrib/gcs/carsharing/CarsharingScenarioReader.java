@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 
@@ -300,7 +301,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 			String s = reader.readLine();
 			String[] arr = s.split(sep);	
 			
-			int next = 0;
+			HashMap<CarsharingStation, Double> stations_y_max_avg = new HashMap<CarsharingStation, Double>();
 		    while((s = reader.readLine()) != null) {
 		    	arr = s.split(sep);
 		    	double X = Double.parseDouble(arr[header.get("lng")]); // Longitude
@@ -311,18 +312,33 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	String station_id = "stat.id." + arr[header.get("stat.id")];
 		    	String station_name = "stat.name." + arr[header.get("stat.id")];
 		    	
-		    	int capacity = (int)(y_max_avg*totPark);
+		    	//int capacity = (int)(y_max_avg*totPark);
 		    	Coord coord = CT.transform(new Coord(X, Y));
 		    	CarsharingStation newS = CarsharingStationFactory.
 						stationBuilder(scenario, station_id, coord).
-						setCapacity(capacity).
+						//setCapacity(capacity).
 						setName(station_name).
 						build();
 		    	this.carsharing.getStations().put(newS.facility().getId(), newS);
-		    	
+		    	stations_y_max_avg.put(newS, y_max_avg);
+		    }
+		    
+		    int dep_size = this.carsharing.getStations().size();
+		    int min_capacity_perstation  = 3;
+		    int min_capacity = dep_size*min_capacity_perstation;
+		    int new_totPark = totPark - min_capacity;
+		    for(CarsharingStation cs : this.carsharing.getStations().values()) {
+		    	double y_max_avg = stations_y_max_avg.get(cs); 
+		    	cs.setCapacity(min_capacity_perstation + (int)Math.round(y_max_avg*new_totPark));
+		    }
+		    
+		    int index = 0;
+		    Iterator<CarsharingStation> itcs = this.carsharing.getStations().values().iterator();
+		    while(itcs.hasNext() && index < totVeh) {
 		    	// Create Vehicle
-		    	int fleet = (int)(y_max_avg*totVeh);
-		    	for(int i = next+1; i <= next+fleet; i++) {
+		    	CarsharingStation cs = itcs.next();
+		    	int fleet = (int) Math.round(stations_y_max_avg.get(cs)*totVeh);
+		    	for(int i = index+1; i <= index+fleet; i++) {
 			    	String veh_id = "veh.id." + i;
 			    	String veh_name = "veh.name." + i;
 			    	CarsharingVehicle newV = CarsharingVehicleFactory.
@@ -330,10 +346,11 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 							setName(veh_name).
 							build();
 		    		this.carsharing.getVehicles().put(newV.vehicle().getId(), newV);
-		    		newS.addToDeployment(newV);
+		    		cs.addToDeployment(newV);
 		    	}
-		    	next += fleet;
+		    	index += fleet;
 		    }
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
