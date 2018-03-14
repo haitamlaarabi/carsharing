@@ -300,6 +300,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 			String s = reader.readLine();
 			String[] arr = s.split(sep);	
 			
+			int next = 0;
 		    while((s = reader.readLine()) != null) {
 		    	arr = s.split(sep);
 		    	double X = Double.parseDouble(arr[header.get("lng")]); // Longitude
@@ -321,7 +322,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	
 		    	// Create Vehicle
 		    	int fleet = (int)(y_max_avg*totVeh);
-		    	for(int i = 1; i <= fleet; i++) {
+		    	for(int i = next+1; i <= next+fleet; i++) {
 			    	String veh_id = "veh.id." + i;
 			    	String veh_name = "veh.name." + i;
 			    	CarsharingVehicle newV = CarsharingVehicleFactory.
@@ -331,6 +332,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    		this.carsharing.getVehicles().put(newV.vehicle().getId(), newV);
 		    		newS.addToDeployment(newV);
 		    	}
+		    	next += fleet;
 		    }
 		} catch (IOException e) {
 			e.printStackTrace();
