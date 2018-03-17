@@ -324,7 +324,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    }
 		    
 		    int dep_size = this.carsharing.getStations().size();
-		    int min_capacity_perstation  = 3;
+		    int min_capacity_perstation  = 1;
 		    int min_capacity = dep_size*min_capacity_perstation;
 		    int new_totPark = totPark - min_capacity;
 		    for(CarsharingStation cs : this.carsharing.getStations().values()) {

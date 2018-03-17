@@ -174,7 +174,7 @@ public class CarsharingManager {
 					stationMobsim.addToDeployment(v);
 				}
 			} 			
-			for(Object v: stationMobsim.deployment()) {
+			for(CarsharingVehicle v: stationMobsim.deployment()) {
 				CarsharingVehicleMobsim vehicleMobsim = CarsharingVehicleFactory.
 						vehicleMobsimBuilder((CarsharingVehicle)v).
 						setBattery(new CarsharingVehicleBattery(battery_factory.get(), energy_factory.get())).
