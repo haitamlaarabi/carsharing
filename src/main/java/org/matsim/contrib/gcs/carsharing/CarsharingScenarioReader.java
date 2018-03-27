@@ -306,21 +306,16 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	arr = s.split(sep);
 		    	double X = Double.parseDouble(arr[header.get("lng")]); // Longitude
 		    	double Y = Double.parseDouble(arr[header.get("lat")]); // Latitude
-		    	
-		    	double y_middle_avg = Double.parseDouble(arr[header.get("y_middle_avg")]);
-		    	double y_max_avg = Double.parseDouble(arr[header.get("y_max_avg")]);
+		    	double coef = Double.parseDouble(arr[header.get("coef")]);
 		    	String station_id = "stat.id." + arr[header.get("stat.id")];
 		    	String station_name = "stat.name." + arr[header.get("stat.id")];
-		    	
-		    	//int capacity = (int)(y_max_avg*totPark);
 		    	Coord coord = CT.transform(new Coord(X, Y));
 		    	CarsharingStation newS = CarsharingStationFactory.
 						stationBuilder(scenario, station_id, coord).
-						//setCapacity(capacity).
 						setName(station_name).
 						build();
 		    	this.carsharing.getStations().put(newS.facility().getId(), newS);
-		    	stations_y_max_avg.put(newS, y_max_avg);
+		    	stations_y_max_avg.put(newS, coef);
 		    }
 		    
 		    int dep_size = this.carsharing.getStations().size();
@@ -329,7 +324,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    int new_totPark = totPark - min_capacity;
 		    for(CarsharingStation cs : this.carsharing.getStations().values()) {
 		    	double y_max_avg = stations_y_max_avg.get(cs); 
-		    	cs.setCapacity(min_capacity_perstation + (int)Math.round(y_max_avg*new_totPark));
+		    	cs.setCapacity(min_capacity_perstation + (int)Math.ceil(y_max_avg*new_totPark));
 		    }
 		    
 		    int index = 0;
