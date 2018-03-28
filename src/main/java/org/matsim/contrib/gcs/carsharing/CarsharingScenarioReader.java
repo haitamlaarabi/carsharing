@@ -1,15 +1,17 @@
 package org.matsim.contrib.gcs.carsharing;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Stack;
 
@@ -301,7 +303,8 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 			String s = reader.readLine();
 			String[] arr = s.split(sep);	
 			
-			HashMap<CarsharingStation, Double> stations_y_max_avg = new HashMap<CarsharingStation, Double>();
+			HashMap<CarsharingStation, Double> stations_coef_map = new HashMap<CarsharingStation, Double>();
+			LinkedList<CarsharingStation> stations_sorted_list = new LinkedList<CarsharingStation>();
 		    while((s = reader.readLine()) != null) {
 		    	arr = s.split(sep);
 		    	double X = Double.parseDouble(arr[header.get("lng")]); // Longitude
@@ -313,34 +316,43 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	CarsharingStation newS = CarsharingStationFactory.
 						stationBuilder(scenario, station_id, coord).
 						setName(station_name).
+						setCapacity(1).
 						build();
 		    	this.carsharing.getStations().put(newS.facility().getId(), newS);
-		    	stations_y_max_avg.put(newS, coef);
+		    	stations_coef_map.put(newS, coef);
+		    	stations_sorted_list.add(newS);
 		    }
+		    
+			Collections.sort(stations_sorted_list, 
+					new Comparator<CarsharingStation>() {
+						@Override
+						public int compare(CarsharingStation s1, CarsharingStation s2) {			
+							return -1 * Double.compare(stations_coef_map.get(s1), stations_coef_map.get(s2));
+						}});
 		    
 		    //int dep_size = this.carsharing.getStations().size();
 		    //int min_capacity_perstation  = 1;
 		    //int min_capacity = dep_size*min_capacity_perstation;
 		    //int new_totPark = totPark - min_capacity;
 		    int totcapacity = 0;
-		    for(CarsharingStation cs : this.carsharing.getStations().values()) {
-		    	double y_max_avg = stations_y_max_avg.get(cs); 
+		    Iterator<CarsharingStation> itcs1 = stations_sorted_list.iterator();
+		    while(itcs1.hasNext() && totcapacity < totPark) {
+		    	CarsharingStation cs = itcs1.next();
+		    	double y_max_avg = stations_coef_map.get(cs); 
 		    	double capacity = y_max_avg*totPark;
 		    	if(totcapacity + capacity > totPark) {
 		    		capacity = Math.abs(totPark-totcapacity);
 		    	}
 		    	cs.setCapacity((int)Math.ceil(capacity));
 		    	totcapacity += cs.getCapacity();
-		    	if(totcapacity >= totPark)
-		    		break;
 		    }
 		    
 		    int index = 0;
-		    Iterator<CarsharingStation> itcs = this.carsharing.getStations().values().iterator();
+		    Iterator<CarsharingStation> itcs = stations_sorted_list.iterator();
 		    while(itcs.hasNext() && index < totVeh) {
 		    	// Create Vehicle
 		    	CarsharingStation cs = itcs.next();
-		    	int fleet = (int) Math.ceil(stations_y_max_avg.get(cs)*totVeh);
+		    	int fleet = (int) Math.ceil(stations_coef_map.get(cs)*totVeh);
 		    	int threshold = index+fleet;
 		    	if(threshold > totVeh) {
 		    		threshold = totVeh;
