@@ -330,8 +330,8 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    		capacity = Math.abs(totPark-totcapacity);
 		    	}
 		    	cs.setCapacity((int)Math.ceil(capacity));
-		    	totcapacity += capacity;
-		    	if(totcapacity > totPark)
+		    	totcapacity += cs.getCapacity();
+		    	if(totcapacity >= totPark)
 		    		break;
 		    }
 		    
