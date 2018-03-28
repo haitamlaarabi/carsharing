@@ -318,13 +318,19 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	stations_y_max_avg.put(newS, coef);
 		    }
 		    
-		    int dep_size = this.carsharing.getStations().size();
-		    int min_capacity_perstation  = 1;
-		    int min_capacity = dep_size*min_capacity_perstation;
-		    int new_totPark = totPark - min_capacity;
+		    //int dep_size = this.carsharing.getStations().size();
+		    //int min_capacity_perstation  = 1;
+		    //int min_capacity = dep_size*min_capacity_perstation;
+		    //int new_totPark = totPark - min_capacity;
+		    int totcapacity = 0;
 		    for(CarsharingStation cs : this.carsharing.getStations().values()) {
 		    	double y_max_avg = stations_y_max_avg.get(cs); 
-		    	cs.setCapacity(min_capacity_perstation + (int)Math.ceil(y_max_avg*new_totPark));
+		    	double capacity = y_max_avg*totPark;
+		    	if(totcapacity + capacity > totPark) {
+		    		capacity = Math.abs(totPark-totcapacity);
+		    	}
+		    	cs.setCapacity((int)Math.ceil(capacity));
+		    	totcapacity += capacity;
 		    }
 		    
 		    int index = 0;
@@ -332,8 +338,12 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    while(itcs.hasNext() && index < totVeh) {
 		    	// Create Vehicle
 		    	CarsharingStation cs = itcs.next();
-		    	int fleet = (int) Math.round(stations_y_max_avg.get(cs)*totVeh);
-		    	for(int i = index+1; i <= index+fleet; i++) {
+		    	int fleet = (int) Math.ceil(stations_y_max_avg.get(cs)*totVeh);
+		    	int threshold = index+fleet;
+		    	if(threshold > totVeh) {
+		    		threshold = totVeh;
+		    	}
+		    	for(int i = index+1; i <= threshold; i++) {
 			    	String veh_id = "veh.id." + i;
 			    	String veh_name = "veh.name." + i;
 			    	CarsharingVehicle newV = CarsharingVehicleFactory.
@@ -343,7 +353,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    		this.carsharing.getVehicles().put(newV.vehicle().getId(), newV);
 		    		cs.addToDeployment(newV);
 		    	}
-		    	index += fleet;
+		    	index = threshold;
 		    }
 
 		} catch (IOException e) {
