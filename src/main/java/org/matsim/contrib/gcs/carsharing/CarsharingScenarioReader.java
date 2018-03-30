@@ -316,7 +316,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	CarsharingStation newS = CarsharingStationFactory.
 						stationBuilder(scenario, station_id, coord).
 						setName(station_name).
-						setCapacity(1).
+						setCapacity(8).
 						build();
 		    	this.carsharing.getStations().put(newS.facility().getId(), newS);
 		    	double parking_coef = Double.parseDouble(arr[header.get("parking_coef")]);
@@ -346,7 +346,9 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	if(totcapacity + capacity > totPark) {
 		    		capacity = Math.abs(totPark-totcapacity);
 		    	}
-		    	cs.setCapacity((int)Math.round(capacity));
+		    	double capacity_temp = Math.max(capacity, cs.getCapacity());
+		    	//double capacity_temp = capacity;
+		    	cs.setCapacity((int)Math.round(capacity_temp));
 		    	totcapacity += cs.getCapacity();
 		    }
 		    
