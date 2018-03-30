@@ -304,12 +304,12 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 			String[] arr = s.split(sep);	
 			
 			HashMap<CarsharingStation, Double> stations_coef_map = new HashMap<CarsharingStation, Double>();
+			HashMap<CarsharingStation, Double> stations_fleetcoef_map = new HashMap<CarsharingStation, Double>();
 			LinkedList<CarsharingStation> stations_sorted_list = new LinkedList<CarsharingStation>();
 		    while((s = reader.readLine()) != null) {
 		    	arr = s.split(sep);
 		    	double X = Double.parseDouble(arr[header.get("lng")]); // Longitude
 		    	double Y = Double.parseDouble(arr[header.get("lat")]); // Latitude
-		    	double coef = Double.parseDouble(arr[header.get("coef")]);
 		    	String station_id = "stat.id." + arr[header.get("stat.id")];
 		    	String station_name = "stat.name." + arr[header.get("stat.id")];
 		    	Coord coord = CT.transform(new Coord(X, Y));
@@ -319,7 +319,10 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 						setCapacity(1).
 						build();
 		    	this.carsharing.getStations().put(newS.facility().getId(), newS);
-		    	stations_coef_map.put(newS, coef);
+		    	double parking_coef = Double.parseDouble(arr[header.get("parking_coef")]);
+		    	double fleet_coef = Double.parseDouble(arr[header.get("fleet_coef")]);
+		    	stations_coef_map.put(newS, parking_coef);
+		    	stations_fleetcoef_map.put(newS, fleet_coef);
 		    	stations_sorted_list.add(newS);
 		    }
 		    
@@ -343,7 +346,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	if(totcapacity + capacity > totPark) {
 		    		capacity = Math.abs(totPark-totcapacity);
 		    	}
-		    	cs.setCapacity((int)Math.ceil(capacity));
+		    	cs.setCapacity((int)Math.round(capacity));
 		    	totcapacity += cs.getCapacity();
 		    }
 		    
@@ -352,7 +355,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    while(itcs.hasNext() && index < totVeh) {
 		    	// Create Vehicle
 		    	CarsharingStation cs = itcs.next();
-		    	int fleet = (int) Math.ceil(stations_coef_map.get(cs)*totVeh);
+		    	int fleet = (int) Math.round(stations_fleetcoef_map.get(cs)*totVeh);
 		    	int threshold = index+fleet;
 		    	if(threshold > totVeh) {
 		    		threshold = totVeh;
