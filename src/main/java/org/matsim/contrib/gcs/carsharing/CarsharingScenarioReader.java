@@ -338,6 +338,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    //int min_capacity = dep_size*min_capacity_perstation;
 		    //int new_totPark = totPark - min_capacity;
 		    int totcapacity = 0;
+		    int real_totcapacity = 0;
 		    Iterator<CarsharingStation> itcs1 = stations_sorted_list.iterator();
 		    while(itcs1.hasNext() && totcapacity < totPark) {
 		    	CarsharingStation cs = itcs1.next();
@@ -349,8 +350,11 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	double capacity_temp = Math.max(capacity, cs.getCapacity());
 		    	//double capacity_temp = capacity;
 		    	cs.setCapacity((int)Math.round(capacity_temp));
-		    	totcapacity += cs.getCapacity();
+		    	totcapacity += capacity;
+		    	real_totcapacity += cs.getCapacity();
 		    }
+		    System.out.println("REAL CAPACITY : " + real_totcapacity);
+		    System.out.println("MIN CAPACITY : " + totcapacity);
 		    
 		    int index = 0;
 		    Iterator<CarsharingStation> itcs = stations_sorted_list.iterator();
