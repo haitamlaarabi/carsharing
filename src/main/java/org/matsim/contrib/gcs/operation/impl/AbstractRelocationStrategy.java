@@ -166,6 +166,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		try {
 			perfWriter = new PrintWriter(new BufferedWriter(new FileWriter(relocation_parameters.get(PERF_FILE_PARAM), true)));
 			perfWriter.println("iteration\tbin\tstation.id\tvalue\tvariable");
+			double tot_perf = 0;
 			for(CarsharingStationMobsim s : this.m.getStations()) {
 				CarsharingBookingStation b = this.m.booking().track(s);
 				int dropoff_failed = 0;
@@ -183,7 +184,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 				int pickupsum = pickup_success+pickup_failed;
 				int dropoffsum = dropoff_success+dropoff_failed;
 				double performance = pickupsum == 0?0:pickup_success/pickupsum + dropoffsum == 0?0:dropoff_success/dropoffsum;
-
+				tot_perf += performance;
 				perfWriter.println(
 						iteration + "\t" + 
 						this.time_bin + "\t" + 
@@ -193,7 +194,9 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 						dropoff_success + "\tDPs\t" + 
 						pickup_success + "\tPUs\t" + 
 						performance + "\tp");
+				perfWriter.flush();
 			}
+			logger.info("performance written : iter " + iteration + " - bin " + this.time_bin + " - tot " + tot_perf);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
