@@ -77,12 +77,13 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 			this.step_time_bin = 0;
 		}
 		this.time_bin = this.lb_time_bin;
-		
-		try {
-			perfWriter = new PrintWriter(new BufferedWriter(new FileWriter(relocation_parameters.get(PERF_FILE_PARAM), true)));
-			perfWriter.println("iteration\tbin\tstation.id\tvalue\tvariable");
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(relocation_parameters.containsKey(PERF_FILE_PARAM)) {
+			try {
+				perfWriter = new PrintWriter(new BufferedWriter(new FileWriter(relocation_parameters.get(PERF_FILE_PARAM), true)));
+				perfWriter.println("iteration\tbin\tstation.id\tvalue\tvariable");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		
 	}
@@ -123,8 +124,11 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 					if(t.getType().equals("START")) {
 						sTask = t;
 					} else {
-						CarsharingBookingRecord b = constructBookingRecord(sTask, t, accessTime, accessDistance);
-						if(this.m.booking().process(b)) { // **** BOOKING 
+						CarsharingOffer off = constructOffer(sTask, t, accessTime, accessDistance);
+						ArrayList<CarsharingOffer> offers = new ArrayList<CarsharingOffer>();
+						offers.add(off);
+						CarsharingBookingRecord b = this.m.booking().process(time_step.step(), off.getDemand(), off, offers);
+						if(!b.bookingFailed()) { // **** BOOKING 
 							for(CarsharingRelocationTask new_task : temp_tasks) {
 								new_task.setBooking(b);
 								booked_tasks.add(new_task);
@@ -150,8 +154,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		return booked_tasks;
 	}
 	
-	
-	CarsharingBookingRecord constructBookingRecord(CarsharingRelocationTask sTask, CarsharingRelocationTask eTask, double aTime, double aDist) {
+	CarsharingOffer constructOffer(CarsharingRelocationTask sTask, CarsharingRelocationTask eTask, double aTime, double aDist) {
 		Leg reloLeg = PopulationUtils.createLeg("RELOCATION");
 		Activity reloSrcActivity = PopulationUtils.createActivityFromCoordAndLinkId("STATION", sTask.getStation().facility().getCoord(), sTask.getStation().facility().getLinkId());
 		reloSrcActivity.setEndTime(sTask.getTime());
@@ -163,10 +166,9 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		builder.setEgress(eTask.getTime(), eTask.getStation(), 0, 0);
 		builder.setDrive(eTask.getSize(), eTask.getRoute());
 		builder.setCost(0);
-		CarsharingBookingRecord booking = CarsharingBookingRecord.constructAndGetBookingRec(time_step.step(), builder.build());
-		return booking;
+		return builder.build();
 	}
-	
+		
 	
 	@Override
 	public void reset(int iteration) {
@@ -190,9 +192,9 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 					else 
 						dropoff_success++;
 				}
-				int allsum = pickup_success+pickup_failed+dropoff_success+dropoff_failed;
-				int successsum = dropoff_success+pickup_success;
-				double performance = (allsum == 0)?0:successsum/allsum;
+				double allsum = pickup_success+pickup_failed+dropoff_success+dropoff_failed;
+				double successsum = dropoff_success+pickup_success;
+				double performance = (allsum == 0)?1:successsum/allsum;
 				tot_perf += performance;
 				this.perfWriter.println(iteration+"\t"+this.time_bin+"\t"+s.getId().toString()+"\t"+dropoff_failed+"\tDPfailed");
 				this.perfWriter.println(iteration+"\t"+this.time_bin+"\t"+s.getId().toString()+"\t"+pickup_failed+"\tPUfailed"); 
@@ -202,9 +204,9 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 				this.perfWriter.flush();
 			}
 			logger.info("performance written : iter " + iteration + " - bin " + this.time_bin + " - tot " + tot_perf);
+			this.time_bin += this.step_time_bin;
 		}
 
-		this.time_bin += this.step_time_bin;
 		if(this.time_bin > this.ub_time_bin) {
 			logger.warn("bin time went beyond upper bound");
 		}

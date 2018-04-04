@@ -1,5 +1,6 @@
 package org.matsim.contrib.gcs.carsharing.core;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -7,6 +8,10 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
 import org.matsim.contrib.gcs.operation.model.CarsharingOfferModel;
+import org.matsim.contrib.gcs.router.CarsharingNearestStationRouterModule;
+import org.matsim.contrib.gcs.router.CarsharingNearestStationRouterModule.CarsharingLocationInfo;
+import org.matsim.contrib.gcs.utils.CarsharingUtils;
+import org.matsim.facilities.Facility;
 
 public class CarsharingBookingManager {
 	
@@ -15,11 +20,15 @@ public class CarsharingBookingManager {
 	private final CarsharingOfferModel offermodel;
 	private final ConcurrentHashMap<Leg, CarsharingBookingRecord> demandBookingMap;
 	private final ConcurrentHashMap<CarsharingStationMobsim, CarsharingBookingStation> stationBookingMap; 
+	final CarsharingManager m;
+	final CarsharingNearestStationRouterModule nearStationRouter;
 	
 	public CarsharingBookingManager(CarsharingManager manager, CarsharingOfferModel omodel) {
 		this.offermodel = omodel;
 		this.demandBookingMap = new ConcurrentHashMap<Leg, CarsharingBookingRecord>();
 		this.stationBookingMap = new ConcurrentHashMap<CarsharingStationMobsim, CarsharingBookingStation>();
+		this.m = manager;
+		this.nearStationRouter = new CarsharingNearestStationRouterModule(this.m.getScenario(), this.m, null);
 	}
 	
 	public void reset(int iteration) {
@@ -27,42 +36,75 @@ public class CarsharingBookingManager {
 		this.stationBookingMap.clear();
 	}
 
-	synchronized public boolean process(CarsharingBookingRecord br) {
+	synchronized public CarsharingBookingRecord process(double now, CarsharingDemand demand, CarsharingOffer selectedOffer, ArrayList<CarsharingOffer> listOfOffers) {
 		
-		CarsharingDemand demand = br.getDemand();
-		CarsharingStationMobsim So = br.getOriginStation();
-		CarsharingStationMobsim Sd = br.getDestinationStation();
+		CarsharingBookingRecord br = null;
+		if(selectedOffer != null) {
+			br = CarsharingBookingRecord.constructAndGetBookingRec(now, selectedOffer);
+			CarsharingStationMobsim So = br.getOriginStation();
+			CarsharingStationMobsim Sd = br.getDestinationStation();
+			br.noVehicleOffer = !this.stationBookingMap.get(So).add(br);
+			br.noParkingOffer = !this.stationBookingMap.get(Sd).add(br);
+			if(br.noVehicleOffer || br.noParkingOffer) {
+				this.stationBookingMap.get(So).cancel(br);
+				this.stationBookingMap.get(Sd).cancel(br);
+			}
+		} else {
+			br = constructFailedRecord(now, listOfOffers, demand);
+			CarsharingStationMobsim So = br.getOriginStation();
+			CarsharingStationMobsim Sd = br.getDestinationStation();
+			if(So != null) {
+				// keep in memory
+				this.stationBookingMap.get(So).add(br);
+				this.stationBookingMap.get(So).cancel(br);
+			}
+			if(Sd != null)  {
+				// keep in memory
+				this.stationBookingMap.get(Sd).add(br);
+				this.stationBookingMap.get(Sd).cancel(br);
+			}
+		}
 
 		// save booking
 		if(demand != null)
 			this.demandBookingMap.put(demand.getID(), br);
 		
-		if(So == null || Sd == null || br.relatedOffer == null) {
-			logger.warn("[B-KO] Agent:" + br.getAgent().getId());
-			return false;
+		return br;
+	}
+	
+	
+	private CarsharingBookingRecord constructFailedRecord(double now, ArrayList<CarsharingOffer> offers, CarsharingDemand demand) {
+		CarsharingLocationInfo departure = this.nearStationRouter.getNearestStationToDeparture(CarsharingUtils.getDummyFacility(demand.getOrigin()), true);
+		CarsharingLocationInfo arrival = this.nearStationRouter.getNearestStationToArrival(CarsharingUtils.getDummyFacility(demand.getDestination()), true, departure);
+		Facility start = departure.facility;
+		Facility end = arrival.facility;
+		double deptime = now;
+		if(departure.station != null) {
+			this.track(departure.station);
+			start = departure.station.facility();
+			deptime += departure.traveltime + this.m.getConfig().getInteractionOffset();
 		}
-		
-		br.noVehicleOffer = !this.stationBookingMap.get(So).add(br);
-		br.noParkingOffer = !this.stationBookingMap.get(Sd).add(br);
-		if(br.noVehicleOffer || br.noParkingOffer) {
-			this.stationBookingMap.get(So).cancel(br);
-			this.stationBookingMap.get(Sd).cancel(br);
-			return false;	
+		if(arrival.station != null){
+			this.track(arrival.station);
+			end = arrival.station.facility();
 		}
-		return true;
-		
-		/*if(So == null || Sd == null) {
-			logger.warn("[B-KO] Agent:" + br.getAgent().getId());
-			return false;
+		Boolean novehiclefound = true;
+		Boolean noparkingfound = true;
+		boolean betterWalk = false;
+		for(CarsharingOffer o : offers) {
+			if(!o.hasValidAccess() && o.getAccess().getStatus().equals(CarsharingOffer.FAILURE_WALK_OFFER)) {
+				betterWalk = true;
+				break;
+			} else if(o.hasValidAccess()) { 
+				novehiclefound = false; 
+				break;	
+			} 
 		}
-		
-		if(br.relatedOffer == null) return false;
-		br.noVehicleOffer = !this.stationBookingMap.get(So).add(br);
-		if(br.noVehicleOffer) return false;	
-		br.noParkingOffer = !this.stationBookingMap.get(Sd).add(br);
-		if(br.noParkingOffer) return false;
-		
-		return true;*/
+		CarsharingBookingRecord booking = CarsharingBookingRecord.constructAndGetFailedBookingRec(
+				now, demand, betterWalk,
+				novehiclefound,	departure.station, deptime,
+				noparkingfound,	arrival.station, Double.NaN);
+		return booking;
 	}
 
 	public CarsharingOfferModel offer() {

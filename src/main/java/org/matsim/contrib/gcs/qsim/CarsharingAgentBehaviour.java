@@ -148,15 +148,9 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 		
 		// [CUSTOMER] Choose an Offer
 		CarsharingOffer selectedOffer = this.customerAgentMemory.decision().selectOffer(offers);
-		
-		if(selectedOffer == null) { // IN CASE OF NO SELECTED OFFER
-			booking = constructFailedRecord(now, offers, demand);
-		} else { // IN CASE OF SELECTED OFFER
-			booking = CarsharingBookingRecord.constructAndGetBookingRec(now, selectedOffer);
-		}
-		
-		// [SYSTEM] Confirm Booking
-		this.carsharingSystemDelegate.booking().process(booking);
+				
+		// [SYSTEM] process Booking
+		booking = this.carsharingSystemDelegate.booking().process(now, demand, selectedOffer, offers);
 		
 		// [CUSTOMER] Booking Confirmation Feedback
 		this.customerAgentMemory.decision().acceptBooking(booking, now);
@@ -173,17 +167,19 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 		return booking;
 	}
 	
-	private CarsharingBookingRecord constructFailedRecord(double now, ArrayList<CarsharingOffer> offers, CarsharingDemand demand) {
+	/*private CarsharingBookingRecord constructFailedRecord(double now, ArrayList<CarsharingOffer> offers, CarsharingDemand demand) {
 		CarsharingLocationInfo departure = this.nearStationRouter.getNearestStationToDeparture(CarsharingUtils.getDummyFacility(demand.getOrigin()), true);
 		CarsharingLocationInfo arrival = this.nearStationRouter.getNearestStationToArrival(CarsharingUtils.getDummyFacility(demand.getDestination()), true, departure);
 		Facility start = departure.facility;
 		Facility end = arrival.facility;
 		double deptime = now;
 		if(departure.station != null) {
+			this.carsharingSystemDelegate.booking().track(departure.station);
 			start = departure.station.facility();
 			deptime += departure.traveltime + this.carsharingSystemDelegate.getConfig().getInteractionOffset();
 		}
 		if(arrival.station != null){
+			this.carsharingSystemDelegate.booking().track(arrival.station);
 			end = arrival.station.facility();
 		}
 		
@@ -192,7 +188,7 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 						this.basicAgentDelegate.getScenario(), 
 						this.carsharingSystemDelegate, 
 						CarsharingPlanModeCst.directTrip);
-		List<? extends PlanElement> default_route = csrouter.calcRoute(start, end, deptime, this.customerAgentMemory.getPerson());*/
+		List<? extends PlanElement> default_route = csrouter.calcRoute(start, end, deptime, this.customerAgentMemory.getPerson());
 		//RouteData rd = CarsharingRouterUtils.calcTCC(this.carsharingSystemDelegate, start, end, deptime, this.customerAgentMemory.getPerson());
 		Boolean novehiclefound = true;
 		Boolean noparkingfound = true;
@@ -211,7 +207,7 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 				novehiclefound,	departure.station, deptime,
 				noparkingfound,	arrival.station, Double.NaN);
 		return booking;
-	}
+	}*/
 	
 
 	@Override
