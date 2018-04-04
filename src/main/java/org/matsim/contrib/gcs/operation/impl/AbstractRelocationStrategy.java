@@ -186,19 +186,15 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 					if(r.bookingFailed()) dropoff_failed++;
 					else dropoff_success++;
 				}
-				int pickupsum = pickup_success+pickup_failed;
-				int dropoffsum = dropoff_success+dropoff_failed;
-				double performance = ((pickupsum == 0)?0:pickup_success/pickupsum) + ((dropoffsum == 0)?0:dropoff_success/dropoffsum);
+				int allsum = pickup_success+pickup_failed+dropoff_success+dropoff_failed;
+				int successsum = dropoff_success+dropoff_success;
+				double performance = (allsum == 0)?0:successsum/allsum;
 				tot_perf += performance;
-				this.perfWriter.println(
-						iteration + "\t" + 
-						this.time_bin + "\t" + 
-						s.getId().toString() + "\t" +
-						dropoff_failed + "\tDPf\t" + 
-						pickup_failed + "\tPUf\t" + 
-						dropoff_success + "\tDPs\t" + 
-						pickup_success + "\tPUs\t" + 
-						performance + "\tp");
+				this.perfWriter.println(iteration+"\t"+this.time_bin+"\t"+s.getId().toString()+"\t"+dropoff_failed+"\tDPfailed");
+				this.perfWriter.println(iteration+"\t"+this.time_bin+"\t"+s.getId().toString()+"\t"+pickup_failed+"\tPUfailed"); 
+				this.perfWriter.println(iteration+"\t"+this.time_bin+"\t"+s.getId().toString()+"\t"+dropoff_success+"\tDPsuccess"); 
+				this.perfWriter.println(iteration+"\t"+this.time_bin+"\t"+s.getId().toString()+"\t"+pickup_success+"\tPUsuccess"); 
+				this.perfWriter.println(iteration+"\t"+this.time_bin+"\t"+s.getId().toString()+"\t"+performance+"\tperformance"); 
 				this.perfWriter.flush();
 			}
 			logger.info("performance written : iter " + iteration + " - bin " + this.time_bin + " - tot " + tot_perf);
