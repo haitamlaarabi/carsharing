@@ -63,7 +63,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		} else {
 			this.iter_activation = -1;
 		}
-		if(relocation_parameters.containsKey(ITER_ACTIVATION_PARAM)) {
+		if(relocation_parameters.containsKey(TIME_BIN_PARAM)) {
 			this.lb_time_bin = Integer.parseInt(relocation_parameters.get(TIME_BIN_PARAM));
 			this.ub_time_bin = Integer.parseInt(relocation_parameters.get(TIME_BIN_PARAM));
 			this.step_time_bin = 0;
