@@ -180,7 +180,10 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 					if(r.bookingFailed()) dropoff_failed++;
 					else dropoff_success++;
 				}
-				double performance = pickup_success/(pickup_success+pickup_failed) + dropoff_success/(dropoff_success+dropoff_failed);
+				int pickupsum = pickup_success+pickup_failed;
+				int dropoffsum = dropoff_success+dropoff_failed;
+				double performance = pickupsum == 0?0:pickup_success/pickupsum + dropoffsum == 0?0:dropoff_success/dropoffsum;
+
 				perfWriter.println(
 						iteration + "\t" + 
 						this.time_bin + "\t" + 
