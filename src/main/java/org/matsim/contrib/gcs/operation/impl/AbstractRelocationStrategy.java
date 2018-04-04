@@ -1,5 +1,9 @@
 package org.matsim.contrib.gcs.operation.impl;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,10 +14,12 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
 import org.matsim.contrib.gcs.carsharing.CarsharingPreprocessedData;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingRecord;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingStation;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingDemand;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingOffer;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingOperatorMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingRelocationTask;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
 import org.matsim.contrib.gcs.events.CarsharingBookingEvent;
 import org.matsim.contrib.gcs.operation.model.CarsharingOperatorChoiceModel;
 import org.matsim.contrib.gcs.operation.model.CarsharingRelocationModel;
@@ -32,8 +38,15 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	protected final Map<String, String> relocation_parameters;
 	public final static String ITER_ACTIVATION_PARAM = "ITER_ACTIVATION";
 	public final static String TIME_BIN_PARAM = "TIME_BIN";
+	public final static String LB_TIME_BIN_PARAM = "LB_TIME_BIN";
+	public final static String UB_TIME_BIN_PARAM = "UB_TIME_BIN";
+	public final static String STEP_TIME_BIN_PARAM = "STEP_TIME_BIN";
+	public final static String PERF_FILE_PARAM = "PERF_FILE";
 	protected final int iter_activation;
-	protected final int time_bin;
+	protected int time_bin;
+	protected final int lb_time_bin;
+	protected final int ub_time_bin;
+	protected final int step_time_bin;
 	
 	
 	public AbstractRelocationStrategy(
@@ -51,10 +64,19 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 			this.iter_activation = -1;
 		}
 		if(relocation_parameters.containsKey(ITER_ACTIVATION_PARAM)) {
-			this.time_bin = Integer.parseInt(relocation_parameters.get(TIME_BIN_PARAM));
+			this.lb_time_bin = Integer.parseInt(relocation_parameters.get(TIME_BIN_PARAM));
+			this.ub_time_bin = Integer.parseInt(relocation_parameters.get(TIME_BIN_PARAM));
+			this.step_time_bin = 0;
+		} else if(relocation_parameters.containsKey(LB_TIME_BIN_PARAM)) {
+			this.lb_time_bin = Integer.parseInt(relocation_parameters.get(LB_TIME_BIN_PARAM));
+			this.ub_time_bin = Integer.parseInt(relocation_parameters.get(UB_TIME_BIN_PARAM));
+			this.step_time_bin = Integer.parseInt(relocation_parameters.get(STEP_TIME_BIN_PARAM));
 		} else {
-			this.time_bin = 3600;
+			this.lb_time_bin = 1800;
+			this.ub_time_bin = 1800;
+			this.step_time_bin = 0;
 		}
+		this.time_bin = this.lb_time_bin;
 	}
 	
 	@Override
@@ -120,6 +142,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		return booked_tasks;
 	}
 	
+	
 	CarsharingBookingRecord constructBookingRecord(CarsharingRelocationTask sTask, CarsharingRelocationTask eTask, double aTime, double aDist) {
 		Leg reloLeg = PopulationUtils.createLeg("RELOCATION");
 		Activity reloSrcActivity = PopulationUtils.createActivityFromCoordAndLinkId("STATION", sTask.getStation().facility().getCoord(), sTask.getStation().facility().getLinkId());
@@ -139,7 +162,44 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	
 	@Override
 	public void reset(int iteration) {
-		this.time_step = new TimeStep(0, time_bin);
+		PrintWriter perfWriter = null;
+		try {
+			perfWriter = new PrintWriter(new BufferedWriter(new FileWriter(relocation_parameters.get(PERF_FILE_PARAM), true)));
+			perfWriter.println("iteration\tbin\tstation.id\tvalue\tvariable");
+			for(CarsharingStationMobsim s : this.m.getStations()) {
+				CarsharingBookingStation b = this.m.booking().track(s);
+				int dropoff_failed = 0;
+				int pickup_failed = 0;
+				int dropoff_success = 0;
+				int pickup_success = 0;
+				for(CarsharingBookingRecord r : b.getDemand(Integer.MAX_VALUE)) {
+					if(r.bookingFailed()) pickup_failed++;
+					else pickup_success++;
+				}
+				for(CarsharingBookingRecord r : b.getSupply(Integer.MAX_VALUE)) {
+					if(r.bookingFailed()) dropoff_failed++;
+					else dropoff_success++;
+				}
+				double performance = pickup_success/(pickup_success+pickup_failed) + dropoff_success/(dropoff_success+dropoff_failed);
+				perfWriter.println(
+						iteration + "\t" + 
+						this.time_bin + "\t" + 
+						s.getId().toString() + "\t" +
+						dropoff_failed + "\tDPf\t" + 
+						pickup_failed + "\tPUf\t" + 
+						dropoff_success + "\tDPs\t" + 
+						pickup_success + "\tPUs\t" + 
+						performance + "\tp");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		this.time_bin += this.step_time_bin;
+		if(this.time_bin > this.ub_time_bin) {
+			logger.warn("bin time went beyond upper bound");
+		}
+		this.time_step = new TimeStep(0, this.time_bin);
 		this.iter = iteration;
 	}
 	
@@ -152,7 +212,6 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	protected abstract List<CarsharingOffer> usrelocate(CarsharingDemand demand, List<CarsharingOffer> offers);
 	protected abstract List<CarsharingRelocationTask> oprelocate();
 	protected abstract void update();
-	//protected abstract void init();
 	
 	protected class TimeStep {
 		protected int time;
