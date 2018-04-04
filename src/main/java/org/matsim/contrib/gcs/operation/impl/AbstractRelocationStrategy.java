@@ -188,7 +188,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 				}
 				int pickupsum = pickup_success+pickup_failed;
 				int dropoffsum = dropoff_success+dropoff_failed;
-				double performance = pickupsum == 0?0:pickup_success/pickupsum + dropoffsum == 0?0:dropoff_success/dropoffsum;
+				double performance = ((pickupsum == 0)?0:pickup_success/pickupsum) + ((dropoffsum == 0)?0:dropoff_success/dropoffsum);
 				tot_perf += performance;
 				this.perfWriter.println(
 						iteration + "\t" + 
