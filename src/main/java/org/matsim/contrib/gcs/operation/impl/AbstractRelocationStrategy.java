@@ -47,7 +47,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	protected final int lb_time_bin;
 	protected final int ub_time_bin;
 	protected final int step_time_bin;
-	
+	PrintWriter perfWriter;
 	
 	public AbstractRelocationStrategy(
 			CarsharingManager m, 
@@ -77,6 +77,14 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 			this.step_time_bin = 0;
 		}
 		this.time_bin = this.lb_time_bin;
+		
+		try {
+			perfWriter = new PrintWriter(new BufferedWriter(new FileWriter(relocation_parameters.get(PERF_FILE_PARAM), true)));
+			perfWriter.println("iteration\tbin\tstation.id\tvalue\tvariable");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 	@Override
@@ -162,10 +170,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	
 	@Override
 	public void reset(int iteration) {
-		PrintWriter perfWriter = null;
-		try {
-			perfWriter = new PrintWriter(new BufferedWriter(new FileWriter(relocation_parameters.get(PERF_FILE_PARAM), true)));
-			perfWriter.println("iteration\tbin\tstation.id\tvalue\tvariable");
+		if(iteration > 0) {
 			double tot_perf = 0;
 			for(CarsharingStationMobsim s : this.m.getStations()) {
 				CarsharingBookingStation b = this.m.booking().track(s);
@@ -185,7 +190,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 				int dropoffsum = dropoff_success+dropoff_failed;
 				double performance = pickupsum == 0?0:pickup_success/pickupsum + dropoffsum == 0?0:dropoff_success/dropoffsum;
 				tot_perf += performance;
-				perfWriter.println(
+				this.perfWriter.println(
 						iteration + "\t" + 
 						this.time_bin + "\t" + 
 						s.getId().toString() + "\t" +
@@ -194,11 +199,9 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 						dropoff_success + "\tDPs\t" + 
 						pickup_success + "\tPUs\t" + 
 						performance + "\tp");
-				perfWriter.flush();
+				this.perfWriter.flush();
 			}
 			logger.info("performance written : iter " + iteration + " - bin " + this.time_bin + " - tot " + tot_perf);
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 
 		this.time_bin += this.step_time_bin;

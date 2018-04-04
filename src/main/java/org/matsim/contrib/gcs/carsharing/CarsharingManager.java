@@ -116,9 +116,9 @@ public class CarsharingManager {
 	public Provider<CarsharingOperatorChoiceModel> opChoiceFactory() { return this.op_choice_factory; }
 
 	public void reset(int iteration) {
+		if(this.relocation != null) this.relocation.reset(iteration);
 		if(this.booking != null) this.booking.reset(iteration);
 		if(this.dataCollector != null) this.dataCollector.reset(iteration);
-		if(this.relocation != null) this.relocation.reset(iteration);
 		for(CarsharingOperatorMobsim operator: this.operators) { operator.reset(iteration);	}
 		for(CarsharingCustomerMobsim customer: this.customers) { customer.reset(iteration);	}
 		for(CarsharingVehicleMobsim vehicle: this.vehicles) { vehicle.reset(iteration);	}

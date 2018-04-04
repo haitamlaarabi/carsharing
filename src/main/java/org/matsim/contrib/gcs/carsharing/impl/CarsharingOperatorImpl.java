@@ -52,6 +52,7 @@ public class CarsharingOperatorImpl implements CarsharingOperatorMobsim {
 	@Override
 	public void reset(int iteration) {
 		this.tasks.clear();
+		this.vehicle = null;
 		this.index = 0;
 		this.location = this.initialLocation;
 	}
