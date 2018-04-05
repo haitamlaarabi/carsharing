@@ -74,8 +74,8 @@ public class CarsharingBookingManager {
 	
 	
 	private CarsharingBookingRecord constructFailedRecord(double now, ArrayList<CarsharingOffer> offers, CarsharingDemand demand) {
-		CarsharingLocationInfo departure = this.nearStationRouter.getNearestStationToDeparture(CarsharingUtils.getDummyFacility(demand.getOrigin()), true);
-		CarsharingLocationInfo arrival = this.nearStationRouter.getNearestStationToArrival(CarsharingUtils.getDummyFacility(demand.getDestination()), true, departure);
+		CarsharingLocationInfo departure = this.nearStationRouter.getNearestStationToDeparture(CarsharingUtils.getDummyFacility(demand.getOrigin()));
+		CarsharingLocationInfo arrival = this.nearStationRouter.getNearestStationToArrival(CarsharingUtils.getDummyFacility(demand.getDestination()), departure.station);
 		Facility start = departure.facility;
 		Facility end = arrival.facility;
 		double deptime = now;

@@ -1,10 +1,11 @@
 package org.matsim.contrib.gcs.router;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
@@ -12,12 +13,12 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
+import org.matsim.contrib.gcs.config.CarsharingConfigGroup;
 import org.matsim.contrib.gcs.replanning.CarsharingPlanModeCst;
 import org.matsim.contrib.gcs.router.CarsharingRouterUtils.RouteData;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.routes.NetworkRoute;
-import org.matsim.core.router.DefaultRoutingModules;
 import org.matsim.core.router.costcalculators.OnlyTimeDependentTravelDisutilityFactory;
 import org.matsim.core.router.util.DijkstraFactory;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
@@ -30,12 +31,14 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 	final double searchDistance;
 	final QuadTree<CarsharingStationMobsim> qt;
 	final CarsharingManager m;
+	final CarsharingConfigGroup cs_conf;
 	
 	public CarsharingNearestStationRouterModule(Scenario scenario, CarsharingManager manager, String cssMode) {
 		super(scenario, manager, cssMode);
 		this.searchDistance = manager.getConfig().getSearchDistance();
 		this.qt = manager.getStations().qtree();
 		this.m = manager;
+		this.cs_conf = m.getConfig();
 	}
 	
 	
@@ -52,8 +55,8 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 		
 		// *********************************************
 		// NEAREST STATIONS
-		CarsharingLocationInfo pickupLocation = getNearestStationToDeparture(fromFacility, aStation);
-		CarsharingLocationInfo dropoffLocation = getNearestStationToArrival(toFacility, eStation, pickupLocation);
+		CarsharingLocationInfo pickupLocation = buildDepartureLocation(fromFacility, aStation);
+		CarsharingLocationInfo dropoffLocation = buildArrivalLocation(toFacility, pickupLocation.station, eStation);
 		if(pickupLocation.station == null || dropoffLocation.station == null) { 
 			return new ArrayList<PlanElement>();
 		} 
@@ -116,30 +119,39 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 	 * @param departureTime
 	 * @return
 	 */
-	public CarsharingLocationInfo getNearestStationToDeparture(Facility fromFacility, boolean hasAccessStation) {
-		
-		CarsharingLocationInfo pickupLocation = new CarsharingLocationInfo();
-		CarsharingStationMobsim nearestStation = null;
-		double tt = 0.0;
-		double td = 0.0;
-		if(hasAccessStation) { 
-			for(CarsharingStationMobsim station: this.qt.getDisk(fromFacility.getCoord().getX(), fromFacility.getCoord().getY(), this.searchDistance)) {
-				final double accessDist = NetworkUtils.getEuclideanDistance(fromFacility.getCoord(), station.facility().getCoord());
-				final double distance = CarsharingUtils.distanceBeeline(accessDist, this.manager.getConfig().getAccessWalkCalcRoute());
-				final double deptime = CarsharingUtils.travelTimeBeeline(accessDist, this.manager.getConfig().getAccessWalkCalcRoute());
-				if(nearestStation == null || td > distance) {
-					nearestStation = station;
-					td = distance;
-					tt = deptime;				
-				} 
-			}
-		} 
-		
-		pickupLocation.station = nearestStation;
-		pickupLocation.facility = fromFacility;
-		pickupLocation.distance = td;
-		pickupLocation.traveltime = tt;
+	
+	private CarsharingLocationInfo buildDepartureLocation(Facility f, boolean hasStation) {
+		CarsharingLocationInfo location = new CarsharingLocationInfo(f);
+		if(hasStation) return location;
+		return this.getNearestStationToDeparture(f);
 
+	}
+	
+	private CarsharingLocationInfo buildArrivalLocation(Facility f, CarsharingStationMobsim s_toexclude, boolean hasStation) {
+		CarsharingLocationInfo location = new CarsharingLocationInfo(f);
+		if(hasStation) return location;
+		return this.getNearestStationToArrival(f,  s_toexclude);
+	} 
+	
+
+	public CarsharingLocationInfo getNearestStationToDeparture(Facility fromFacility) {
+		CarsharingLocationInfo pickupLocation = this.getNearestStationToDeparture(fromFacility.getCoord());
+		pickupLocation.facility = fromFacility;
+		return pickupLocation;
+	}
+	
+	public CarsharingLocationInfo getNearestStationToDeparture(Coord fromCoord) {
+		CarsharingLocationInfo pickupLocation = new CarsharingLocationInfo(null);
+		double euc_distance = manager.getConfig().getSearchDistance()/this.cs_conf.getAccessWalkCalcRoute().getBeelineDistanceFactor();
+		Collection<CarsharingStationMobsim> stations = manager.getStations().qtree().getDisk(fromCoord.getX(), fromCoord.getY(), euc_distance);
+		for(CarsharingStationMobsim station: stations) {
+			final double access_euc_dist = NetworkUtils.getEuclideanDistance(fromCoord, station.facility().getCoord());
+			if(pickupLocation.station == null || pickupLocation.distance > access_euc_dist) {
+				pickupLocation.station = station;
+				pickupLocation.distance = CarsharingUtils.distanceBeeline(access_euc_dist, this.cs_conf.getEgressWalkCalcRoute());
+				pickupLocation.traveltime = CarsharingUtils.travelTimeBeeline(access_euc_dist, this.cs_conf.getEgressWalkCalcRoute());
+			}
+		}
 		return pickupLocation;
 	}
 
@@ -151,38 +163,48 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 	 * @param excludedDepartureStation
 	 * @return
 	 */
-	public CarsharingLocationInfo getNearestStationToArrival(Facility toFacility, boolean hasEgressStation, CarsharingLocationInfo excludedDepartureStation) {
-		CarsharingLocationInfo dropoffLocation = new CarsharingLocationInfo();
-		CarsharingStationMobsim nearestStation = null;
-		double tt = 0.0;
-		double td = 0.0;
-		if(hasEgressStation) {
-			for(CarsharingStationMobsim station: this.qt.getDisk(toFacility.getCoord().getX(), toFacility.getCoord().getY(), this.searchDistance)) {
-				if(excludedDepartureStation.station != null && excludedDepartureStation.station.equals(station)) {
-					continue;
-				}
-				final double egressDist = NetworkUtils.getEuclideanDistance(toFacility.getCoord(), station.facility().getCoord());
-				final double distance = CarsharingUtils.distanceBeeline(egressDist, this.manager.getConfig().getEgressWalkCalcRoute());
-				final double arrtime = CarsharingUtils.travelTimeBeeline(egressDist, this.manager.getConfig().getEgressWalkCalcRoute());
-				if(nearestStation == null || td > distance) {
-					nearestStation = station;
-					td = distance;
-					tt = arrtime;		
-				} 
-			} 
-		} 
-		dropoffLocation.station = nearestStation;
+	public CarsharingLocationInfo getNearestStationToArrival(Facility toFacility, CarsharingStationMobsim s_toexclude) {
+		CarsharingLocationInfo dropoffLocation = this.getNearestStationToArrival(toFacility.getCoord(), s_toexclude);
 		dropoffLocation.facility = toFacility;
-		dropoffLocation.distance = td;
-		dropoffLocation.traveltime = tt;
 		return dropoffLocation;
 	}
+	
+	public CarsharingLocationInfo getNearestStationToArrival(Coord toCoord, CarsharingStationMobsim s_toexclude) {
+		CarsharingLocationInfo dropoffLocation = new CarsharingLocationInfo(null);
+		double euc_distance = manager.getConfig().getSearchDistance()/this.cs_conf.getEgressWalkCalcRoute().getBeelineDistanceFactor();
+		Collection<CarsharingStationMobsim> stations = manager.getStations().qtree().getDisk(
+				toCoord.getX(), toCoord.getY(), euc_distance);
+		for(CarsharingStationMobsim station: stations) {
+			if(station.equals(s_toexclude) || station.getType().equals("FLOATING")) continue;
+			final double egress_euc_dist = NetworkUtils.getEuclideanDistance(toCoord, station.facility().getCoord());
+			if(dropoffLocation.station == null || dropoffLocation.distance > egress_euc_dist) {
+				dropoffLocation.station = station;
+				dropoffLocation.distance = CarsharingUtils.distanceBeeline(egress_euc_dist, this.cs_conf.getEgressWalkCalcRoute());
+				dropoffLocation.traveltime = CarsharingUtils.travelTimeBeeline(egress_euc_dist, this.cs_conf.getEgressWalkCalcRoute());
+			}
+		}
+		return dropoffLocation;
+	}
+	
+	
+	// *****************
 
 	public static class CarsharingLocationInfo {
-		public CarsharingStationMobsim station = null;
-		public Facility facility = null;
-		public double distance = 0.0;
-		public double traveltime = 0.0;
+		CarsharingLocationInfo(Facility f, boolean floating) {
+			this.facility = f;
+			this.station = null;
+			this.distance = 0;
+			this.traveltime = 0;
+			this.isFloating = floating;
+		}
+		CarsharingLocationInfo(Facility f) {
+			this(f, false);
+		}
+		public CarsharingStationMobsim station;
+		public Facility facility;
+		public double distance;
+		public double traveltime;
+		public boolean isFloating;
 	}
 	
 	

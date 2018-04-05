@@ -194,6 +194,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 					else 
 						dropoff_success++;
 				}
+				
 				double allsum = pickup_success+pickup_failed+dropoff_success+dropoff_failed;
 				double successsum = dropoff_success+pickup_success;
 				double performance = (allsum == 0)?1:successsum/allsum;
