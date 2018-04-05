@@ -203,7 +203,6 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 				this.perfWriter.println(iteration+"\t"+this.time_bin+"\t"+s.getId().toString()+"\t"+pickup_failed+"\tPUfailed"); 
 				this.perfWriter.println(iteration+"\t"+this.time_bin+"\t"+s.getId().toString()+"\t"+dropoff_success+"\tDPsuccess"); 
 				this.perfWriter.println(iteration+"\t"+this.time_bin+"\t"+s.getId().toString()+"\t"+pickup_success+"\tPUsuccess"); 
-				this.perfWriter.println(iteration+"\t"+this.time_bin+"\t"+s.getId().toString()+"\t"+performance+"\tperformance"); 
 				this.perfWriter.flush();
 			}
 			logger.info("performance written : iter " + iteration + " - bin " + this.time_bin + " - tot " + tot_perf);
