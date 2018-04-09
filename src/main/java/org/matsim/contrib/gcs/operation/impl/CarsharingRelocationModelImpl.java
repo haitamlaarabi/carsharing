@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.matsim.contrib.gcs.carsharing.AbstractRelocationStrategy;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingDemand;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingOffer;

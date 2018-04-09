@@ -1,4 +1,4 @@
-package org.matsim.contrib.gcs.operation.impl;
+package org.matsim.contrib.gcs.carsharing;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -14,8 +14,6 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PopulationFactory;
-import org.matsim.contrib.gcs.carsharing.CarsharingManager;
-import org.matsim.contrib.gcs.carsharing.CarsharingPreprocessedData;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingRecord;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingStation;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingDemand;
