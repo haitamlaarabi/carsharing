@@ -131,9 +131,17 @@ public final class CarsharingUtils {
 					if(col == null || col.equals("NA")) {
 						
 					} else {
-						station = m.getStations().map().get(Id.create(col, ActivityFacility.class));
+						Id<ActivityFacility> idf = Id.create(col, ActivityFacility.class);
+						station = m.getStations().map().get(idf);
 						if(station == null) {
-							station = m.getStations().map().get(Id.create("stat.id."+col, ActivityFacility.class));
+							station = (CarsharingStationMobsim) m.getCsScenario().getStations().get(idf);
+							if(station == null) {
+								idf = Id.create("stat.id."+col, ActivityFacility.class);
+								station = m.getStations().map().get(idf);
+								if(station == null) {
+									station = (CarsharingStationMobsim) m.getCsScenario().getStations().get(idf);
+								}
+							}
 						}
 					}
 				} else if(header[j].compareTo("type") == 0) {

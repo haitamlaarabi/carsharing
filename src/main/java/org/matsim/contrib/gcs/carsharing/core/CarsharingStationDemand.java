@@ -29,7 +29,7 @@ public class CarsharingStationDemand {
 		} else {
 			b.parking_availability_tracker -= dm.getNbrOfVeh();
 		}
-		if(b.car_availability_tracker < 0 || b.parking_availability_tracker > b.station.parking().getCapacity()) {
+		if(b.car_availability_tracker < 0 || b.parking_availability_tracker > b.station.getCapacity()) {
 			logger.warn("Availability in station "+ b.station + " is " + b.car_availability_tracker);
 		}
 		w.car_availability_flag = b.car_availability_tracker;

@@ -228,11 +228,10 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 			//this.time_bin = (this.time_bin + STEP);
 			this.time_bin_k = (this.time_bin_k + 1)%this.time_bin_k_ub;
 			
-		}
-		
-		if(this.time_bin >= this.rparams.getBinstats_ubound()) {
-			this.staff_size_k = (this.staff_size_k + 1)%this.staff_size_k_ub;
-			this.staff_size = this.rparams.getStaff_lbound() + this.staff_size_k;
+			if(this.time_bin >= this.rparams.getBinstats_ubound()) {
+				this.staff_size_k = (this.staff_size_k + 1)%this.staff_size_k_ub;
+				this.staff_size = this.rparams.getStaff_lbound() + this.staff_size_k;
+			}
 		}
 
 		if(this.m.getOperators().size() != this.staff_size) {

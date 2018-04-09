@@ -116,7 +116,7 @@ public class CarsharingRelocationParams extends ReflectiveConfigGroup implements
 	/**
 	 * @param lower_bound_bin the lower_bound_bin to set
 	 */
-	public void setStatsbin_lbound(int lower_bound_bin) {
+	public void setBinstats_lbound(int lower_bound_bin) {
 		this.binstats_lbound = lower_bound_bin;
 	}
 
@@ -132,7 +132,7 @@ public class CarsharingRelocationParams extends ReflectiveConfigGroup implements
 	/**
 	 * @param upper_bound_bin the upper_bound_bin to set
 	 */
-	public void setStatsbin_ubound(int upper_bound_bin) {
+	public void setBinstats_ubound(int upper_bound_bin) {
 		this.binstats_ubound = upper_bound_bin;
 	}
 
