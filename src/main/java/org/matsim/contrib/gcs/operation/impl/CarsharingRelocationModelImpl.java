@@ -20,7 +20,7 @@ public class CarsharingRelocationModelImpl extends AbstractRelocationStrategy {
 			CarsharingManager m, 
 			TripRouter router, 
 			Map<String, String> relocation_parameters) {
-		super(m, router, relocation_parameters);
+		super(m, router);
 		this.m = m;
 		this.router = router;
 	}

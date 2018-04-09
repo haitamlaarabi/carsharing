@@ -18,8 +18,6 @@ public class CarsharingInstallerDefault extends CarsharingInstaller {
 		manager.getConfig().setSearchDistance(500.0);
 		manager.getConfig().setCarsharingScenarioInputFile(logdir + "/carsharing-scenario.xml");
 		manager.getConfig().setInteractionOffset(3*60);
-		manager.getConfig().setStaff(null);
-		manager.getConfig().setMaxTrainSize(1);
 		
 		manager.getConfig().setRentalRatePerMin(-1.0);
 		manager.getConfig().setConstantRate(0.0);

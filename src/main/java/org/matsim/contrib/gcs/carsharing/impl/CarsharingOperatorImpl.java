@@ -121,4 +121,9 @@ public class CarsharingOperatorImpl implements CarsharingOperatorMobsim {
 		return this.getId();
 	}
 
+	@Override
+	public void setMaxTrainSize(int ts) {
+		this.trainSize = ts;
+	}
+
 }

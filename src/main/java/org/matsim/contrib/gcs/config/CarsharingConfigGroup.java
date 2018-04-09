@@ -26,8 +26,7 @@ public class CarsharingConfigGroup extends ConfigGroup {
 	public static final String rentalRatePerMin_str = "rentalRatePerMin";
 	public static final String constantRate_str = "constantRate";
 	public static final String constant_str = "constant";
-	public static final String staff_str = "staff";
-	public static final String maxTrainSize_str = "maxTrainSize";
+	public static final String maxTrain_str = "maxTrain";
 	
 	public static final String interactionOffset_str = "interactionOffset";
 	public static final String searchDistance_str = "searchDistance";
@@ -43,14 +42,18 @@ public class CarsharingConfigGroup extends ConfigGroup {
 	
 	public static final String logDir_str = "logDir";
 	
-	
+	final CarsharingRelocationParams relocation;
 		
 	public CarsharingConfigGroup(Config config) {
 		super(GROUP_NAME);
 		this.config = config;
 		attributes = new HashMap<String, Object>();
+		this.relocation = new CarsharingRelocationParams();
 	}
 	
+	public CarsharingRelocationParams getRelocation() {
+		return relocation;
+	}
 	
 	public PlanCalcScoreConfigGroup.ModeParams getDriveCalcScore() {
 		return config.planCalcScore().getOrCreateModeParams(CarsharingRouterUtils.cs_drive);
@@ -72,25 +75,14 @@ public class CarsharingConfigGroup extends ConfigGroup {
 		return config.plansCalcRoute().getOrCreateModeRoutingParams(CarsharingRouterUtils.cs_egress_walk);
 	}
 	
-	
-	@StringGetter( maxTrainSize_str )
-	public Integer getMaxTrainSize() {
-		return (int)attributes.get(maxTrainSize_str);
+	@StringGetter( maxTrain_str )
+	public int getMaxTrain() {
+		return (int)attributes.get(maxTrain_str);
 	}
 
-	@StringSetter( maxTrainSize_str )
-	public void setMaxTrainSize(Integer value) {
-		attributes.put(maxTrainSize_str, value);
-	}
-	
-	@StringGetter( staff_str )
-	public Integer getStaff() {
-		return (int)attributes.get(staff_str);
-	}
-
-	@StringSetter( staff_str )
-	public void setStaff(Integer value) {
-		attributes.put(staff_str, value);
+	@StringSetter( maxTrain_str )
+	public void setMaxTrain(int value) {
+		attributes.put(maxTrain_str, value);
 	}
 	
 	

@@ -16,6 +16,7 @@ public interface CarsharingOperatorMobsim extends CarsharingAgent {
 	void setVehicle(CarsharingVehicleMobsim vehicle);
 	
 	int getMaxRoadtrainSize();
+	void setMaxTrainSize(int ts);
 	boolean available();
 	
 	ArrayList<CarsharingRelocationTask> getAllTasks();

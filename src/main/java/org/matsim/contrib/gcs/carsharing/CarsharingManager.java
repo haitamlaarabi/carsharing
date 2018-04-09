@@ -104,6 +104,7 @@ public class CarsharingManager {
 	public CarsharingRelocationModel relocation() { return this.relocation; }
 	public Network getCarNetwork() { return this.carsharing.getCarNetwork(); }
 	public Scenario getScenario() { return this.carsharing.getScenario(); }
+	public CarsharingScenario getCsScenario() { return this.carsharing; }
 	public CarsharingVehicles vehicles() { return this.vehicles; }
 	public CarsharingStations getStations() { return this.stations; }
 	public CarsharingCustomers customers() { return this.customers; }

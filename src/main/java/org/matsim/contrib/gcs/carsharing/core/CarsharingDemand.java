@@ -2,6 +2,7 @@ package org.matsim.contrib.gcs.carsharing.core;
 
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Plan;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
 
 /**
@@ -71,5 +72,16 @@ public class CarsharingDemand {
 	public int getNbrOfVeh() { return numberOfVehicles; }
 	public int getTripIndex() { return this.tripindex; }
 	public int getPlanIndex() { return this.planindex; }
+	
+	public static CarsharingDemand getInstance(CarsharingCustomerMobsim user, Leg carsharingLegID, Plan currentPlan) {
+		if(!CarsharingUtils.isUnRoutedCarsharingLeg(carsharingLegID)) {
+			return null;
+		}
+		int unroutedIndex = currentPlan.getPlanElements().indexOf(carsharingLegID);
+		Activity accessActivity = (Activity)currentPlan.getPlanElements().get(unroutedIndex - 1);
+		Activity egressActivity = (Activity)currentPlan.getPlanElements().get(unroutedIndex + 1);
+		CarsharingDemand demand = new CarsharingDemand(carsharingLegID, user, accessActivity, egressActivity, 1);
+		return demand;
+	}
 	
 }

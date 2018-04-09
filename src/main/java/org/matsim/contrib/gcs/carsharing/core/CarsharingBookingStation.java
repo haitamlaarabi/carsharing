@@ -64,7 +64,9 @@ public class CarsharingBookingStation {
 		}
 	}
 	
+
 	public CarsharingBookingStation(CarsharingStationMobsim s) {
+		super();
 		this.station = s;
 		this.activity = new SortedList<BookingRecordWrapper>(new Comparator<BookingRecordWrapper>() {
 			@Override
@@ -74,6 +76,19 @@ public class CarsharingBookingStation {
 		});
 		this.car_availability_tracker = s.parking().getFleetSize();
 		this.parking_availability_tracker = s.parking().getCapacity() - s.parking().getFleetSize();
+		this.booking_wrapper = new HashMap<CarsharingBookingRecord, BookingRecordWrapper>();
+	}
+	
+	public CarsharingBookingStation(CarsharingStation s) {
+		this.station = (CarsharingStationMobsim)s;
+		this.activity = new SortedList<BookingRecordWrapper>(new Comparator<BookingRecordWrapper>() {
+			@Override
+			public int compare(BookingRecordWrapper o1, BookingRecordWrapper o2) {
+				return Double.compare(o1.getTime(), o2.getTime());
+			}
+		});
+		this.car_availability_tracker = s.deployment().size();
+		this.parking_availability_tracker = s.getCapacity() - s.deployment().size();
 		this.booking_wrapper = new HashMap<CarsharingBookingRecord, BookingRecordWrapper>();
 	}
 	

@@ -1,25 +1,40 @@
 package org.matsim.contrib.gcs.utils;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.contrib.gcs.carsharing.CarsharingManager;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingRecord;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingCustomerMobsim;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingDemand;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingOffer;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
 import org.matsim.contrib.gcs.replanning.CarsharingPlanModeCst;
+import org.matsim.contrib.gcs.router.CarsharingNearestStationRouterModule;
+import org.matsim.contrib.gcs.router.CarsharingNearestStationRouterModule.CarsharingLocationInfo;
 import org.matsim.contrib.gcs.router.CarsharingRouterUtils;
+import org.matsim.contrib.gcs.router.CarsharingRouterUtils.RouteData;
+import org.matsim.contrib.parking.parkingchoice.lib.DebugLib;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup.ModeRoutingParams;
@@ -27,19 +42,146 @@ import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
-import org.matsim.core.router.TripRouter;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.Facility;
 import org.matsim.vehicles.Vehicle;
-import org.matsim.withinday.trafficmonitoring.TravelTimeCollector;
 
 public final class CarsharingUtils {
 	
 	static String ACCESS_STATION = "access_station";
 	static String EGRESS_STATION = "egress_station";
 	
+	public static LinkedList<String> readFileRows(String fileName) {
+		LinkedList<String> list = new LinkedList<String>();
+
+		try {
+
+			FileInputStream fis = new FileInputStream(fileName);
+			InputStreamReader isr = new InputStreamReader(fis, "ISO-8859-1");
+
+			BufferedReader br = new BufferedReader(isr);
+			String line;
+			line = br.readLine();
+			while (line != null) {
+				list.add(line);
+				line = br.readLine();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			DebugLib.stopSystemAndReportInconsistency();
+		}
+
+		return list;
+	}
 	
+	public static HashSet<CarsharingBookingRecord> extractDemandFromPlans(CarsharingManager manager) {
+		Scenario scenario = manager.getScenario();
+		HashSet<CarsharingBookingRecord> recset = new HashSet<CarsharingBookingRecord>();
+		CarsharingNearestStationRouterModule csRouter = new CarsharingNearestStationRouterModule(scenario, manager, null);
+		double stime = 8 * 3600.0;
+		double etime = stime + 30 * 60.0;
+		for(Person p : scenario.getPopulation().getPersons().values()) {
+			List<PlanElement> elements = p.getSelectedPlan().getPlanElements();
+			for(int i = 0; i < elements.size(); i++) {
+				if(CarsharingUtils.isUnRoutedCarsharingLeg(elements.get(i))) {
+					Activity depAct = (Activity)elements.get(i-1);
+					Activity arrAct = (Activity)elements.get(i+1);
+					
+					CarsharingLocationInfo departure = csRouter.getNearestStationToDeparture(
+							CarsharingUtils.getDummyFacility(depAct));
+					CarsharingLocationInfo arrival = csRouter.getNearestStationToArrival(
+							CarsharingUtils.getDummyFacility(arrAct), departure.station);
+					
+					if(departure.station != null && arrival.station != null) {
+						CarsharingDemand demand = CarsharingDemand.getInstance(manager.customers().map().get(p.getId()), 
+								(Leg) elements.get(i), p.getSelectedPlan());
+						CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromDemand(demand, "DUMMY");
+						builder.setAccess(demand.getRawDepartureTime(), departure.station, 0.0, 0.0);
+						builder.setDrive(1);
+						builder.setEgress(arrival.station, 0.0, 0.0);
+						recset.add(CarsharingBookingRecord.constructAndGetBookingRec(0.0, builder.build()));
+					}
+				}
+			}
+		}
+		return recset;
+	}
+	
+	public static HashSet<CarsharingBookingRecord> extractDemandFromBookingFile(CarsharingManager m, String SIM_FILENAME) {
+		HashSet<CarsharingBookingRecord> recs =  new HashSet<CarsharingBookingRecord>();
+		HashMap<String, CarsharingOffer.Builder> offersB = new HashMap<String, CarsharingOffer.Builder>();
+		HashMap<String, Integer> offersB_counter = new HashMap<String, Integer>();
+		LinkedList<String> rows = readFileRows(SIM_FILENAME);
+		String[] header = rows.get(0).split("\t"); 
+		for(int i = 1; i < rows.size(); i++) {
+			int j = 0;
+			CarsharingStationMobsim station = null;
+			CarsharingCustomerMobsim customer = null;
+			String type = "";
+			double time_act = 0;
+			String booking_id = "";
+			int time = 0;
+			int time_offset = 0;
+			int time_drive = 0;
+			for(String col : rows.get(i).split("\t")) {
+				if(header[j].compareTo("date") == 0) {
+					time = Double.valueOf(col).intValue();
+				} else if(header[j].compareTo("station.id") == 0) {
+					if(col == null || col.equals("NA")) {
+						
+					} else {
+						station = m.getStations().map().get(Id.create(col, ActivityFacility.class));
+						if(station == null) {
+							station = m.getStations().map().get(Id.create("stat.id."+col, ActivityFacility.class));
+						}
+					}
+				} else if(header[j].compareTo("type") == 0) {
+					type = col;
+				} else if (header[j].compareTo("booking.id") == 0) {
+					booking_id = col;
+				} else if (header[j].compareTo("customer.id") == 0) {
+					customer = m.customers().map().get(Id.create(col, Person.class));
+				} else if(header[j].compareTo("time.act") == 0 && col.compareToIgnoreCase("NA") != 0) {
+					time_act = Double.parseDouble(col);
+				}  else if(header[j].compareTo("time.drive") == 0) {
+					time_drive = (int)Double.parseDouble(col);
+				}
+				j++;
+			}
+			if(!offersB.containsKey(booking_id)) {
+				offersB.put(booking_id, CarsharingOffer.Builder.newInstanceFromAgent(customer));
+			}
+			if(type.compareTo("START") == 0) {
+				Integer counter = offersB_counter.get(booking_id);
+				if(counter == null) {
+					counter = new Integer(1);
+					offersB.get(booking_id).setAccess(time, station, time_act, 0);
+				} else {
+					counter = counter + 1;
+				}
+				offersB_counter.put(booking_id, counter);
+			} else  {
+				Integer counter = offersB_counter.get(booking_id);
+				if(counter != null) {
+					RouteData rd = new RouteData();
+					rd.time = time_drive;
+					rd.offset = m.getConfig().getInteractionOffset();
+					offersB.get(booking_id).setDrive(counter, rd);
+					offersB.get(booking_id).setEgress(station, time_act, 0);
+					CarsharingOffer o = offersB.get(booking_id).build();
+					CarsharingBookingRecord brec = null;
+					if(o.getAccess().getStation() == null || o.getEgress().getStation() == null) {
+						brec = CarsharingBookingRecord.constructAndGetFailedBookingRec(o.getDepartureTime(), o);
+					} else {
+						brec = CarsharingBookingRecord.constructAndGetBookingRec(o.getDepartureTime(), o);
+					}
+					recs.add(brec);
+				}
+			}
+		}
+		return recs;
+	}
 
 	public static double distanceBeeline(double euc_distance, ModeRoutingParams r_param) {
 		double distance = euc_distance * r_param.getBeelineDistanceFactor();
