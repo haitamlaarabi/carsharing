@@ -1,9 +1,6 @@
 package org.matsim.contrib.gcs.config;
 
 import java.util.HashMap;
-import java.util.Map;
-
-import javax.inject.Named;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -17,14 +14,12 @@ import org.matsim.contrib.gcs.operation.impl.CarsharingBatteryModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingEnergyConsumptionModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingMembershipModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingOfferModelImpl;
-import org.matsim.contrib.gcs.operation.impl.CarsharingOfferModelImpl2;
 import org.matsim.contrib.gcs.operation.impl.CarsharingOperatorChoiceModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingParkingModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingPowerDistributionModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingPowerSourceModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingRelocationModelImpl;
 import org.matsim.contrib.gcs.operation.impl.CarsharingUserChoiceModelImpl;
-import org.matsim.contrib.gcs.operation.impl.CarsharingUserChoiceModelImpl2;
 import org.matsim.contrib.gcs.operation.model.CarsharingBatteryModel;
 import org.matsim.contrib.gcs.operation.model.CarsharingEnergyConsumptionModel;
 import org.matsim.contrib.gcs.operation.model.CarsharingMembershipModel;
@@ -45,28 +40,13 @@ import org.matsim.contrib.gcs.scoring.CarsharingScoringFunctionFactory;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.mobsim.framework.Mobsim;
-import org.matsim.core.mobsim.framework.listeners.FixedOrderSimulationListener;
 import org.matsim.core.router.MainModeIdentifier;
 import org.matsim.core.router.RoutingModule;
 import org.matsim.core.router.TripRouter;
-import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
-import org.matsim.core.router.util.TravelTime;
-import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
-import org.matsim.withinday.controller.WithinDayControlerListener;
-import org.matsim.withinday.mobsim.MobsimDataProvider;
-import org.matsim.withinday.mobsim.WithinDayEngine;
-import org.matsim.withinday.mobsim.WithinDayQSimFactory;
-import org.matsim.withinday.replanning.identifiers.tools.ActivityReplanningMap;
-import org.matsim.withinday.replanning.identifiers.tools.LinkReplanningMap;
-import org.matsim.withinday.trafficmonitoring.EarliestLinkExitTimeProvider;
-import org.matsim.withinday.trafficmonitoring.TravelTimeCollector;
-import org.matsim.withinday.trafficmonitoring.TravelTimeCollectorModule;
 
 import com.google.inject.Inject;
 import com.google.inject.Key;
 import com.google.inject.Provider;
-import com.google.inject.Provides;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
@@ -137,7 +117,7 @@ public abstract class CarsharingInstaller extends AbstractModule {
     	bindCarsharingPowerDistributionModel(CarsharingPowerDistributionModelFactory.class);
     	bindCarsharingPowerSourceModel(CarsharingPowerSourceModelFactory.class);
     	bindCarsharingParkingModel(CarsharingParkingModelFactory.class);
-    	bindCarsharingOfferModel(CarsharingOfferModelImpl2.class);
+    	bindCarsharingOfferModel(CarsharingOfferModelImpl.class);
     	bindCarsharingMembershipModel(CarsharingMembershipModelFactory.class);
     	bindCarsharingRelocationModel(CarsharingRelocationModelFactory.class);
     	bindCarsharingOperatorChoiceModel(CarsharingOperatorChoiceModelFactory.class);
@@ -294,7 +274,7 @@ public abstract class CarsharingInstaller extends AbstractModule {
 	}
 	public static class CarsharingUserChoiceModelFactory implements Provider<CarsharingUserChoiceModel> {
 		@Override public CarsharingUserChoiceModel get() {
-			return new CarsharingUserChoiceModelImpl2();
+			return new CarsharingUserChoiceModelImpl();
 		}
 	}
 	public static class CarsharingParkingModelFactory implements Provider<CarsharingParkingModel> {

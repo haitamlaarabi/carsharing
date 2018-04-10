@@ -96,10 +96,10 @@ public final class CarsharingUtils {
 					if(departure.station != null && arrival.station != null) {
 						CarsharingDemand demand = CarsharingDemand.getInstance(manager.customers().map().get(p.getId()), 
 								(Leg) elements.get(i), p.getSelectedPlan());
-						CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromDemand(demand, "DUMMY");
-						builder.setAccess(demand.getRawDepartureTime(), departure.station, 0.0, 0.0);
+						CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromAgent(demand.getAgent(), demand);
+						builder.setAccess(demand.getRawDepartureTime(), departure.station, 0.0, 0.0, CarsharingOffer.DUMMY);
 						builder.setDrive(1);
-						builder.setEgress(arrival.station, 0.0, 0.0);
+						builder.setEgress(arrival.station, 0.0, 0.0, CarsharingOffer.DUMMY);
 						recset.add(CarsharingBookingRecord.constructAndGetBookingRec(0.0, builder.build()));
 					}
 				}
@@ -158,13 +158,13 @@ public final class CarsharingUtils {
 				j++;
 			}
 			if(!offersB.containsKey(booking_id)) {
-				offersB.put(booking_id, CarsharingOffer.Builder.newInstanceFromAgent(customer));
+				offersB.put(booking_id, CarsharingOffer.Builder.newInstanceFromAgent(customer, null));
 			}
 			if(type.compareTo("START") == 0) {
 				Integer counter = offersB_counter.get(booking_id);
 				if(counter == null) {
 					counter = new Integer(1);
-					offersB.get(booking_id).setAccess(time, station, time_act, 0);
+					offersB.get(booking_id).setAccess(time, station, time_act, 0, CarsharingOffer.SUCCESS_STANDARDOFFER);
 				} else {
 					counter = counter + 1;
 				}
@@ -176,14 +176,9 @@ public final class CarsharingUtils {
 					rd.time = time_drive;
 					rd.offset = m.getConfig().getInteractionOffset();
 					offersB.get(booking_id).setDrive(counter, rd);
-					offersB.get(booking_id).setEgress(station, time_act, 0);
+					offersB.get(booking_id).setEgress(station, time_act, 0, CarsharingOffer.SUCCESS_STANDARDOFFER);
 					CarsharingOffer o = offersB.get(booking_id).build();
-					CarsharingBookingRecord brec = null;
-					if(o.getAccess().getStation() == null || o.getEgress().getStation() == null) {
-						brec = CarsharingBookingRecord.constructAndGetFailedBookingRec(o.getDepartureTime(), o);
-					} else {
-						brec = CarsharingBookingRecord.constructAndGetBookingRec(o.getDepartureTime(), o);
-					}
+					CarsharingBookingRecord brec = CarsharingBookingRecord.constructAndGetBookingRec(o.getDepartureTime(), o);
 					recs.add(brec);
 				}
 			}

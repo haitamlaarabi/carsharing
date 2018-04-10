@@ -36,11 +36,14 @@ public class CarsharingUserChoiceModelImpl implements CarsharingUserChoiceModel 
 	@Override
 	public CarsharingOffer selectOffer(Collection<CarsharingOffer> offers) {
 		CarsharingOffer minCostOffer = null;
+		double minTotCost = Double.MAX_VALUE;
 		for(CarsharingOffer o : offers) {
 			if(o.hasValidAccess() && o.hasValidEgress()) {
-				if(minCostOffer == null || minCostOffer.getCost() > o.getCost())
+				final double trip_cost = o.getCost() * (o.getDrive().getRentalTime());
+				if(minCostOffer == null || minTotCost > trip_cost)
 					minCostOffer = o;
-			}
+					minTotCost = trip_cost;
+			} 
 		}
 		return minCostOffer;
 	}	

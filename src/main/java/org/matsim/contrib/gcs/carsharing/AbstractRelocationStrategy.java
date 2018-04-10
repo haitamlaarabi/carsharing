@@ -155,11 +155,6 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 							}
 						} else {
 							logger.warn("BOOKING FAILURE - " + b.getAgent().getId());
-							if(!b.vehicleOffer()) {
-								b.setComment("NO_VEHICLE_TO_RELOCATE");
-							} else if(!b.parkingOffer()) {
-								b.setComment("NO_PARKING_SPACE");
-							}
 						}
 						m.events().processEvent(new CarsharingBookingEvent(time, m.getScenario(), m, b.getDemand(), b));
 						sTask = null;
@@ -180,9 +175,9 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		Activity reloDstActivity = PopulationUtils.createActivityFromCoordAndLinkId("STATION", eTask.getStation().facility().getCoord(), eTask.getStation().facility().getLinkId());
 		reloDstActivity.setStartTime(eTask.getTime());
 		CarsharingDemand d = new CarsharingDemand(reloLeg, eTask.getAgent(), reloSrcActivity, reloDstActivity, eTask.getSize());
-		CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromDemand(d, "OPERATOR_RELOCATION");
-		builder.setAccess(sTask.getTime(), sTask.getStation(), aTime, aDist);
-		builder.setEgress(eTask.getTime(), eTask.getStation(), 0, 0);
+		CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromAgent(d.getAgent(), d);
+		builder.setAccess(sTask.getTime(), sTask.getStation(), aTime, aDist, CarsharingOffer.OPERATOR_RELOCATION);
+		builder.setEgress(eTask.getTime(), eTask.getStation(), 0, 0, CarsharingOffer.OPERATOR_RELOCATION);
 		builder.setDrive(eTask.getSize(), eTask.getRoute());
 		builder.setCost(0);
 		return builder.build();
@@ -251,6 +246,15 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 			for(CarsharingOperatorMobsim o : this.m.getOperators()) {
 				o.setMaxTrainSize(this.train_size);
 			}
+		}
+		
+		try {
+			this.traceWriter = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getTrace_output_file()+"_"+iteration+".log", true)));
+			this.taskWriter = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getTask_output_file()+"_"+iteration+".log", true)));
+			this.traceWriter.println("time\tstation.id\tvalue\tvariable");
+			this.taskWriter.println("time\tf.station\tr.station\tn.veh\toperator");
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		
 		this.time_bin = this.rparams.getBinstats_lbound() + this.time_bin_k*STEP;

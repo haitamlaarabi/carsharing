@@ -15,18 +15,16 @@ public class CarsharingBookingRecord {
 		CarsharingOffer relatedOffer;
 		CarsharingDemand demand;
 		
-		boolean noVehicleOffer; 
-		boolean noParkingOffer;
-		boolean betterWalk;
+		Boolean vehicleOffer; 
+		Boolean parkingOffer;
 		String id;
-		String comment = null;
 		
 		CarsharingBookingRecord() {}
 		
-		private static CarsharingBookingRecord constructBookingRec(
-				double bookingTime, CarsharingDemand demand, boolean betterWalk,
-				boolean noVehicleOffer, CarsharingStationMobsim depStation, double depTime,
-				boolean noParkingOffer,	CarsharingStationMobsim arrStation,	double arrTime) {
+		public static CarsharingBookingRecord constructBookingRec(
+				double bookingTime, CarsharingDemand demand, 
+				Boolean vehicleOffer, CarsharingStationMobsim depStation, double depTime,
+				Boolean parkingOffer,	CarsharingStationMobsim arrStation,	double arrTime) {
 			CarsharingBookingRecord b = new CarsharingBookingRecord();
 			b.bookingTime = bookingTime;
 			b.demand = demand;
@@ -34,49 +32,27 @@ public class CarsharingBookingRecord {
 			else b.person = null;
 			b.trip = null;
 			b.park = null;
-			b.noVehicleOffer = noVehicleOffer;
+			b.vehicleOffer = vehicleOffer;
 			b.sourceStation = depStation;
 			b.departureTime = depTime;
-			b.noParkingOffer = noParkingOffer;
+			b.parkingOffer = parkingOffer;
 			b.destinationStation = arrStation;
 			b.arrivalTime = arrTime;
 			b.id = ((b.person == null)?"NA":b.person.getId()) + "@" + (int)bookingTime;
-			b.betterWalk = betterWalk;
-			if(b.betterWalk) {
-				b.comment = "WALK";
-			} else if(!b.vehicleOffer() || !b.parkingOffer()) {
-				b.comment = "PT";
-			} else {
-				b.comment = "CS";
-			}
-			return b;
-		}
-		
-		public static CarsharingBookingRecord constructAndGetFailedBookingRec(
-				double bookingTime, CarsharingDemand demand, boolean betterWalk,
-				boolean noVehicleOffer, CarsharingStationMobsim depStation, double depTime,
-				boolean noParkingOffer,	CarsharingStationMobsim arrStation,	double arrTime) {
-			CarsharingBookingRecord b = constructBookingRec(bookingTime, demand, betterWalk, 
-					noVehicleOffer, depStation, depTime, 
-					noParkingOffer, arrStation, arrTime);
-			b.id = b.id + "-FAILED";
-			return b;
-		}
-		
-		public static CarsharingBookingRecord constructAndGetFailedBookingRec(double bookingTime, CarsharingOffer offer) {
-			CarsharingBookingRecord b = constructBookingRec(bookingTime, offer.getDemand(), false, 
-					offer.getAccess().getStation()==null, offer.getAccess().getStation(), offer.getDepartureTime(),
-					offer.getEgress().getStation()==null, offer.getEgress().getStation(), offer.getArrivalTime());
-			b.id = b.id + "-FAILED";
-			b.relatedOffer = offer;
-			b.numberOfVehicles = offer.getNbOfVehicles();
 			return b;
 		}
 		
 		public static CarsharingBookingRecord constructAndGetBookingRec(double bookingTime, CarsharingOffer offer) {
-			CarsharingBookingRecord b = constructBookingRec(bookingTime, offer.getDemand(), false, 
-					false, offer.getAccess().getStation(), offer.getDepartureTime(),
-					false, offer.getEgress().getStation(), offer.getArrivalTime());
+			Boolean nv = null, np = null;
+			if(offer.getAccess().getStation() != null) {
+				nv = offer.getAccess().getStatus().isValid();
+			}
+			if(offer.getEgress().getStation() != null) {
+				np = offer.getEgress().getStatus().isValid();
+			}
+			CarsharingBookingRecord b = constructBookingRec(bookingTime, offer.getDemand(), 
+					nv, offer.getAccess().getStation(), offer.getDepartureTime(),
+					np, offer.getEgress().getStation(), offer.getArrivalTime());
 			b.relatedOffer = offer;
 			b.numberOfVehicles = offer.getNbOfVehicles();
 			return b;
@@ -94,9 +70,7 @@ public class CarsharingBookingRecord {
 		public void setNbrOfVeh(int nbreveh) { this.numberOfVehicles = nbreveh; }
 		public void setRelatedOffer(CarsharingOffer offer) { this.relatedOffer = offer; }
 		public void setAgent(CarsharingAgent a) { this.person = a; }
-		public void setComment(String s) { this.comment = s; }
 		
-		public String getComment() { return this.comment; }
 		public String getId() {	return this.id;	}
 		public double getDepartureTime() { return this.departureTime; }
 		public double getArrivalTime() { return this.arrivalTime; }
@@ -109,14 +83,12 @@ public class CarsharingBookingRecord {
 		public CarsharingVehicleMobsim getVehicle() { return this.vehicle; }
 		public CarsharingAgent getAgent() { return this.person; }
 		
-		
 		public String trip() { return this.trip; }
 		public String park() { return this.park; }
 
-		public boolean vehicleOffer() { return !this.noVehicleOffer; }
-		public boolean parkingOffer() { return !this.noParkingOffer; }
+		public Boolean vehicleOffer() { return this.vehicleOffer!=null && this.vehicleOffer; }
+		public Boolean parkingOffer() { return this.parkingOffer!=null && this.parkingOffer; }
 		
-		public boolean betterWalk() { return this.betterWalk; }
-		public boolean bookingFailed() { return this.noVehicleOffer || this.noParkingOffer; }
+		public boolean bookingFailed() { return vehicleOffer() == false || parkingOffer() == false; }
 		
 }

@@ -53,7 +53,6 @@ public class CarsharingBookingEvent extends AbstractCarsharingEvent {
 		logRow.put("facility.lng", this.book_log.src_lng);
 		logRow.put("facility.lat", this.book_log.src_lat);
 		
-		logRow.put("comment", this.book_log.comment);
 		return logRow;
 	}
 	
@@ -85,7 +84,6 @@ public class CarsharingBookingEvent extends AbstractCarsharingEvent {
 		logRow.put("facility.lng", this.book_log.dst_lng);
 		logRow.put("facility.lat", this.book_log.dst_lat);
 		
-		logRow.put("comment", this.book_log.comment);
 		return logRow;
 	}
 	

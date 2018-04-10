@@ -213,22 +213,10 @@ public abstract class AbstractCarsharingAgentBehaviour implements 	VehicleUsingA
 		Activity O = (Activity) planelements.get(unroutedIndex - 1);
 		Activity D = (Activity) planelements.get(unroutedIndex + 1);
 		List<PlanElement> new_trip = new ArrayList<PlanElement>();
-		//Leg new_leg = null;
-		if(this.currBookingRecord.betterWalk()) {
-			//new_leg = PopulationUtils.createLeg(CarsharingRouterUtils.cs_walk);
-			new_trip.addAll(this.tripRouter.calcRoute(
-					CarsharingRouterUtils.cs_walk, 
-					CarsharingUtils.getDummyFacility(O), CarsharingUtils.getDummyFacility(D), 
-					now, this.basicAgentDelegate.getPerson()));
-		} else {
-			//new_leg = PopulationUtils.createLeg(CarsharingRouterUtils.cs_pt);
-			new_trip.addAll(this.tripRouter.calcRoute(
-					CarsharingRouterUtils.cs_pt, 
-					CarsharingUtils.getDummyFacility(O), CarsharingUtils.getDummyFacility(D), 
-					now, this.basicAgentDelegate.getPerson()));
-		}
-		//new_leg.setRoute(new LinkNetworkRouteImpl(O.getLinkId(), D.getLinkId()));
-		//new_trip.add(new_leg);
+		new_trip.addAll(this.tripRouter.calcRoute(
+				CarsharingRouterUtils.cs_pt, 
+				CarsharingUtils.getDummyFacility(O), CarsharingUtils.getDummyFacility(D), 
+				now, this.basicAgentDelegate.getPerson()));
 		TripRouter.insertTrip(this.getCurrentPlan(), O, new_trip, D);
 	}
 
