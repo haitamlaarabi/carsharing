@@ -108,6 +108,10 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		}
 	}
 	
+	public boolean isActivated() {
+		return this.iter >= this.rparams.getActivate_from_iter() && this.iter <= this.rparams.getDeactivate_after_iter();
+	}
+	
 	@Override
 	public void updateRelocationList(int time) {
 		if(this.time_step.check((int) time)) {
@@ -117,9 +121,8 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	
 	@Override
 	public List<CarsharingOffer> relocationList(int time, CarsharingDemand demand, List<CarsharingOffer> offers) {
-		List<CarsharingOffer> offer_tasks = new ArrayList<CarsharingOffer>();
-		if(this.iter < this.rparams.getActivate_from_iter() || this.iter > this.rparams.getDeactivate_after_iter()) {
-			return offer_tasks;
+		if(!this.isActivated()) {
+			return new ArrayList<CarsharingOffer>();
 		}
 		return this.usrelocate(demand, offers);
 	}
@@ -127,9 +130,6 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	@Override
 	public List<CarsharingRelocationTask> relocationList(int time) {
 		List<CarsharingRelocationTask> booked_tasks = new ArrayList<CarsharingRelocationTask>();
-		if(this.iter < this.rparams.getActivate_from_iter() || this.iter > this.rparams.getDeactivate_after_iter()) {
-			return booked_tasks;
-		}
 		List<CarsharingRelocationTask> tasks = this.oprelocate();
 		CarsharingRelocationTask sTask = null;
 		double accessTime = 0, accessDistance = 0;
@@ -189,9 +189,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	
 	@Override
 	public void reset(int iteration) {	
-		if(this.iter < this.rparams.getActivate_from_iter() || this.iter > this.rparams.getDeactivate_after_iter()) {
-			return;
-		}
+		if(!this.isActivated()) return;
 		init();
 		if(iteration > 0) {
 			double tot_perf = 0;

@@ -14,4 +14,5 @@ public interface CarsharingRelocationModel extends CarsharingOperationModel {
 	List<CarsharingRelocationTask> relocationList(int time);
 	void reset(int iteration);
 	void updateRelocationList(int time);
+	boolean isActivated();
 }
