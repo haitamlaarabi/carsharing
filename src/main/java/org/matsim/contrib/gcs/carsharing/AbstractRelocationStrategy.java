@@ -62,26 +62,18 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	protected int staff_size;
 	protected int train_size;
 	
-	public AbstractRelocationStrategy(
-			CarsharingManager m, TripRouter router) {
+	public AbstractRelocationStrategy(CarsharingManager m, TripRouter router) {
 		this.m = m;
 		this.router = router;
 		this.choiceFactory = m.opChoiceFactory();
 		this.pp_data = m.ppData();
 		this.rparams = m.getConfig().getRelocation();
-		
-		try {
-			this.perf_writer = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getPerfomance_file(), true)));
-			this.traceWriter = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getTrace_output_file(), true)));
-			this.taskWriter = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getTask_output_file(), true)));
-			this.traceWriter.println("time\tstation.id\tvalue\tvariable");
-			this.taskWriter.println("time\tf.station\tr.station\tn.veh\toperator");
-			this.perf_writer.println("iteration\tbin\toperators\tstation.id\tvalue\tvariable");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		this.demand = new ConcurrentHashMap<Id<ActivityFacility>, CarsharingStationDemand>(); 
+		this.demand = new ConcurrentHashMap<Id<ActivityFacility>, CarsharingStationDemand>();
+	}
+	
+	void init() {
+		if(this.demand.isEmpty())
+			return;
 		HashSet<CarsharingBookingRecord> recs = null;
 		if( this.rparams.getEstimated_demand_file() != null ) {
 			recs = CarsharingUtils.extractDemandFromBookingFile(this.m, this.rparams.getEstimated_demand_file());
@@ -99,12 +91,21 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 				this.demand.get(rec.getDestinationStation().getId()).push(rec);
 			}
 		}
-		
 		this.staff_size = this.rparams.getStaff_lbound();
 		this.time_bin = this.rparams.getBinstats_lbound();
 		this.train_size = this.rparams.getMaxtrain();
 		this.time_bin_k_ub = 1+(this.rparams.getBinstats_ubound() - this.rparams.getBinstats_lbound())/STEP;
 		this.staff_size_k_ub = 1+(this.rparams.getStaff_ubound() - this.rparams.getStaff_lbound());
+		try {
+			this.perf_writer = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getPerfomance_file(), true)));
+			this.traceWriter = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getTrace_output_file(), true)));
+			this.taskWriter = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getTask_output_file(), true)));
+			this.traceWriter.println("time\tstation.id\tvalue\tvariable");
+			this.taskWriter.println("time\tf.station\tr.station\tn.veh\toperator");
+			this.perf_writer.println("iteration\tbin\toperators\tstation.id\tvalue\tvariable");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
@@ -116,52 +117,54 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	
 	@Override
 	public List<CarsharingOffer> relocationList(int time, CarsharingDemand demand, List<CarsharingOffer> offers) {
-		if(this.iter >= this.rparams.getActivate_from_iter() && this.iter <= this.rparams.getDeactivate_after_iter()) {
-			return this.usrelocate(demand, offers);
+		List<CarsharingOffer> offer_tasks = new ArrayList<CarsharingOffer>();
+		if(this.iter < this.rparams.getActivate_from_iter() || this.iter > this.rparams.getDeactivate_after_iter()) {
+			return offer_tasks;
 		}
-		return new ArrayList<CarsharingOffer>();
+		return this.usrelocate(demand, offers);
 	}
 	
 	@Override
 	public List<CarsharingRelocationTask> relocationList(int time) {
 		List<CarsharingRelocationTask> booked_tasks = new ArrayList<CarsharingRelocationTask>();
-		if(this.iter >= this.rparams.getActivate_from_iter() && this.iter <= this.rparams.getDeactivate_after_iter()) {
-			List<CarsharingRelocationTask> tasks = this.oprelocate();
-			CarsharingRelocationTask sTask = null;
-			double accessTime = 0, accessDistance = 0;
-			List<CarsharingRelocationTask> temp_tasks = new ArrayList<CarsharingRelocationTask>();
-			for(CarsharingRelocationTask t : tasks) {
-				CarsharingOperatorMobsim op = (CarsharingOperatorMobsim) t.getAgent();
-				if(!op.available()) {
-					throw new RuntimeException("Adding tasks to busy operator");
-				}
-				temp_tasks.add(t);
-				if(t.getSize() == 0) {
-					accessTime = t.getTravelTime();
-					accessDistance = t.getDistance();
+		if(this.iter < this.rparams.getActivate_from_iter() || this.iter > this.rparams.getDeactivate_after_iter()) {
+			return booked_tasks;
+		}
+		List<CarsharingRelocationTask> tasks = this.oprelocate();
+		CarsharingRelocationTask sTask = null;
+		double accessTime = 0, accessDistance = 0;
+		List<CarsharingRelocationTask> temp_tasks = new ArrayList<CarsharingRelocationTask>();
+		for(CarsharingRelocationTask t : tasks) {
+			CarsharingOperatorMobsim op = (CarsharingOperatorMobsim) t.getAgent();
+			if(!op.available()) {
+				throw new RuntimeException("Adding tasks to busy operator");
+			}
+			temp_tasks.add(t);
+			if(t.getSize() == 0) {
+				accessTime = t.getTravelTime();
+				accessDistance = t.getDistance();
+			} else {
+				if(t.getType().equals("START")) {
+					sTask = t;
 				} else {
-					if(t.getType().equals("START")) {
-						sTask = t;
-					} else {
-						CarsharingOffer off = constructOffer(sTask, t, accessTime, accessDistance);
-						ArrayList<CarsharingOffer> offers = new ArrayList<CarsharingOffer>();
-						offers.add(off);
-						CarsharingBookingRecord b = this.m.booking().process(time_step.step(), off.getDemand(), off, offers);
-						if(!b.bookingFailed()) { // **** BOOKING 
-							for(CarsharingRelocationTask new_task : temp_tasks) {
-								new_task.setBooking(b);
-								booked_tasks.add(new_task);
-								op.addTask(new_task);
-							}
-						} else {
-							logger.warn("BOOKING FAILURE - " + b.getAgent().getId());
+					CarsharingOffer off = constructOffer(sTask, t, accessTime, accessDistance);
+					ArrayList<CarsharingOffer> offers = new ArrayList<CarsharingOffer>();
+					offers.add(off);
+					CarsharingBookingRecord b = this.m.booking().process(time_step.step(), off.getDemand(), off, offers);
+					if(!b.bookingFailed()) { // **** BOOKING 
+						for(CarsharingRelocationTask new_task : temp_tasks) {
+							new_task.setBooking(b);
+							booked_tasks.add(new_task);
+							op.addTask(new_task);
 						}
-						m.events().processEvent(new CarsharingBookingEvent(time, m.getScenario(), m, b.getDemand(), b));
-						sTask = null;
-						accessTime = 0;
-						accessDistance = 0;
-						temp_tasks.clear();
+					} else {
+						logger.warn("BOOKING FAILURE - " + b.getAgent().getId());
 					}
+					m.events().processEvent(new CarsharingBookingEvent(time, m.getScenario(), m, b.getDemand(), b));
+					sTask = null;
+					accessTime = 0;
+					accessDistance = 0;
+					temp_tasks.clear();
 				}
 			}
 		}
@@ -186,6 +189,10 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	
 	@Override
 	public void reset(int iteration) {	
+		if(this.iter < this.rparams.getActivate_from_iter() || this.iter > this.rparams.getDeactivate_after_iter()) {
+			return;
+		}
+		init();
 		if(iteration > 0) {
 			double tot_perf = 0;
 			for(CarsharingStationMobsim s : this.m.getStations()) {
@@ -229,7 +236,8 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 			}
 		}
 
-		if(this.m.getOperators().size() != this.staff_size) {
+		List<CarsharingOperatorMobsim> ops = this.m.getOperators().availableSet();
+		if(ops.size() != this.staff_size) {
 			this.m.getOperators().clear();
 			PopulationFactory popFactory = this.m.getScenario().getPopulation().getFactory();
 			CarsharingStationMobsim[] stations = this.m.getStations().map().values().toArray(new CarsharingStationMobsim[0]);
@@ -242,7 +250,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 						setTrainSize(this.train_size).
 						build());
 			}
-		} else if(this.m.getOperators().availableSet().get(0).getMaxRoadtrainSize() != this.train_size) {
+		} else if(ops.get(0).getMaxRoadtrainSize() != this.train_size) {
 			for(CarsharingOperatorMobsim o : this.m.getOperators()) {
 				o.setMaxTrainSize(this.train_size);
 			}
