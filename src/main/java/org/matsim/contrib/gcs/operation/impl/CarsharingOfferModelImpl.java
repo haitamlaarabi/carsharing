@@ -222,7 +222,7 @@ public class CarsharingOfferModelImpl implements CarsharingOfferModel  {
 			
 			CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromOffer(offer);
 			builder.setDrive(offer.getNbOfVehicles(), rd);
-			builder.setEgress((CarsharingStationMobsim) newFS, traveltime, distance, CarsharingOffer.SUCCESS_FREEFLOATINGOFFER);
+			builder.setEgress((CarsharingStationMobsim) newFS, (int) traveltime, distance, CarsharingOffer.SUCCESS_FREEFLOATINGOFFER);
 			return builder.build();
 	}
 	

@@ -40,7 +40,7 @@ public class CarsharingBookingManager {
 		
 		CarsharingBookingRecord br = null;
 		if(selectedOffer != null) {
-			br = CarsharingBookingRecord.constructAndGetBookingRec(now, selectedOffer);
+			br = CarsharingBookingRecord.constructAndGetBookingRec((int)now, selectedOffer);
 			CarsharingStationMobsim So = br.getOriginStation();
 			CarsharingStationMobsim Sd = br.getDestinationStation();
 			br.vehicleOffer = this.stationBookingMap.get(So).add(br);
@@ -90,7 +90,7 @@ public class CarsharingBookingManager {
 		
 		CarsharingBookingRecord br = null;
 		if(aStation != null && eStation != null) {
-			br = CarsharingBookingRecord.constructAndGetBookingRec(now, theoffer);
+			br = CarsharingBookingRecord.constructAndGetBookingRec((int)now, theoffer);
 		} else {
 			Facility start = CarsharingUtils.getDummyFacility(demand.getOrigin());
 			Facility end = CarsharingUtils.getDummyFacility(demand.getDestination());
@@ -108,8 +108,8 @@ public class CarsharingBookingManager {
 				end = eStation.facility();
 				noparkingfound = !theoffer.getEgress().getStatus().isValid();
 			}
-			br = CarsharingBookingRecord.constructBookingRec(
-					now, demand, novehiclefound, aStation, deptime,	noparkingfound,	eStation, demand.getRawArrivalTime());
+			br = CarsharingBookingRecord.constructBookingRec((int)now, demand, novehiclefound, aStation, (int)deptime, 
+					noparkingfound, eStation, (int)deptime+1);
 		}
 		
 		return br;

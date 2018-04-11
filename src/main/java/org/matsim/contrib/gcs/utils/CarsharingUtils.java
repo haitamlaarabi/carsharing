@@ -97,10 +97,10 @@ public final class CarsharingUtils {
 						CarsharingDemand demand = CarsharingDemand.getInstance(manager.customers().map().get(p.getId()), 
 								(Leg) elements.get(i), p.getSelectedPlan());
 						CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromAgent(demand.getAgent(), demand);
-						builder.setAccess(demand.getRawDepartureTime(), departure.station, 0.0, 0.0, CarsharingOffer.DUMMY);
+						builder.setAccess(demand.getRawDepartureTime(), departure.station, 0, 0.0, CarsharingOffer.DUMMY);
 						builder.setDrive(1);
-						builder.setEgress(arrival.station, 0.0, 0.0, CarsharingOffer.DUMMY);
-						recset.add(CarsharingBookingRecord.constructAndGetBookingRec(0.0, builder.build()));
+						builder.setEgress(arrival.station, 0, 0.0, CarsharingOffer.DUMMY);
+						recset.add(CarsharingBookingRecord.constructAndGetBookingRec(0, builder.build()));
 					}
 				}
 			}
@@ -119,7 +119,7 @@ public final class CarsharingUtils {
 			CarsharingStationMobsim station = null;
 			CarsharingCustomerMobsim customer = null;
 			String type = "";
-			double time_act = 0;
+			int time_act = 0;
 			String booking_id = "";
 			int time = 0;
 			int time_offset = 0;
@@ -151,7 +151,7 @@ public final class CarsharingUtils {
 				} else if (header[j].compareTo("customer.id") == 0) {
 					customer = m.customers().map().get(Id.create(col, Person.class));
 				} else if(header[j].compareTo("time.act") == 0 && col.compareToIgnoreCase("NA") != 0) {
-					time_act = Double.parseDouble(col);
+					time_act = (int)Double.parseDouble(col);
 				}  else if(header[j].compareTo("time.drive") == 0) {
 					time_drive = (int)Double.parseDouble(col);
 				}
@@ -191,8 +191,8 @@ public final class CarsharingUtils {
 		return distance;
 	}
 	
-	public static double travelTimeBeeline(double euc_distance, ModeRoutingParams r_param) {
-		double traveltime = distanceBeeline(euc_distance, r_param) / r_param.getTeleportedModeSpeed();
+	public static int travelTimeBeeline(double euc_distance, ModeRoutingParams r_param) {
+		int traveltime = (int) (distanceBeeline(euc_distance, r_param) / r_param.getTeleportedModeSpeed());
 		return traveltime;
 	}
 	

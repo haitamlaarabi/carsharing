@@ -203,7 +203,7 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 		public CarsharingStationMobsim station;
 		public Facility facility;
 		public double distance;
-		public double traveltime;
+		public int traveltime;
 		public boolean isFloating;
 	}
 	

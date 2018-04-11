@@ -72,8 +72,6 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	}
 	
 	void init() {
-		if(this.demand.isEmpty())
-			return;
 		HashSet<CarsharingBookingRecord> recs = null;
 		if( this.rparams.getEstimated_demand_file() != null ) {
 			recs = CarsharingUtils.extractDemandFromBookingFile(this.m, this.rparams.getEstimated_demand_file());
@@ -100,7 +98,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 			this.perf_writer = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getPerfomance_file(), true)));
 			this.traceWriter = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getTrace_output_file(), true)));
 			this.taskWriter = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getTask_output_file(), true)));
-			this.traceWriter.println("time\tstation.id\tvalue\tvariable");
+			this.traceWriter.println("bin.from\tbin.to\tstation.id\tvalue\tvariable");
 			this.taskWriter.println("time\tf.station\tr.station\tn.veh\toperator");
 			this.perf_writer.println("iteration\tbin\toperators\tstation.id\tvalue\tvariable");
 		} catch (IOException e) {
@@ -132,7 +130,8 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		List<CarsharingRelocationTask> booked_tasks = new ArrayList<CarsharingRelocationTask>();
 		List<CarsharingRelocationTask> tasks = this.oprelocate();
 		CarsharingRelocationTask sTask = null;
-		double accessTime = 0, accessDistance = 0;
+		int accessTime = 0;
+		double accessDistance = 0;
 		List<CarsharingRelocationTask> temp_tasks = new ArrayList<CarsharingRelocationTask>();
 		for(CarsharingRelocationTask t : tasks) {
 			CarsharingOperatorMobsim op = (CarsharingOperatorMobsim) t.getAgent();
@@ -171,7 +170,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		return booked_tasks;
 	}
 	
-	CarsharingOffer constructOffer(CarsharingRelocationTask sTask, CarsharingRelocationTask eTask, double aTime, double aDist) {
+	CarsharingOffer constructOffer(CarsharingRelocationTask sTask, CarsharingRelocationTask eTask, int aTime, double aDist) {
 		Leg reloLeg = PopulationUtils.createLeg("RELOCATION");
 		Activity reloSrcActivity = PopulationUtils.createActivityFromCoordAndLinkId("STATION", sTask.getStation().facility().getCoord(), sTask.getStation().facility().getLinkId());
 		reloSrcActivity.setEndTime(sTask.getTime());
@@ -189,8 +188,9 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	
 	@Override
 	public void reset(int iteration) {	
+		this.iter = iteration;
 		if(!this.isActivated()) return;
-		init();
+		if(this.demand.isEmpty()) init();
 		if(iteration > 0) {
 			double tot_perf = 0;
 			for(CarsharingStationMobsim s : this.m.getStations()) {
@@ -265,8 +265,6 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		
 		this.time_bin = this.rparams.getBinstats_lbound() + this.time_bin_k*STEP;
 		this.time_step = new TimeStep(0, this.time_bin);
-		this.iter = iteration;
-
 	}
 	
 	// ***********************************************

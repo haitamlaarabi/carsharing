@@ -49,15 +49,15 @@ public class CarsharingOffer {
 			access.status = s;
 		}
 
-		public void setAccess(double depTime, CarsharingStationMobsim aStation, double aTT, double aDist, CarsharingOfferStatus flag) {
+		public void setAccess(int depTime, CarsharingStationMobsim aStation, int aTT, double aDist, CarsharingOfferStatus flag) {
 			access = new AccessOffer(depTime, aStation, aTT, aDist, flag);
 		}
 		
-		public void setEgress(CarsharingStationMobsim eStation, double eTT, double eDist, CarsharingOfferStatus flag) {
+		public void setEgress(CarsharingStationMobsim eStation, int eTT, double eDist, CarsharingOfferStatus flag) {
 			egress = new EgressOffer(drive.time+drive.travelTime, eStation, eTT, eDist, flag);
 		}
 		
-		public void setEgress(double deptime, CarsharingStationMobsim eStation, double eTT, double eDist, CarsharingOfferStatus flag) {
+		public void setEgress(int deptime, CarsharingStationMobsim eStation, int eTT, double eDist, CarsharingOfferStatus flag) {
 			egress = new EgressOffer(deptime, eStation, eTT, eDist, flag);
 		}
 		
@@ -95,11 +95,11 @@ public class CarsharingOffer {
 	public static class AccessOffer {
 
 		private CarsharingStationMobsim station;
-		private double travelTime;
+		private int travelTime;
 		private double distance;
-		private double time;
+		private int time;
 		private CarsharingOfferStatus status;
-		public AccessOffer(double depTime, CarsharingStationMobsim aStation, double aDur, double aDist, CarsharingOfferStatus flag) {
+		public AccessOffer(int depTime, CarsharingStationMobsim aStation, int aDur, double aDist, CarsharingOfferStatus flag) {
 			this.station = aStation;
 			this.distance = aDist;
 			this.travelTime = aDur;
@@ -114,10 +114,10 @@ public class CarsharingOffer {
 			this.status = a.status;
 		}
 		public CarsharingStationMobsim getStation() { return station; }
-		public double getTravelTime() {	return travelTime; }
+		public int getTravelTime() {	return travelTime; }
 		public double getDistance() { return distance; }
 		public CarsharingOfferStatus getStatus() { return status; }
-		public double getTime() { return this.time; }
+		public int getTime() { return this.time; }
 	}
 	
 	/**
@@ -127,11 +127,11 @@ public class CarsharingOffer {
 	 */
 	public static class EgressOffer  {
 		private CarsharingStationMobsim station;
-		private double travelTime;
+		private int travelTime;
 		private double distance;
 		private CarsharingOfferStatus status;
-		private double time;
-		public EgressOffer(double depTime, CarsharingStationMobsim eStation, double eDur, double eDist, CarsharingOfferStatus flag) {
+		private int time;
+		public EgressOffer(int depTime, CarsharingStationMobsim eStation, int eDur, double eDist, CarsharingOfferStatus flag) {
 			this.station = eStation;
 			this.travelTime = eDur;
 			this.distance = eDist;
@@ -146,10 +146,10 @@ public class CarsharingOffer {
 			this.status = e.status;
 		}
 		public CarsharingStationMobsim getStation() { return station; }
-		public double getTravelTime() { return travelTime; }
+		public int getTravelTime() { return travelTime; }
 		public double getDistance() { return distance; }
 		public CarsharingOfferStatus getStatus() { return status; }
-		public double getTime() { return this.time; }
+		public int getTime() { return this.time; }
 	}
 	
 	/**
@@ -158,13 +158,13 @@ public class CarsharingOffer {
 	 *
 	 */
 	public static class DriveOffer {
-		private double time;
-		private double travelTime = 0;
+		private int time;
+		private int travelTime = 0;
 		private double distance = 0;
-		private double offset = 0;
+		private int offset = 0;
 		private List<? extends PlanElement> route = null;
 		private int nVEH;
-		public DriveOffer(double depTime, int nVEH, RouteData rd){
+		public DriveOffer(int depTime, int nVEH, RouteData rd){
 			this.time = depTime;
 			this.nVEH = nVEH;
 			if(rd != null) {
@@ -182,11 +182,11 @@ public class CarsharingOffer {
 			this.travelTime = d.travelTime;
 			this.offset = d.offset;
 		}
-		public double getRentalTime() { return travelTime + 2*this.offset; }
+		public int getRentalTime() { return travelTime + 2*this.offset; }
 		public double getDistance() { return distance; }
 		public List<? extends PlanElement> getRoute() { return this.route; }
-		public double getTime() { return this.time; }
-		public double getOffset() { return this.offset; }
+		public int getTime() { return this.time; }
+		public int getOffset() { return this.offset; }
 		public int getNbVehicles() { return this.nVEH; }
 	}
 	
@@ -214,10 +214,10 @@ public class CarsharingOffer {
 	public boolean hasValidEgress() { return this.egress.status.status; }
 	public CarsharingAgent getAgent() { return this.agent; }
 	public double getCost() { return this.cost; }
-	public double getDepartureTime() { return this.access.time; }
-	public double getArrivalTime() { return this.egress.time + this.egress.travelTime; }
-	public double getAccessTime() { return this.access.time + this.access.travelTime; }
-	public double getEgressTime() { return this.egress.time; }
+	public int getDepartureTime() { return this.access.time; }
+	public int getArrivalTime() { return this.egress.time + this.egress.travelTime; }
+	public int getAccessTime() { return this.access.time + this.access.travelTime; }
+	public int getEgressTime() { return this.egress.time; }
 	public boolean isValid() { return this.access.status.status && this.egress.status.status; }
 	
 	

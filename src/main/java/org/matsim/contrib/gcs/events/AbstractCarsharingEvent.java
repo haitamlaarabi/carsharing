@@ -113,6 +113,8 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 		final String dst_lng;
 		final String dst_lat;
 		
+		final String status;
+		
 		
 		BookLog(CarsharingBookingRecord r) {
 			this.trip_index = String.valueOf(r.getDemand().getTripIndex());
@@ -120,16 +122,11 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 			this.trip_id = r.trip();
 			this.booking_id = r.getId();
 			this.nbr_of_veh = String.valueOf(r.getNbrOfVeh());
-			if(r.vehicleOffer()) {
-				this.src_request_status = "SUCCESS";
-			} else {
-				this.src_request_status = "FAILURE";
-			}
-			if(r.parkingOffer()) {
-				this.dst_request_status = "SUCCESS";
-			} else {
-				this.dst_request_status = "FAILURE";
-			}
+
+			this.status = r.bookingFailed() ? "KO":"OK";
+			this.src_request_status = r.vehicleOffer()?"SUCCESS":"FAILURE";
+			this.dst_request_status = r.parkingOffer()?"SUCCESS":"FAILURE";
+
 			if(r.getRelatedOffer() != null) {
 				this.src_station_log = new StationLog(r.getOriginStation());
 				this.src_distance_act = String.valueOf(r.getRelatedOffer().getAccess().getDistance());

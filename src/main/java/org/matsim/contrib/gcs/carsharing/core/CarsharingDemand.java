@@ -16,8 +16,8 @@ public class CarsharingDemand {
 	private Activity origin;
 	private Activity destination;
 	
-	private double departureTime;
-	private double arrivalTime;
+	private int departureTime;
+	private int arrivalTime;
 	
 	private int numberOfVehicles;
 	private Leg carsharingLeg;
@@ -37,9 +37,9 @@ public class CarsharingDemand {
 		this.origin = origin;
 		this.destination = destination;
 		
-		this.departureTime = this.origin.getEndTime();
+		this.departureTime = (int) this.origin.getEndTime();
 		if(CarsharingUtils.isNaNorInfinit(this.departureTime)) {
-			this.departureTime = this.origin.getStartTime();
+			this.departureTime = (int) this.origin.getStartTime();
 			if(CarsharingUtils.isNaNorInfinit(this.departureTime)) {
 				throw new RuntimeException("Demand: origin activity with undefined start time & end time");
 			} 
@@ -48,9 +48,9 @@ public class CarsharingDemand {
 			}
 		}
 		
-		this.arrivalTime = this.destination.getStartTime();
+		this.arrivalTime = (int) this.destination.getStartTime();
 		if(CarsharingUtils.isNaNorInfinit(this.arrivalTime)) {
-			this.arrivalTime = this.destination.getEndTime();
+			this.arrivalTime = (int) this.destination.getEndTime();
 			if(CarsharingUtils.isNaNorInfinit(this.arrivalTime)) {
 				throw new RuntimeException("Demand: destination activity with undefined start time & end time");
 			}
@@ -67,8 +67,8 @@ public class CarsharingDemand {
 	public CarsharingAgent getAgent() { return this.person; }		
 	public Activity getOrigin() { return this.origin; }
 	public Activity getDestination() { return this.destination; }
-	public double getRawDepartureTime() { return this.departureTime; }
-	public double getRawArrivalTime() { return this.arrivalTime; }
+	public int getRawDepartureTime() { return this.departureTime; }
+	public int getRawArrivalTime() { return this.arrivalTime; }
 	public int getNbrOfVeh() { return numberOfVehicles; }
 	public int getTripIndex() { return this.tripindex; }
 	public int getPlanIndex() { return this.planindex; }

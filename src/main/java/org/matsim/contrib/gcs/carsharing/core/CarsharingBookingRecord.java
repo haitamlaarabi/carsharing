@@ -2,13 +2,13 @@ package org.matsim.contrib.gcs.carsharing.core;
 
 public class CarsharingBookingRecord {
 
-		double bookingTime;
+		int bookingTime;
 		CarsharingAgent person;
 		CarsharingStationMobsim sourceStation;
-		double departureTime;
+		int departureTime;
 		int numberOfVehicles;
 		CarsharingStationMobsim destinationStation;
-		double arrivalTime;
+		int arrivalTime;
 		String trip;
 		String park;
 		CarsharingVehicleMobsim vehicle;
@@ -22,9 +22,9 @@ public class CarsharingBookingRecord {
 		CarsharingBookingRecord() {}
 		
 		public static CarsharingBookingRecord constructBookingRec(
-				double bookingTime, CarsharingDemand demand, 
-				Boolean vehicleOffer, CarsharingStationMobsim depStation, double depTime,
-				Boolean parkingOffer,	CarsharingStationMobsim arrStation,	double arrTime) {
+				int bookingTime, CarsharingDemand demand, 
+				Boolean vehicleOffer, CarsharingStationMobsim depStation, int depTime,
+				Boolean parkingOffer,	CarsharingStationMobsim arrStation,	int arrTime) {
 			CarsharingBookingRecord b = new CarsharingBookingRecord();
 			b.bookingTime = bookingTime;
 			b.demand = demand;
@@ -42,7 +42,7 @@ public class CarsharingBookingRecord {
 			return b;
 		}
 		
-		public static CarsharingBookingRecord constructAndGetBookingRec(double bookingTime, CarsharingOffer offer) {
+		public static CarsharingBookingRecord constructAndGetBookingRec(int bookingTime, CarsharingOffer offer) {
 			Boolean nv = null, np = null;
 			if(offer.getAccess().getStation() != null) {
 				nv = offer.getAccess().getStatus().isValid();
@@ -61,23 +61,23 @@ public class CarsharingBookingRecord {
 
 						
 		public void setVehicle(CarsharingVehicleMobsim v) { this.vehicle = v; }
-		public void setArrivalTime(double arrivalTime) { this.arrivalTime = arrivalTime; }
+		public void setArrivalTime(int arrivalTime) { this.arrivalTime = arrivalTime; }
 		public void setTrip(String tripLabel) { this.trip = tripLabel; }
 		public void setPark(String parkId) { this.park = parkId; }
 		public void setDestinationStation(CarsharingStationMobsim stationDestination) {	this.destinationStation = stationDestination; }
 		public void setOriginStation(CarsharingStationMobsim sourceStation) { this.sourceStation = sourceStation; }
-		public void setDepartureTime(double departureTime) { this.departureTime = departureTime; }
+		public void setDepartureTime(int departureTime) { this.departureTime = departureTime; }
 		public void setNbrOfVeh(int nbreveh) { this.numberOfVehicles = nbreveh; }
 		public void setRelatedOffer(CarsharingOffer offer) { this.relatedOffer = offer; }
 		public void setAgent(CarsharingAgent a) { this.person = a; }
 		
 		public String getId() {	return this.id;	}
-		public double getDepartureTime() { return this.departureTime; }
-		public double getArrivalTime() { return this.arrivalTime; }
+		public int getDepartureTime() { return this.departureTime; }
+		public int getArrivalTime() { return this.arrivalTime; }
 		public int getNbrOfVeh() { return this.numberOfVehicles; }
 		public CarsharingStationMobsim getOriginStation() { return this.sourceStation; }
 		public CarsharingStationMobsim getDestinationStation() { return this.destinationStation; }
-		public double getBookingTime() { return this.bookingTime; }
+		public int getBookingTime() { return this.bookingTime; }
 		public CarsharingOffer getRelatedOffer() { return this.relatedOffer; }
 		public CarsharingDemand getDemand() { return this.demand; }
 		public CarsharingVehicleMobsim getVehicle() { return this.vehicle; }

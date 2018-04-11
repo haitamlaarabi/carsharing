@@ -1,8 +1,5 @@
 package org.matsim.contrib.gcs.carsharing.core;
 
-import java.util.List;
-
-import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.gcs.router.CarsharingRouterUtils.RouteData;
 
 public class CarsharingRelocationTask implements Comparable<CarsharingRelocationTask> {
@@ -14,23 +11,23 @@ public class CarsharingRelocationTask implements Comparable<CarsharingRelocation
 	private int size;
 	final private String id;
 	final private double distance;
-	final private double tt;
+	final private int tt;
 	private CarsharingBookingRecord booking = null;
 	private RouteData route = null;
 	
-	public static CarsharingRelocationTask startTask(String id, int time, CarsharingAgent agent, CarsharingStationMobsim station, int size, double tt, double distance) {
+	public static CarsharingRelocationTask startTask(String id, int time, CarsharingAgent agent, CarsharingStationMobsim station, int size, int tt, double distance) {
 		CarsharingRelocationTask t = new CarsharingRelocationTask(id, time, agent, station, size, tt, distance);
 		t.type = "START";
 		return t;
 	}
 	
-	public static CarsharingRelocationTask endTask(String id, int time, CarsharingAgent agent, CarsharingStationMobsim station, int size, double tt, double distance) {
+	public static CarsharingRelocationTask endTask(String id, int time, CarsharingAgent agent, CarsharingStationMobsim station, int size, int tt, double distance) {
 		CarsharingRelocationTask t = new CarsharingRelocationTask(id, time, agent, station, size, tt, distance);
 		t.type = "END";
 		return t;
 	}
 		
-	private CarsharingRelocationTask(String id, int time, CarsharingAgent agent, CarsharingStationMobsim station, int size, double tt, double distance) {
+	private CarsharingRelocationTask(String id, int time, CarsharingAgent agent, CarsharingStationMobsim station, int size, int tt, double distance) {
 		this.agent = agent;
 		this.station = station;
 		this.size = size;
@@ -48,7 +45,7 @@ public class CarsharingRelocationTask implements Comparable<CarsharingRelocation
 		return type;
 	}
 	
-	public double getTravelTime() {
+	public int getTravelTime() {
 		return this.tt;
 	}
 	
@@ -64,7 +61,7 @@ public class CarsharingRelocationTask implements Comparable<CarsharingRelocation
 		return station;
 	}
 	
-	public double getTime() {
+	public int getTime() {
 		return this.time;
 	}
 
