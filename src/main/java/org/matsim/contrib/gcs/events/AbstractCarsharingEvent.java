@@ -96,7 +96,7 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 		final String src_time_drive;
 		final String src_type;
 		final String src_date;
-		final String src_offset;
+		final String src_time_rental;
 		final String src_lng;
 		final String src_lat;
 		
@@ -109,7 +109,7 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 		final String dst_time_drive;
 		final String dst_type;
 		final String dst_date;
-		final String dst_offset;
+		final String dst_time_rental;
 		final String dst_lng;
 		final String dst_lat;
 		
@@ -132,29 +132,29 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 				this.src_distance_act = String.valueOf(r.getRelatedOffer().getAccess().getDistance());
 				this.src_time_act = String.valueOf(r.getRelatedOffer().getAccess().getTravelTime());
 				this.src_distance_drive = String.valueOf(r.getRelatedOffer().getDrive().getDistance());
-				this.src_time_drive = String.valueOf(r.getRelatedOffer().getDrive().getRentalTime());
-				this.src_offset = String.valueOf(manager.getConfig().getInteractionOffset());
+				this.src_time_drive = String.valueOf(r.getRelatedOffer().getDrive().getTravelTime());
+				this.src_time_rental = String.valueOf(r.getRelatedOffer().getDrive().getRentalTime());
 
 				this.dst_station_log = new StationLog(r.getDestinationStation());
 				this.dst_distance_act = String.valueOf(r.getRelatedOffer().getEgress().getDistance());
 				this.dst_time_act = String.valueOf(r.getRelatedOffer().getEgress().getTravelTime());
 				this.dst_distance_drive = String.valueOf(r.getRelatedOffer().getDrive().getDistance());
-				this.dst_time_drive = String.valueOf(r.getRelatedOffer().getDrive().getRentalTime());
-				this.dst_offset = String.valueOf(manager.getConfig().getInteractionOffset());
+				this.dst_time_drive = String.valueOf(r.getRelatedOffer().getDrive().getTravelTime());
+				this.dst_time_rental = String.valueOf(r.getRelatedOffer().getDrive().getRentalTime());
 			} else {
 				this.src_station_log = new StationLog(r.getOriginStation());
 				this.src_distance_act = "NA";
 				this.src_time_act = "NA";
 				this.src_distance_drive = "NA";
 				this.src_time_drive = "NA";
-				this.src_offset = "NA";
+				this.src_time_rental = "NA";
 				
 				this.dst_station_log = new StationLog(r.getDestinationStation());
 				this.dst_distance_act = "NA";
 				this.dst_time_act = "NA";
 				this.dst_distance_drive = "NA";
 				this.dst_time_drive = "NA";
-				this.dst_offset = "NA";
+				this.dst_time_rental = "NA";
 			}
 			Coord org = ct.transform(r.getDemand().getOrigin().getCoord());
 			Coord dst = ct.transform(r.getDemand().getDestination().getCoord());

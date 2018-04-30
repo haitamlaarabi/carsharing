@@ -191,6 +191,14 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		this.iter = iteration;
 		if(!this.isActivated()) return;
 		if(this.demand.isEmpty()) init();
+		try {
+			this.traceWriter = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getTrace_output_file() + "_" + iteration + "_.log", true)));
+			this.taskWriter = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getTask_output_file() + "_" + iteration + "_.log", true)));
+			this.traceWriter.println("bin.from\tbin.to\tstation.id\tvalue\tvariable");
+			this.taskWriter.println("time\tf.station\tr.station\tn.veh\toperator");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		if(iteration > 0) {
 			double tot_perf = 0;
 			for(CarsharingStationMobsim s : this.m.getStations()) {
@@ -252,15 +260,6 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 			for(CarsharingOperatorMobsim o : this.m.getOperators()) {
 				o.setMaxTrainSize(this.train_size);
 			}
-		}
-		
-		try {
-			this.traceWriter = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getTrace_output_file()+"_"+iteration+".log", true)));
-			this.taskWriter = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getTask_output_file()+"_"+iteration+".log", true)));
-			this.traceWriter.println("time\tstation.id\tvalue\tvariable");
-			this.taskWriter.println("time\tf.station\tr.station\tn.veh\toperator");
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 		
 		this.time_bin = this.rparams.getBinstats_lbound() + this.time_bin_k*STEP;

@@ -43,9 +43,9 @@ public class CarsharingBookingManager {
 			br = CarsharingBookingRecord.constructAndGetBookingRec((int)now, selectedOffer);
 			CarsharingStationMobsim So = br.getOriginStation();
 			CarsharingStationMobsim Sd = br.getDestinationStation();
-			br.vehicleOffer = this.stationBookingMap.get(So).add(br);
-			br.parkingOffer = this.stationBookingMap.get(Sd).add(br);
-			if(!br.vehicleOffer || !br.parkingOffer) {
+			br.setVehicleOffer(this.stationBookingMap.get(So).add(br));
+			br.setParkingOffer(this.stationBookingMap.get(Sd).add(br));
+			if(br.bookingFailed()) {
 				this.stationBookingMap.get(So).cancel(br);
 				this.stationBookingMap.get(Sd).cancel(br);
 			}

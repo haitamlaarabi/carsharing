@@ -15,8 +15,8 @@ public class CarsharingBookingRecord {
 		CarsharingOffer relatedOffer;
 		CarsharingDemand demand;
 		
-		Boolean vehicleOffer; 
-		Boolean parkingOffer;
+		private Boolean vehicleOffer; 
+		private Boolean parkingOffer;
 		String id;
 		
 		CarsharingBookingRecord() {}
@@ -26,10 +26,11 @@ public class CarsharingBookingRecord {
 				Boolean vehicleOffer, CarsharingStationMobsim depStation, int depTime,
 				Boolean parkingOffer,	CarsharingStationMobsim arrStation,	int arrTime) {
 			CarsharingBookingRecord b = new CarsharingBookingRecord();
+			b.person = null;
+			b.trip = null;
+			b.park = null;
 			b.bookingTime = bookingTime;
 			b.demand = demand;
-			if(demand != null)	b.person = demand.getAgent();
-			else b.person = null;
 			b.trip = null;
 			b.park = null;
 			b.vehicleOffer = vehicleOffer;
@@ -38,6 +39,7 @@ public class CarsharingBookingRecord {
 			b.parkingOffer = parkingOffer;
 			b.destinationStation = arrStation;
 			b.arrivalTime = arrTime;
+			if(demand != null)	b.person = demand.getAgent();
 			b.id = ((b.person == null)?"NA":b.person.getId()) + "@" + (int)bookingTime;
 			return b;
 		}
@@ -54,7 +56,9 @@ public class CarsharingBookingRecord {
 					nv, offer.getAccess().getStation(), offer.getDepartureTime(),
 					np, offer.getEgress().getStation(), offer.getArrivalTime());
 			b.relatedOffer = offer;
+			b.person = offer.getAgent();
 			b.numberOfVehicles = offer.getNbOfVehicles();
+			b.id = b.person.getId() + "@" + (int)bookingTime;
 			return b;
 		}
 		
@@ -88,6 +92,14 @@ public class CarsharingBookingRecord {
 
 		public Boolean vehicleOffer() { return this.vehicleOffer!=null && this.vehicleOffer; }
 		public Boolean parkingOffer() { return this.parkingOffer!=null && this.parkingOffer; }
+		
+		public void setVehicleOffer(Boolean vo) {
+			this.vehicleOffer = vo;
+		}
+		
+		public void setParkingOffer(Boolean po) {
+			this.parkingOffer = po;
+		}
 		
 		public boolean bookingFailed() { return vehicleOffer() == false || parkingOffer() == false; }
 		

@@ -170,18 +170,23 @@ public class CarsharingOfferModelImpl implements CarsharingOfferModel  {
 	 */
 	public CarsharingOffer getEgressStationOffer(CarsharingOffer o, CarsharingLocationInfo s, CarsharingOfferStatus flag) {
 		
-		RouteData rd = null;
-		if(flag != CarsharingOffer.FAILURE_NOARRIVALSTATION && o.getAccess().getStatus().isValid()) {
-			rd = CarsharingRouterUtils.calcTCC(manager, 
+		CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromOffer(o);
+		
+		if(flag != CarsharingOffer.FAILURE_NOARRIVALSTATION && o.getAccess().getStation() != null) {
+			RouteData rd = CarsharingRouterUtils.calcTCC(manager, 
 					o.getAccess().getStation().facility(), 
 					s.station.facility(), 
 					o.getAccessTime(), 
 					o.getDemand().getAgent().getPerson());
+			
+			builder.setDrive(o.getNbOfVehicles(), rd);
+			builder.setEgress(s.station, s.traveltime, s.distance, flag);
+			
+		} else {
+			builder.setDrive(o.getNbOfVehicles(), null);
+			builder.setEgress(1+o.getDepartureTime(), s.station, s.traveltime, s.distance, flag);
 		}
 				
-		CarsharingOffer.Builder builder = CarsharingOffer.Builder.newInstanceFromOffer(o);
-		builder.setDrive(o.getNbOfVehicles(), rd);
-		builder.setEgress(o.getDemand().getRawArrivalTime(), s.station, s.traveltime, s.distance, flag);
 		return builder.build();
 	}
 	

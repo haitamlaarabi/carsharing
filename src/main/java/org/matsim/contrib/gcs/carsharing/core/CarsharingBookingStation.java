@@ -11,50 +11,83 @@ public class CarsharingBookingStation {
 	
 	protected final CarsharingStationMobsim station;
 	protected final Map<CarsharingBookingRecord, BookingRecordWrapper> booking_wrapper;
-	protected final SortedList<BookingRecordWrapper> activity;
+	protected final SortedList<BookingRecordWrapper> car_availability_wrapper;
+	protected final SortedList<BookingRecordWrapper> park_availability_wrapper;
 	protected int car_availability_tracker;
-	protected int parking_availability_tracker;
+	protected int park_availability_tracker;
 	
 	protected class BookingRecordWrapper {
 		public CarsharingBookingRecord record;
 		public boolean isDemand;
-		public double time;
-		public int parking_availability_flag;
+		public double car_availability_time;
+		public double park_availability_time;
 		public int car_availability_flag;
+		public int park_availability_flag;
 		public boolean status = false;
-		public BookingRecordWrapper(double t) {
-			this.time = t;
+		public BookingRecordWrapper(double time, boolean car_availability) {
+			if(car_availability) {
+				this.car_availability_time = time;
+			} else {
+				this.park_availability_time = time;
+			}
 		}
 		public BookingRecordWrapper(CarsharingBookingRecord record) {
-			if(record.getOriginStation() != null && record.getOriginStation().equals(station)) {
-				this.isDemand = true;
-				if(record.getRelatedOffer() != null) {
-					this.time = record.getRelatedOffer().getDrive().getTime();
-				} else {
-					this.time = record.getDepartureTime();
-				}
-			} else if(record.getDestinationStation() != null && record.getDestinationStation().equals(station)) {
-				this.isDemand = false;
-				if(record.getRelatedOffer() != null) {
-					this.time = record.getRelatedOffer().getEgress().getTime() - record.getRelatedOffer().getDrive().getOffset();
-				} else {
-					this.time = record.getArrivalTime();
-				}
-			} else {
-				throw new RuntimeException("Wrong Booking Wrapper !!");
-			}
 			this.record = record;
+			this.isDemand = record.getOriginStation() != null && record.getOriginStation().equals(station);
+			if(!this.isDemand) {
+				this.isDemand = !(record.getDestinationStation() != null && record.getDestinationStation().equals(station));
+				if(this.isDemand) {
+					throw new RuntimeException("Wrong Booking Wrapper !!");
+				}
+			} 
+			CarsharingOffer offer = record.getRelatedOffer();
+			if(this.isDemand) {
+				this.car_availability_time = record.getDepartureTime();
+				this.park_availability_time = (offer == null)? record.getDepartureTime() : offer.getDrive().getTime();
+			} else {
+				this.car_availability_time = (offer == null)? record.getArrivalTime() : offer.getEgressTime();
+				this.park_availability_time = record.getDepartureTime();
+			}
+			car_availability_wrapper.add(this);
+			park_availability_wrapper.add(this);
+			booking_wrapper.put(record, this);
 		}
-		public double getTime() {
-			return this.time;
+		public void update() {
+			this.car_availability_flag = car_availability_tracker;
+			this.park_availability_flag = car_availability_tracker;
+		}
+	}
+	
+	public CarsharingBookingStation(CarsharingStationMobsim s) {
+		super();
+		this.station = s;
+		this.booking_wrapper = new HashMap<CarsharingBookingRecord, BookingRecordWrapper>();
+		this.car_availability_wrapper = new SortedList<BookingRecordWrapper>(new Comparator<BookingRecordWrapper>() {
+			@Override
+			public int compare(BookingRecordWrapper o1, BookingRecordWrapper o2) {
+				return Double.compare(o1.car_availability_time, o2.car_availability_time);
+			}
+		});
+		this.park_availability_wrapper = new SortedList<BookingRecordWrapper>(new Comparator<BookingRecordWrapper>() {
+			@Override
+			public int compare(BookingRecordWrapper o1, BookingRecordWrapper o2) {
+				return Double.compare(o1.park_availability_time, o2.park_availability_time);
+			}
+		});
+		if(s.parking() == null) {
+			this.car_availability_tracker = s.deployment().size();
+			this.park_availability_tracker = s.getCapacity() - s.deployment().size();
+		} else {
+			this.car_availability_tracker = s.parking().getFleetSize();
+			this.park_availability_tracker = s.parking().getCapacity() - s.parking().getFleetSize();
 		}
 	}
 	
 	public CarsharingBookingStation(CarsharingBookingStation b) {
 		this(CarsharingStationFactory.getStationCopy(b.station));
 		this.car_availability_tracker = b.station.deployment().size();
-		this.parking_availability_tracker = b.station.parking().getCapacity() - b.station.deployment().size();
-		for(BookingRecordWrapper w : b.activity) {
+		this.park_availability_tracker = b.station.parking().getCapacity() - b.station.deployment().size();
+		for(BookingRecordWrapper w : b.car_availability_wrapper) {
 			if(w.isDemand) {
 				w.record.setOriginStation(this.station);
 			} else {
@@ -63,35 +96,7 @@ public class CarsharingBookingStation {
 			this.add(w.record);
 		}
 	}
-	
-
-	public CarsharingBookingStation(CarsharingStationMobsim s) {
-		super();
-		this.station = s;
-		this.activity = new SortedList<BookingRecordWrapper>(new Comparator<BookingRecordWrapper>() {
-			@Override
-			public int compare(BookingRecordWrapper o1, BookingRecordWrapper o2) {
-				return Double.compare(o1.getTime(), o2.getTime());
-			}
-		});
-		this.car_availability_tracker = s.parking().getFleetSize();
-		this.parking_availability_tracker = s.parking().getCapacity() - s.parking().getFleetSize();
-		this.booking_wrapper = new HashMap<CarsharingBookingRecord, BookingRecordWrapper>();
-	}
-	
-	public CarsharingBookingStation(CarsharingStation s) {
-		this.station = (CarsharingStationMobsim)s;
-		this.activity = new SortedList<BookingRecordWrapper>(new Comparator<BookingRecordWrapper>() {
-			@Override
-			public int compare(BookingRecordWrapper o1, BookingRecordWrapper o2) {
-				return Double.compare(o1.getTime(), o2.getTime());
-			}
-		});
-		this.car_availability_tracker = s.deployment().size();
-		this.parking_availability_tracker = s.getCapacity() - s.deployment().size();
-		this.booking_wrapper = new HashMap<CarsharingBookingRecord, BookingRecordWrapper>();
-	}
-	
+		
 	public CarsharingStationMobsim getStation() {
 		return this.station;
 	}
@@ -100,7 +105,7 @@ public class CarsharingBookingStation {
 		BookingRecordWrapper w = this.booking_wrapper.get(record);
 		if(w.isDemand) {
 			// increase parking availability after the vehicle(s) left the station. We don't do this at the booking since the vehicle(s) are still parked
-			this.parking_availability_tracker += record.getNbrOfVeh(); 
+			this.park_availability_tracker += record.getNbrOfVeh(); 
 		} else {
 			// increase car availability after the vehicle(s) arrives to the station. We don't do this at the booking since the vehicle(s) didn't arrive yet
 			this.car_availability_tracker += record.getNbrOfVeh();
@@ -113,41 +118,48 @@ public class CarsharingBookingStation {
 			if(w.isDemand) {
 				this.car_availability_tracker += record.getNbrOfVeh();
 			} else {
-				this.parking_availability_tracker += record.getNbrOfVeh();
+				this.park_availability_tracker += record.getNbrOfVeh();
 			}
 		}
 	}
-	
+		
 	public boolean add(CarsharingBookingRecord record) {
 		BookingRecordWrapper w = new BookingRecordWrapper(record);
 		if(w.isDemand && record.getNbrOfVeh() <= this.car_availability_tracker) {
 			this.car_availability_tracker -= record.getNbrOfVeh(); // decrease car availability, or in other words to book a vehicle
 			w.status = true;
-		} else if (!w.isDemand && record.getNbrOfVeh() <= this.parking_availability_tracker) {
-			this.parking_availability_tracker -= record.getNbrOfVeh(); // decrease parking availability, or in other words to book a parking slot
+		} else if (!w.isDemand && record.getNbrOfVeh() <= this.park_availability_tracker) {
+			this.park_availability_tracker -= record.getNbrOfVeh(); // decrease parking availability, or in other words to book a parking slot
 			w.status = true;
 		} 
-		if(this.car_availability_tracker < 0 || this.parking_availability_tracker > this.station.parking().getCapacity()) {
+		if(this.car_availability_tracker < 0 || this.park_availability_tracker > this.station.parking().getCapacity()) {
 			throw new RuntimeException("Availability in station "+ this.station + " is " + this.car_availability_tracker);
 		}
-		w.car_availability_flag = this.car_availability_tracker;
-		w.parking_availability_flag = this.parking_availability_tracker;
-		this.activity.add(w);
-		this.booking_wrapper.put(record, w);
+		w.update();
 		return w.status;
 	}
 	
-	public CarsharingBookingRecord[] getDemand(double time) {
-		return this.getDemand(0.0, time);
+	// *********
+	
+	protected SortedList<BookingRecordWrapper> getCarAvailability(double lb, double ub) {
+		BookingRecordWrapper lb_w = new BookingRecordWrapper(lb, true);
+		BookingRecordWrapper ub_w = new BookingRecordWrapper(ub, true);
+		SortedList<BookingRecordWrapper> sublist = this.car_availability_wrapper.subList(lb_w, ub_w);
+		return sublist;
 	}
 	
-	public CarsharingBookingRecord[] getSupply(double time) {
-		return this.getSupply(0.0, time);
-	}
+	protected SortedList<BookingRecordWrapper> getParkAvailability(double lb, double ub) {
+		BookingRecordWrapper lb_w = new BookingRecordWrapper(lb, false);
+		BookingRecordWrapper ub_w = new BookingRecordWrapper(ub, false);
+		SortedList<BookingRecordWrapper> sublist = this.park_availability_wrapper.subList(lb_w, ub_w);
+		return sublist;
+	} 
+	
+	// *********
 	
 	public CarsharingBookingRecord[] getDemand(double lowerBorn, double upperBorn) {
 		ArrayList<CarsharingBookingRecord> records = new ArrayList<CarsharingBookingRecord>();
-		for(BookingRecordWrapper w : this.activity.subList(new BookingRecordWrapper(lowerBorn), new BookingRecordWrapper(upperBorn))) {
+		for(BookingRecordWrapper w : getCarAvailability(lowerBorn, upperBorn)) {
 			if(w.isDemand) {
 				records.add(w.record);
 			}
@@ -157,7 +169,7 @@ public class CarsharingBookingStation {
 	
 	public CarsharingBookingRecord[] getSupply(double lowerBorn, double upperBorn) {
 		ArrayList<CarsharingBookingRecord> records = new ArrayList<CarsharingBookingRecord>();
-		for(BookingRecordWrapper w : this.activity.subList(new BookingRecordWrapper(lowerBorn), new BookingRecordWrapper(upperBorn))) {
+		for(BookingRecordWrapper w : getParkAvailability(lowerBorn, upperBorn)) {
 			if(!w.isDemand) {
 				records.add(w.record);
 			}
@@ -165,83 +177,42 @@ public class CarsharingBookingStation {
 		return records.toArray(new CarsharingBookingRecord[0]);
 	}
 	
-	public CarsharingBookingRecord[] getSatisfiedDemand(double lowerBorn, double upperBorn) {
-		ArrayList<CarsharingBookingRecord> records = new ArrayList<CarsharingBookingRecord>();
-		for(BookingRecordWrapper w : this.activity.subList(new BookingRecordWrapper(lowerBorn), new BookingRecordWrapper(upperBorn))) {
-			if(w.isDemand && !w.record.bookingFailed()) {
-				records.add(w.record);
-			}
-		}
-		return records.toArray(new CarsharingBookingRecord[0]);
+	// *********
+	
+	public CarsharingBookingRecord[] getDemand(double time) {
+		return this.getDemand(0.0, time);
+	}
+	
+	public CarsharingBookingRecord[] getSupply(double time) {
+		return this.getSupply(0.0, time);
+	}
 
-	}
-	
-	
-	public CarsharingBookingRecord[] getSatisfiedSupply(double lowerBorn, double upperBorn) {
-		ArrayList<CarsharingBookingRecord> records = new ArrayList<CarsharingBookingRecord>();
-		for(BookingRecordWrapper w : this.activity.subList(new BookingRecordWrapper(lowerBorn), new BookingRecordWrapper(upperBorn))) {
-			if(!w.isDemand && !w.record.bookingFailed()) {
-				records.add(w.record);
-			}
-		}
-		return records.toArray(new CarsharingBookingRecord[0]);
-	}
-	
-	
-	public CarsharingBookingRecord[] getOperatorSupply(double lowerBorn, double upperBorn) {
-		ArrayList<CarsharingBookingRecord> records = new ArrayList<CarsharingBookingRecord>();
-		for(BookingRecordWrapper w : this.activity.subList(new BookingRecordWrapper(lowerBorn), new BookingRecordWrapper(upperBorn))) {
-			if(!w.isDemand && !w.record.bookingFailed() && w.record.getAgent() instanceof CarsharingOperatorMobsim) {
-				records.add(w.record);
-			}
-		}
-		return records.toArray(new CarsharingBookingRecord[0]);
-	}
-	
+	// *********
+		
 	public int vehicleAvailability() {
 		return this.car_availability_tracker;
 	}
-	public int vehicleAvailability(double time) {
-		SortedList<BookingRecordWrapper> sub = this.activity.subList(new BookingRecordWrapper(0), new BookingRecordWrapper(time));
-		if(sub.isEmpty()) 
+	
+	public int vehicleAvailability(double time) {		
+		SortedList<BookingRecordWrapper> sublist = getCarAvailability(0, time);
+		if(sublist.isEmpty()) 
 			return this.car_availability_tracker;
 		else 
-			return sub.getLast().car_availability_flag;
+			return sublist.getLast().car_availability_flag;
 	}
+	
+	// *********
 	
 	public int parkingAvailability() {
-		return this.parking_availability_tracker;
+		return this.park_availability_tracker;
 	}
+	
 	public int parkingAvailability(double time) {
-		SortedList<BookingRecordWrapper> sub = this.activity.subList(new BookingRecordWrapper(0), new BookingRecordWrapper(time));
-		if(sub.isEmpty()) 
-			return this.parking_availability_tracker;
+		SortedList<BookingRecordWrapper> sublist = getParkAvailability(0, time);
+		if(sublist.isEmpty()) 
+			return this.park_availability_tracker;
 		else 
-			return sub.getLast().parking_availability_flag;
-	}
-	
-	
-	public int vehicleMinAvailability(double lb, double up) {
-		int min_cav = Integer.MAX_VALUE;
-		for(BookingRecordWrapper w : this.activity.subList(new BookingRecordWrapper(lb), new BookingRecordWrapper(up))) {
-			if(min_cav > w.car_availability_flag)
-				min_cav = w.car_availability_flag;
-		}
-		if(min_cav == Integer.MAX_VALUE) 
-			min_cav = vehicleAvailability(lb);
-		return min_cav;
-	}
-	
-	
-	public int parkingMinAvailability(double lb, double up) {
-		int min_pav = Integer.MAX_VALUE;
-		for(BookingRecordWrapper w : this.activity.subList(new BookingRecordWrapper(lb), new BookingRecordWrapper(up))) {
-			if(min_pav > w.parking_availability_flag)
-				min_pav = w.parking_availability_flag;
-		}
-		if(min_pav == Integer.MAX_VALUE) 
-			min_pav = parkingAvailability(lb); 
-		return min_pav;
+			return sublist.getLast().park_availability_flag;
 	}
 	
 }

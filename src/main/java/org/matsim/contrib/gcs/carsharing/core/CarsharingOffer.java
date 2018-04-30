@@ -54,7 +54,7 @@ public class CarsharingOffer {
 		}
 		
 		public void setEgress(CarsharingStationMobsim eStation, int eTT, double eDist, CarsharingOfferStatus flag) {
-			egress = new EgressOffer(drive.time+drive.travelTime, eStation, eTT, eDist, flag);
+			egress = new EgressOffer(drive.time+drive.rentalTime, eStation, eTT, eDist, flag);
 		}
 		
 		public void setEgress(int deptime, CarsharingStationMobsim eStation, int eTT, double eDist, CarsharingOfferStatus flag) {
@@ -160,6 +160,7 @@ public class CarsharingOffer {
 	public static class DriveOffer {
 		private int time;
 		private int travelTime = 0;
+		private int rentalTime = 0;
 		private double distance = 0;
 		private int offset = 0;
 		private List<? extends PlanElement> route = null;
@@ -172,6 +173,7 @@ public class CarsharingOffer {
 				this.distance = rd.distance;
 				this.travelTime = rd.time;
 				this.offset = rd.offset;
+				this.rentalTime = rd.time + 2*rd.offset;
 			}
 		}
 		DriveOffer(DriveOffer d) {
@@ -182,7 +184,8 @@ public class CarsharingOffer {
 			this.travelTime = d.travelTime;
 			this.offset = d.offset;
 		}
-		public int getRentalTime() { return travelTime + 2*this.offset; }
+		public int getRentalTime() { return this.rentalTime; }
+		public int getTravelTime() { return this.travelTime; }
 		public double getDistance() { return distance; }
 		public List<? extends PlanElement> getRoute() { return this.route; }
 		public int getTime() { return this.time; }

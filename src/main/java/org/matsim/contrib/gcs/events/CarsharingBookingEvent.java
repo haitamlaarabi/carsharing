@@ -42,7 +42,7 @@ public class CarsharingBookingEvent extends AbstractCarsharingEvent {
 		logRow.put("time.act", this.book_log.src_time_act);
 		logRow.put("distance.drive", this.book_log.src_distance_drive);
 		logRow.put("time.drive", this.book_log.src_time_drive);
-		logRow.put("time.offset", this.book_log.src_offset);
+		logRow.put("time.rental", this.book_log.src_time_rental);
 		
 		logRow.put("station.id", this.book_log.src_station_log.station_id);
 		logRow.put("lng", this.book_log.src_station_log.lng);
@@ -75,7 +75,7 @@ public class CarsharingBookingEvent extends AbstractCarsharingEvent {
 		logRow.put("time.act", this.book_log.dst_time_act);
 		logRow.put("distance.drive", this.book_log.dst_distance_drive);
 		logRow.put("time.drive", this.book_log.dst_time_drive);
-		logRow.put("time.offset", this.book_log.dst_offset);
+		logRow.put("time.rental", this.book_log.dst_time_rental);
 		
 		logRow.put("station.id", this.book_log.dst_station_log.station_id);
 		logRow.put("lng", this.book_log.dst_station_log.lng);

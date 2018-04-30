@@ -37,27 +37,29 @@ public class CarsharingDemand {
 		this.origin = origin;
 		this.destination = destination;
 		
-		this.departureTime = (int) this.origin.getEndTime();
-		if(CarsharingUtils.isNaNorInfinit(this.departureTime)) {
-			this.departureTime = (int) this.origin.getStartTime();
-			if(CarsharingUtils.isNaNorInfinit(this.departureTime)) {
+		double deptime = this.origin.getEndTime();
+		if(CarsharingUtils.isNaNorInfinit(deptime)) {
+			deptime = (int) this.origin.getStartTime();
+			if(CarsharingUtils.isNaNorInfinit(deptime)) {
 				throw new RuntimeException("Demand: origin activity with undefined start time & end time");
 			} 
 			if(!CarsharingUtils.isNaNorInfinit(this.origin.getMaximumDuration())) {
-				this.departureTime += this.origin.getMaximumDuration();
+				deptime += this.origin.getMaximumDuration();
 			}
 		}
+		this.departureTime = (int) deptime;
 		
-		this.arrivalTime = (int) this.destination.getStartTime();
-		if(CarsharingUtils.isNaNorInfinit(this.arrivalTime)) {
-			this.arrivalTime = (int) this.destination.getEndTime();
-			if(CarsharingUtils.isNaNorInfinit(this.arrivalTime)) {
+		double arrtime = (int) this.destination.getStartTime();
+		if(CarsharingUtils.isNaNorInfinit(arrtime)) {
+			arrtime = (int) this.destination.getEndTime();
+			if(CarsharingUtils.isNaNorInfinit(arrtime)) {
 				throw new RuntimeException("Demand: destination activity with undefined start time & end time");
 			}
 			if(!CarsharingUtils.isNaNorInfinit(this.origin.getMaximumDuration())) {
-				this.arrivalTime -= this.origin.getMaximumDuration();
+				arrtime -= this.origin.getMaximumDuration();
 			}
 		}
+		this.arrivalTime = (int) arrtime;
 		
 		this.numberOfVehicles = numberOfVehicles;
 		this.carsharingLeg = carsharingLeg;
