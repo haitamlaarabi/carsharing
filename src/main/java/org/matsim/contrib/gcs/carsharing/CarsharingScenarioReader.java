@@ -310,8 +310,8 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    	arr = s.split(sep);
 		    	double X = Double.parseDouble(arr[header.get("lng")]); // Longitude
 		    	double Y = Double.parseDouble(arr[header.get("lat")]); // Latitude
-		    	String station_id = "stat.id." + arr[header.get("stat.id")];
-		    	String station_name = "stat.name." + arr[header.get("stat.id")];
+		    	String station_id = arr[header.get("stat.id")];
+		    	String station_name = arr[header.get("stat.id")];
 		    	Coord coord = CT.transform(new Coord(X, Y));
 		    	CarsharingStation newS = CarsharingStationFactory.
 						stationBuilder(scenario, station_id, coord).
