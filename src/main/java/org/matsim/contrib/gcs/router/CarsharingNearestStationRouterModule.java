@@ -122,14 +122,16 @@ public class CarsharingNearestStationRouterModule extends CarsharingDefaultRoute
 	
 	private CarsharingLocationInfo buildDepartureLocation(Facility f, boolean hasStation) {
 		CarsharingLocationInfo location = new CarsharingLocationInfo(f);
-		if(hasStation) return location;
+		if(!hasStation) return location;
+		
 		return this.getNearestStationToDeparture(f);
 
 	}
 	
 	private CarsharingLocationInfo buildArrivalLocation(Facility f, CarsharingStationMobsim s_toexclude, boolean hasStation) {
 		CarsharingLocationInfo location = new CarsharingLocationInfo(f);
-		if(hasStation) return location;
+		if(!hasStation) return location;
+		
 		return this.getNearestStationToArrival(f,  s_toexclude);
 	} 
 	
