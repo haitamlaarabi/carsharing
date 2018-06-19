@@ -1,11 +1,13 @@
 package org.matsim.contrib.gcs.carsharing.core;
 
+import java.util.ArrayList;
+
 import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingStation.BookingRecordWrapper;
 
 public class CarsharingStationDemand {
 
 	CarsharingBookingStation b;
-	double coef;
+	double coef = Double.NaN;
 
 	public CarsharingStationDemand(CarsharingBookingStation b) {
 		b = new CarsharingBookingStation(b);
@@ -83,6 +85,6 @@ public class CarsharingStationDemand {
 	
 	public void setCoeff(double coefficient) {
 		coef = coefficient;
-	}	
+	}
 	
 }
