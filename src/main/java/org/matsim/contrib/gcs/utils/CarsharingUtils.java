@@ -314,6 +314,15 @@ public final class CarsharingUtils {
 		return x;
 	}
 	
+	public static ModeParams createModeParam(String mode, double coefT, double constant) {
+		ModeParams x = new ModeParams(mode);
+		x.setMarginalUtilityOfTraveling(coefT);
+		x.setMarginalUtilityOfDistance(0);
+		x.setMonetaryDistanceRate(0);
+		x.setConstant(constant);
+		return x;
+	}
+	
 	public static ModeParams createModeParam(String mode, double factTraveling, double factMoney, double factConstant) {
 		double utilPerf = 6.0;
 		ModeParams x = new ModeParams(mode);
