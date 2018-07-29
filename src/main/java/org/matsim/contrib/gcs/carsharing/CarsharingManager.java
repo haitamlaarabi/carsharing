@@ -193,9 +193,6 @@ public class CarsharingManager {
 		this.stop_deployment_at_iteration = depiter;
 	}
 	
-	public int getIteration() {
-		return this.services.getIterationNumber();
-	}
 	
 	
 
