@@ -24,9 +24,9 @@ public class ControllerListener
 		implements StartupListener, IterationEndsListener, IterationStartsListener, ScoringListener {
 
 	// MATSIM
-	@Inject private Scenario sc;
-	@Inject private CarsharingManager m;
-	@Inject private CarsharingPreprocessedData data;
+	@Inject protected Scenario sc;
+	@Inject protected CarsharingManager m;
+	@Inject protected CarsharingPreprocessedData data;
 	
 	AgentEventsListener agentEventsHandler;
 	CarsharingEventsListener carsharingEventsHandler;

@@ -122,6 +122,7 @@ public abstract class CarsharingInstaller extends AbstractModule {
     	bindCarsharingRelocationModel(CarsharingRelocationModelFactory.class);
     	bindCarsharingOperatorChoiceModel(CarsharingOperatorChoiceModelFactory.class);
     	bindCarsharingMobsimMonitoring(CarsharingMobsimHandleImpl.class);
+    	bindListener(ControllerListener.class);
     	
     	installOrOverrideModules(); // NEW MODULES TO ADD
     	
@@ -155,8 +156,7 @@ public abstract class CarsharingInstaller extends AbstractModule {
     	//addTravelDisutilityFactoryBinding(CarsharingRouterUtils.cs_walk).to(Key.get(TravelDisutilityFactory.class, Names.named(TransportMode.walk)));
     	addRoutingModuleBinding(CarsharingRouterUtils.cs_walk).to(Key.get(RoutingModule.class, Names.named(TransportMode.walk)));
     	
-    	addControlerListenerBinding().to(ControllerListener.class);
-    	
+    	addControlerListenerBinding().to(defaultListener);
 	}
 	
 
@@ -174,10 +174,15 @@ public abstract class CarsharingInstaller extends AbstractModule {
 	Class<? extends Provider<CarsharingMembershipModel>> membershipmodel = null;
 	Class<? extends Provider<CarsharingRelocationModel>> relocate = null;
 	
+	Class<? extends ControllerListener> defaultListener = null;
+	
 	Class<? extends CarsharingMobsimHandle> monitor = null;
 	//Class<? extends CarsharingRelocationModel> relocate = null;
 	Class<? extends CarsharingOfferModel> offermodel = null;
 	
+	public final void bindListener(Class<? extends ControllerListener> clazz) {
+		defaultListener = clazz;
+	}
 	
 	public final void bindCarsharingRelocationModel(Class<? extends Provider<CarsharingRelocationModel>> factory) {
 		this.relocate = factory;
