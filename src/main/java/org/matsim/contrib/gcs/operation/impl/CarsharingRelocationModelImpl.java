@@ -37,7 +37,7 @@ public class CarsharingRelocationModelImpl extends AbstractRelocationStrategy {
 	}
 
 	@Override
-	protected void update() {
+	protected void update(int time) {
 	}
 
 	
