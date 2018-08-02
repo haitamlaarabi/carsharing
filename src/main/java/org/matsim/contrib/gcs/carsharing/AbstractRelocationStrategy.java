@@ -148,7 +148,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 					CarsharingOffer off = constructOffer(sTask, t, accessTime, accessDistance);
 					ArrayList<CarsharingOffer> offers = new ArrayList<CarsharingOffer>();
 					offers.add(off);
-					CarsharingBookingRecord b = this.m.booking().process(time_step.step(), off.getDemand(), off, offers);
+					CarsharingBookingRecord b = this.m.booking().process(time_step.get(), off.getDemand(), off, offers);
 					if(!b.bookingFailed()) { // **** BOOKING 
 						for(CarsharingRelocationTask new_task : temp_tasks) {
 							new_task.setBooking(b);
