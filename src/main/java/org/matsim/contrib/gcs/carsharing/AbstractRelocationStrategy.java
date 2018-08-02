@@ -112,7 +112,8 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	
 	@Override
 	public void updateRelocationList(int time) {
-		this.update(time);
+		boolean checked = this.time_step.check((int) time);
+		this.update(time, checked);
 	}
 	
 	@Override
@@ -272,7 +273,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	
 	protected abstract List<CarsharingOffer> usrelocate(CarsharingDemand demand, List<CarsharingOffer> offers);
 	protected abstract List<CarsharingRelocationTask> oprelocate();
-	protected abstract void update(int time);
+	protected abstract void update(int time, boolean checked);
 	
 	protected class TimeStep {
 		protected int time;
