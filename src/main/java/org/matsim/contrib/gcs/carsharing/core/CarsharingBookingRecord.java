@@ -15,6 +15,9 @@ public class CarsharingBookingRecord {
 		CarsharingOffer relatedOffer;
 		CarsharingDemand demand;
 		
+		int pickuptime;
+		int dropofftime;
+		
 		private Boolean vehicleOffer; 
 		private Boolean parkingOffer;
 		String id;
@@ -41,6 +44,8 @@ public class CarsharingBookingRecord {
 			b.arrivalTime = arrTime;
 			if(demand != null)	b.person = demand.getAgent();
 			b.id = ((b.person == null)?"NA":b.person.getId()) + "@" + (int)bookingTime;
+			b.pickuptime = b.departureTime;
+			b.dropofftime = b.arrivalTime;
 			return b;
 		}
 		
@@ -54,12 +59,14 @@ public class CarsharingBookingRecord {
 			}
 			CarsharingBookingRecord b = constructBookingRec(bookingTime, offer.getDemand(), 
 					nv, offer.getAccess().getStation(), offer.getDepartureTime(),
-					np, offer.getEgress().getStation(), offer.getEgressTime());
+					np, offer.getEgress().getStation(), offer.getArrivalTime());
 					//np, offer.getEgress().getStation(), offer.getArrivalTime());
 			b.relatedOffer = offer;
 			b.person = offer.getAgent();
 			b.numberOfVehicles = offer.getNbOfVehicles();
 			b.id = b.person.getId() + "@" + (int)bookingTime;
+			b.pickuptime = offer.getAccessTime();
+			b.dropofftime = offer.getEgressTime();
 			return b;
 		}
 		
@@ -87,6 +94,8 @@ public class CarsharingBookingRecord {
 		public CarsharingDemand getDemand() { return this.demand; }
 		public CarsharingVehicleMobsim getVehicle() { return this.vehicle; }
 		public CarsharingAgent getAgent() { return this.person; }
+		public int getPickupTime() { return this.pickuptime; }
+		public int getDropoffTime() { return this.dropofftime; }
 		
 		public String trip() { return this.trip; }
 		public String park() { return this.park; }

@@ -29,6 +29,7 @@ public class CarsharingBookingEvent extends AbstractCarsharingEvent {
 		Map<String, String> logRow = new HashMap<String, String>();
 		logRow.put("booking.time", this.time);
 		logRow.put("date", this.book_log.src_date);
+		logRow.put("date.veh", this.book_log.src_date_veh);
 		logRow.put("customer.id", this.agent_id);
 		
 		logRow.put("booking.id", this.book_log.booking_id);				
@@ -62,6 +63,7 @@ public class CarsharingBookingEvent extends AbstractCarsharingEvent {
 		Map<String, String> logRow = new HashMap<String, String>();
 		logRow.put("booking.time", this.time);
 		logRow.put("date", this.book_log.dst_date);
+		logRow.put("date.veh", this.book_log.dst_date_veh);
 		logRow.put("customer.id", this.agent_id);
 		
 		logRow.put("trip.id", this.book_log.trip_id);

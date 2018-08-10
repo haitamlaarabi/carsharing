@@ -99,6 +99,7 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 		final String src_time_rental;
 		final String src_lng;
 		final String src_lat;
+		final String src_date_veh;
 		
 		// dst
 		final StationLog dst_station_log;
@@ -112,6 +113,7 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 		final String dst_time_rental;
 		final String dst_lng;
 		final String dst_lat;
+		final String dst_date_veh;
 		
 		final String status;
 		
@@ -166,6 +168,8 @@ public abstract class AbstractCarsharingEvent extends Event implements Carsharin
 			this.dst_type = "END";
 			this.src_date = String.valueOf(r.getDepartureTime());
 			this.dst_date = String.valueOf(r.getArrivalTime());
+			this.src_date_veh = String.valueOf(r.getPickupTime());
+			this.dst_date_veh = String.valueOf(r.getDropoffTime());
 		}
 	}
 	
