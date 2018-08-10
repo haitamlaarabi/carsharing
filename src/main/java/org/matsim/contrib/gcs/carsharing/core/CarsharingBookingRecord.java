@@ -54,7 +54,8 @@ public class CarsharingBookingRecord {
 			}
 			CarsharingBookingRecord b = constructBookingRec(bookingTime, offer.getDemand(), 
 					nv, offer.getAccess().getStation(), offer.getDepartureTime(),
-					np, offer.getEgress().getStation(), offer.getArrivalTime());
+					np, offer.getEgress().getStation(), offer.getEgressTime());
+					//np, offer.getEgress().getStation(), offer.getArrivalTime());
 			b.relatedOffer = offer;
 			b.person = offer.getAgent();
 			b.numberOfVehicles = offer.getNbOfVehicles();
