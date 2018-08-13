@@ -24,11 +24,14 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingAgent;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingRecord;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingCustomerMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingDemand;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingOffer;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingRelocationTask;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicleMobsim;
 import org.matsim.contrib.gcs.replanning.CarsharingPlanModeCst;
 import org.matsim.contrib.gcs.router.CarsharingNearestStationRouterModule;
 import org.matsim.contrib.gcs.router.CarsharingNearestStationRouterModule.CarsharingLocationInfo;
@@ -51,6 +54,25 @@ public final class CarsharingUtils {
 	
 	static String ACCESS_STATION = "access_station";
 	static String EGRESS_STATION = "egress_station";
+	
+	public static boolean checkbattery(CarsharingRelocationTask task, double time) {
+		CarsharingAgent agent = task.getAgent();
+		CarsharingStationMobsim s = task.getStation();
+		double distance = task.getDistance();
+		int j = task.getSize();
+		for(CarsharingVehicleMobsim v : s.parking()) {
+			if(j <= 0) break;
+			//double maxspeed = v.vehicle().getType().getMaximumVelocity();
+			//double avgspeed = v.vehicle().getType().getMaximumVelocity();
+			double speed = distance/task.getTravelTime();
+			double eng = v.battery().energyConsumptionQty(speed, distance);
+			double psoc = v.battery().getSoC();
+			boolean chargedenough = v.battery().checkBattery(speed, distance);
+			if(!chargedenough) { return false;}
+			j--;
+		}
+		return true;
+	}
 	
 	public static LinkedList<String> readFileRows(String fileName) {
 		LinkedList<String> list = new LinkedList<String>();

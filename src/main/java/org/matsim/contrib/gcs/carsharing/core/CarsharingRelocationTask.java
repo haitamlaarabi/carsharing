@@ -14,6 +14,7 @@ public class CarsharingRelocationTask implements Comparable<CarsharingRelocation
 	final private int tt;
 	private CarsharingBookingRecord booking = null;
 	private RouteData route = null;
+	private String comment = null;
 	
 	public static CarsharingRelocationTask startTask(String id, int time, CarsharingAgent agent, CarsharingStationMobsim station, int size, int tt, double distance) {
 		CarsharingRelocationTask t = new CarsharingRelocationTask(id, time, agent, station, size, tt, distance);
@@ -87,6 +88,14 @@ public class CarsharingRelocationTask implements Comparable<CarsharingRelocation
 	
 	public RouteData getRoute() {
 		return this.route;
+	}
+	
+	public String getComment() {
+		return this.comment;
+	}
+	
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 	
 	@Override

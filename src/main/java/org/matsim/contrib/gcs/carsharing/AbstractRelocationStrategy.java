@@ -14,6 +14,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PopulationFactory;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingAgent;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingRecord;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingBookingStation;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingDemand;
@@ -23,6 +24,7 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingRelocationTask;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStation;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStationDemand;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
+import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicleMobsim;
 import org.matsim.contrib.gcs.carsharing.impl.CarsharingOperatorFactory;
 import org.matsim.contrib.gcs.config.CarsharingRelocationParams;
 import org.matsim.contrib.gcs.events.CarsharingBookingEvent;
@@ -143,22 +145,26 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 				accessDistance = t.getDistance();
 			} else {
 				if(t.getType().equals("START")) {
-					sTask = t;
+					if(CarsharingUtils.checkbattery(t, time)) {
+						sTask = t;
+					} 
 				} else {
-					CarsharingOffer off = constructOffer(sTask, t, accessTime, accessDistance);
-					ArrayList<CarsharingOffer> offers = new ArrayList<CarsharingOffer>();
-					offers.add(off);
-					CarsharingBookingRecord b = this.m.booking().process(time_step.get(), off.getDemand(), off, offers);
-					if(!b.bookingFailed()) { // **** BOOKING 
-						for(CarsharingRelocationTask new_task : temp_tasks) {
-							new_task.setBooking(b);
-							booked_tasks.add(new_task);
-							op.addTask(new_task);
+					if(sTask != null) {
+						CarsharingOffer off = constructOffer(sTask, t, accessTime, accessDistance);
+						ArrayList<CarsharingOffer> offers = new ArrayList<CarsharingOffer>();
+						offers.add(off);
+						CarsharingBookingRecord b = this.m.booking().process(time_step.get(), off.getDemand(), off, offers);
+						if(!b.bookingFailed()) { // **** BOOKING 
+							for(CarsharingRelocationTask new_task : temp_tasks) {
+								new_task.setBooking(b);
+								booked_tasks.add(new_task);
+								op.addTask(new_task);
+							}
+						} else {
+							logger.warn("BOOKING FAILURE - " + b.getAgent().getId());
 						}
-					} else {
-						logger.warn("BOOKING FAILURE - " + b.getAgent().getId());
+						m.events().processEvent(new CarsharingBookingEvent(time, m.getScenario(), m, b.getDemand(), b));
 					}
-					m.events().processEvent(new CarsharingBookingEvent(time, m.getScenario(), m, b.getDemand(), b));
 					sTask = null;
 					accessTime = 0;
 					accessDistance = 0;

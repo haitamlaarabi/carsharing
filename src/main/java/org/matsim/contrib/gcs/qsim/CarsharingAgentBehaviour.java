@@ -105,8 +105,8 @@ public class CarsharingAgentBehaviour extends AbstractCarsharingAgentBehaviour {
 				this.customerAgentMemory.status().getOngoingRental().setPark(v.status().getPark().getId());
 			}*/
 		} else {
-			logger.warn("FAILURE TO DROPOFF ... ABORTING...");
-			this.setStateToAbort(now);
+			throw new RuntimeException("FAILURE TO DROPOFF, ABORTING... " + egressStation.getId() + " | " + this.getId());
+			//this.setStateToAbort(now);
 		}
 		
 		ongoingTrip.setRentalCost(this.carsharingSystemDelegate.booking().

@@ -11,6 +11,7 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicleMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicleTrip;
 import org.matsim.contrib.gcs.operation.model.CarsharingOperatorChoiceModel;
+import org.matsim.contrib.gcs.utils.CarsharingUtils;
 
 public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoiceModel {
 
@@ -37,7 +38,8 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 					" |agentId:"+task.getAgent().getId());
 		} else {
 			if(this.canpickup) { // if agent can pick up and there are vehicles to pick up
-				if(!ENERGY(task, time)) {
+				if(!CarsharingUtils.checkbattery(task, time)) {
+					//task.setComment("ENERGY-KO");
 					logger.warn("[RPickupENERGY-KO] T:" + (int)time + 
 							"|tId:"+task.getId()+
 							"|staId:"+task.getStation().getId()+
@@ -107,35 +109,6 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 	@Override
 	public void bindTo(CarsharingOperatorMobsim user) {
 		this.op = user;
-	}
-
-	private boolean ENERGY(CarsharingRelocationTask task, double time) {
-		CarsharingAgent agent = task.getAgent();
-		CarsharingStationMobsim s = task.getStation();
-		double distance = task.getDistance();
-		int j = task.getSize();
-		for(CarsharingVehicleMobsim v : s.parking()) {
-			if(j <= 0) break;
-			//double maxspeed = v.vehicle().getType().getMaximumVelocity();
-			//double avgspeed = v.vehicle().getType().getMaximumVelocity();
-			double speed = distance/task.getTravelTime();
-			double eng = v.battery().energyConsumptionQty(speed, distance);
-			double psoc = v.battery().getSoC();
-			boolean chargedenough = v.battery().checkBattery(speed, distance);
-			logger.info(
-					"[ENERGY] |T:" + time + 
-					" |staId:" + s.getId() + 
-					" |agent:" + agent.getId() + 
-					" |vehId:" + v.vehicle().getId() + 
-					" |soc:" + v.battery().getSoC() + 
-					" |maxspeed: " + speed + 
-					" |distance:" + distance + 
-					" |consume:" + eng + 
-					" |xSoc:" + psoc);
-			if(!chargedenough) { return false;}
-			j--;
-		}
-		return true;
 	}
 
 }
