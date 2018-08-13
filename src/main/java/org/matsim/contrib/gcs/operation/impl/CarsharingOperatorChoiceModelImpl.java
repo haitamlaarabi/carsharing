@@ -37,7 +37,7 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 					" |locationId:"+op.getLocation().getId()+
 					" |agentId:"+task.getAgent().getId());
 		} else {
-			if(this.canpickup) { // if agent can pick up and there are vehicles to pick up
+			if(this.canpickup && task.getSize() > 0) { // if agent can pick up and there are vehicles to pick up
 				if(!CarsharingUtils.checkbattery(task, time)) {
 					//task.setComment("ENERGY-KO");
 					logger.warn("[RPickupENERGY-KO] T:" + (int)time + 
@@ -45,7 +45,7 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 							"|staId:"+task.getStation().getId()+
 							"|linkId:"+task.getStation().facility().getLinkId()+
 							"|agentId:"+task.getAgent().getId());
-				} else {
+				} else  {
 					//int rt_size = Math.min(this.m.booking().track(here).vehicleAvailability(), task.getSize());
 					//task.setSize(rt_size);
 					//task.getBooking().setNbrOfVeh(rt_size);

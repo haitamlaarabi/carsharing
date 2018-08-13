@@ -82,7 +82,7 @@ public class CarsharingStationImpl implements CarsharingStationMobsim {
 				leadVehicle.startTrip(agent, this, time);
 				return leadVehicle;
 			} else {
-				logger.warn("[PICKUP-KO] staId:" + this.getId() + " |agentId: " + agent.getId());
+				logger.error("[PICKUP-KO] staId:" + this.getId() + " |agentId: " + agent.getId());
 			}
 		}
 		return null;
