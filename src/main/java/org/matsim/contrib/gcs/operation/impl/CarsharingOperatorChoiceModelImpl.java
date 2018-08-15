@@ -4,14 +4,12 @@ import java.util.Queue;
 
 import org.apache.log4j.Logger;
 import org.matsim.contrib.gcs.carsharing.CarsharingManager;
-import org.matsim.contrib.gcs.carsharing.core.CarsharingAgent;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingOperatorMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingRelocationTask;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingStationMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicleMobsim;
 import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicleTrip;
 import org.matsim.contrib.gcs.operation.model.CarsharingOperatorChoiceModel;
-import org.matsim.contrib.gcs.utils.CarsharingUtils;
 
 public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoiceModel {
 
@@ -31,24 +29,62 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 		CarsharingStationMobsim here = task.getStation();
 		
 		if(!task.getStation().equals(op.getLocation())) {
-			logger.warn("[R-PU-WRONG-LOCATION] T:" + (int)time + 
+			logger.error("[R-PU-WRONG-LOCATION] T:" + (int)time + 
 					" |tId:"+task.getId()+
 					" |staId:"+task.getStation().getId()+
 					" |locationId:"+op.getLocation().getId()+
 					" |agentId:"+task.getAgent().getId());
 		} else {
 			if(this.canpickup && task.getSize() > 0) { // if agent can pick up and there are vehicles to pick up
+				
+				int vehicles_to_relocate = Math.min(here.parking().getFleetSize(), task.getSize());
+				if(task.getSize() > vehicles_to_relocate) {
+					logger.warn("[R-PICKUP-AVAILABILITY_PROBLEM] T:" + (int)time + 
+							"|tId:"+task.getId()+
+							"|staId:"+task.getStation().getId()+
+							"|agentId:"+task.getAgent().getId()+
+							"|expectedRT:"+task.getSize()+
+							"|AvailableRT:"+vehicles_to_relocate);
+				}
+				
+				int j = 0;
+				for(CarsharingVehicleMobsim v : here.parking()) {
+					if(j >= vehicles_to_relocate) break;
+					double distanceToDrive = task.getDistance();
+					double estimatedTT = task.getTravelTime();
+					if(!v.battery().checkBattery(distanceToDrive/estimatedTT, distanceToDrive)) break;
+					j++;
+				}
+				if(vehicles_to_relocate > j) {
+					logger.warn("[R-PICKUP-ENERGY_PROBLEM] T:" + (int)time + 
+							"|tId:"+task.getId()+
+							"|staId:"+task.getStation().getId()+
+							"|agentId:"+task.getAgent().getId()+
+							"|expectedRT:"+vehicles_to_relocate+
+							"|AvailableRT:"+j);
+				}
+				
+				CarsharingVehicleMobsim RTLead = here.pickup(this.op, j, time); // PICKUP
+				if(RTLead != null) { 
+					this.op.setVehicle(RTLead);
+					task.setSize(j);
+					task.getBooking().setNbrOfVeh(j);
+					this.canpickup = false;
+				} else {
+					logger.error("[R-PU-KO] T:" + (int)time + 
+							" |tId:"+task.getId()+
+							" |staId:"+task.getStation().getId()+
+							" |agentId:"+task.getAgent().getId());
+				}
+				
+				/*
 				if(!CarsharingUtils.checkbatteryNow(task)) {
-					//task.setComment("ENERGY-KO");
 					logger.error("[R-ENERGY-KO] T:" + (int)time + 
 							"|tId:"+task.getId()+
 							"|staId:"+task.getStation().getId()+
 							"|linkId:"+task.getStation().facility().getLinkId()+
 							"|agentId:"+task.getAgent().getId());
 				} else  {
-					//int rt_size = Math.min(this.m.booking().track(here).vehicleAvailability(), task.getSize());
-					//task.setSize(rt_size);
-					//task.getBooking().setNbrOfVeh(rt_size);
 					this.op.setVehicle(here.pickup(this.op, task.getSize(), time)); // pickup
 					if(this.op.getVehicle() != null) { 
 						this.canpickup = false;
@@ -60,6 +96,7 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 								" |agentId:"+task.getAgent().getId());
 					}
 				}
+				*/
 			} else if(this.op.getVehicle() != null) { // otherwise, if operator already have vehicles
 				this.op.getVehicle().startTrip(this.op, this.op.getLocation(), time); // start a new trip
 				this.canpickup = false;

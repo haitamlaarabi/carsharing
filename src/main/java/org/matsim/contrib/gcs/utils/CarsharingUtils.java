@@ -56,7 +56,13 @@ public final class CarsharingUtils {
 	static String EGRESS_STATION = "egress_station";
 	
 	public static boolean checkbatteryFromBooking(CarsharingManager m, CarsharingRelocationTask task) {
-		return checkbatteryFromBooking(m, task.getStation(), task.getDistance(), task.getTravelTime(), task.getSize());
+		int j=0;
+		for(CarsharingVehicleMobsim v : task.getStation().parking()) {
+			if(!v.battery().checkBattery(task.getDistance()/task.getTravelTime(), task.getDistance())) break;
+			j++;
+		}
+		return j == task.getSize();
+		//return checkbatteryFromBooking(m, task.getStation(), task.getDistance(), task.getTravelTime(), task.getSize());
 	}
 	
 	public static boolean checkbatteryFromBooking(CarsharingManager m, CarsharingLocationInfo locinfo, int numbOfVehicle) {
@@ -77,7 +83,7 @@ public final class CarsharingUtils {
 	}
 	
 	
-	public static boolean checkbatteryNow(CarsharingRelocationTask task) {
+	/*public static boolean checkbatteryNow(CarsharingRelocationTask task) {
 		return checkbatteryNow(task.getStation(), task.getDistance(), task.getTravelTime(), task.getSize());
 	}
 	
@@ -89,7 +95,7 @@ public final class CarsharingUtils {
 			vvalidated--;
 		}
 		return numbOfVehicle > 0 && vvalidated == 0;
-	}
+	}*/
 	
 	public static LinkedList<String> readFileRows(String fileName) {
 		LinkedList<String> list = new LinkedList<String>();
