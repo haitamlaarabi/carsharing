@@ -55,15 +55,15 @@ public final class CarsharingUtils {
 	static String ACCESS_STATION = "access_station";
 	static String EGRESS_STATION = "egress_station";
 	
-	public static boolean checkbattery(CarsharingManager m, CarsharingRelocationTask task) {
-		return checkbattery(m, task.getStation(), task.getDistance(), task.getTravelTime(), task.getSize());
+	public static boolean checkbatteryFromBooking(CarsharingManager m, CarsharingRelocationTask task) {
+		return checkbatteryFromBooking(m, task.getStation(), task.getDistance(), task.getTravelTime(), task.getSize());
 	}
 	
-	public static boolean checkbattery(CarsharingManager m, CarsharingLocationInfo locinfo, int numbOfVehicle) {
-		return checkbattery(m, locinfo.station, locinfo.distance, locinfo.traveltime, numbOfVehicle);
+	public static boolean checkbatteryFromBooking(CarsharingManager m, CarsharingLocationInfo locinfo, int numbOfVehicle) {
+		return checkbatteryFromBooking(m, locinfo.station, locinfo.distance, locinfo.traveltime, numbOfVehicle);
 	}
 	
-	public static boolean checkbattery(CarsharingManager m, CarsharingStationMobsim s, double distanceToDrive, double estimatedTT, int numbOfVehicle) {
+	public static boolean checkbatteryFromBooking(CarsharingManager m, CarsharingStationMobsim s, double distanceToDrive, double estimatedTT, int numbOfVehicle) {
 		int j=0;
 		int vvalidated = numbOfVehicle;
 		int vehNotav = s.parking().getFleetSize()-m.booking().track(s).vehicleAvailability();
@@ -76,6 +76,20 @@ public final class CarsharingUtils {
 		return numbOfVehicle > 0 && vvalidated == 0;
 	}
 	
+	
+	public static boolean checkbatteryNow(CarsharingRelocationTask task) {
+		return checkbatteryNow(task.getStation(), task.getDistance(), task.getTravelTime(), task.getSize());
+	}
+	
+	public static boolean checkbatteryNow(CarsharingStationMobsim s, double distanceToDrive, double estimatedTT, int numbOfVehicle) {
+		int vvalidated = numbOfVehicle;
+		for(CarsharingVehicleMobsim v : s.parking()) {
+			if(vvalidated <= 0) break;
+			if(!v.battery().checkBattery(distanceToDrive/estimatedTT, distanceToDrive)) break;
+			vvalidated--;
+		}
+		return numbOfVehicle > 0 && vvalidated == 0;
+	}
 	
 	public static LinkedList<String> readFileRows(String fileName) {
 		LinkedList<String> list = new LinkedList<String>();

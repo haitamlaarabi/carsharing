@@ -38,7 +38,7 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 					" |agentId:"+task.getAgent().getId());
 		} else {
 			if(this.canpickup && task.getSize() > 0) { // if agent can pick up and there are vehicles to pick up
-				if(!CarsharingUtils.checkbattery(m, task)) {
+				if(!CarsharingUtils.checkbatteryNow(task)) {
 					//task.setComment("ENERGY-KO");
 					logger.error("[R-ENERGY-KO] T:" + (int)time + 
 							"|tId:"+task.getId()+
