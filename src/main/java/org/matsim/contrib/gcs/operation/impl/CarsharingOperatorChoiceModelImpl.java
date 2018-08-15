@@ -38,9 +38,9 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 					" |agentId:"+task.getAgent().getId());
 		} else {
 			if(this.canpickup && task.getSize() > 0) { // if agent can pick up and there are vehicles to pick up
-				if(!CarsharingUtils.checkbattery(task, time)) {
+				if(!CarsharingUtils.checkbattery(m, task)) {
 					//task.setComment("ENERGY-KO");
-					logger.warn("[RPickupENERGY-KO] T:" + (int)time + 
+					logger.error("[R-ENERGY-KO] T:" + (int)time + 
 							"|tId:"+task.getId()+
 							"|staId:"+task.getStation().getId()+
 							"|linkId:"+task.getStation().facility().getLinkId()+
@@ -53,7 +53,7 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 					if(this.op.getVehicle() != null) { 
 						this.canpickup = false;
 					} else if(task.getSize() != 0) {
-						logger.warn("[R-PU-KO] T:" + (int)time + 
+						logger.error("[R-PU-KO] T:" + (int)time + 
 								" |tId:"+task.getId()+
 								" |staId:"+task.getStation().getId()+
 								" |linkId:"+task.getStation().facility().getLinkId()+
@@ -75,7 +75,7 @@ public class CarsharingOperatorChoiceModelImpl implements CarsharingOperatorChoi
 		CarsharingVehicleMobsim VEH = this.op.getVehicle();
 		
 		if(task.getStation().equals(op.getLocation())) {
-			logger.warn("[R-DO-SAME-LOCATION] T:" + (int)time + 
+			logger.error("[R-DO-SAME-LOCATION] T:" + (int)time + 
 					" |tId:"+task.getId()+" |staId:"+task.getStation().getId()+
 					" |locationId:"+op.getLocation().getId()+
 					" |agentId:"+task.getAgent().getId());

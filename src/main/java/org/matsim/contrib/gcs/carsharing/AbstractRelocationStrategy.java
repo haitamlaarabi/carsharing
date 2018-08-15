@@ -145,7 +145,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 				accessDistance = t.getDistance();
 			} else {
 				if(t.getType().equals("START")) {
-					if(CarsharingUtils.checkbattery(t, time)) {
+					if(CarsharingUtils.checkbattery(m, t)) {
 						sTask = t;
 					} 
 				} else {

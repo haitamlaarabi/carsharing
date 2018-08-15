@@ -55,24 +55,27 @@ public final class CarsharingUtils {
 	static String ACCESS_STATION = "access_station";
 	static String EGRESS_STATION = "egress_station";
 	
-	public static boolean checkbattery(CarsharingRelocationTask task, double time) {
-		CarsharingAgent agent = task.getAgent();
-		CarsharingStationMobsim s = task.getStation();
-		double distance = task.getDistance();
-		int j = task.getSize();
-		for(CarsharingVehicleMobsim v : s.parking()) {
-			if(j <= 0) break;
-			//double maxspeed = v.vehicle().getType().getMaximumVelocity();
-			//double avgspeed = v.vehicle().getType().getMaximumVelocity();
-			double speed = distance/task.getTravelTime();
-			double eng = v.battery().energyConsumptionQty(speed, distance);
-			double psoc = v.battery().getSoC();
-			boolean chargedenough = v.battery().checkBattery(speed, distance);
-			if(!chargedenough) { return false;}
-			j--;
-		}
-		return true;
+	public static boolean checkbattery(CarsharingManager m, CarsharingRelocationTask task) {
+		return checkbattery(m, task.getStation(), task.getDistance(), task.getTravelTime(), task.getSize());
 	}
+	
+	public static boolean checkbattery(CarsharingManager m, CarsharingLocationInfo locinfo, int numbOfVehicle) {
+		return checkbattery(m, locinfo.station, locinfo.distance, locinfo.traveltime, numbOfVehicle);
+	}
+	
+	public static boolean checkbattery(CarsharingManager m, CarsharingStationMobsim s, double distanceToDrive, double estimatedTT, int numbOfVehicle) {
+		int j=0;
+		int vvalidated = numbOfVehicle;
+		int vehNotav = s.parking().getFleetSize()-m.booking().track(s).vehicleAvailability();
+		for(CarsharingVehicleMobsim v : s.parking()) {
+			if(vvalidated <= 0) break;
+			if(++j <= vehNotav) continue;
+			if(!v.battery().checkBattery(distanceToDrive/estimatedTT, distanceToDrive)) break;
+			vvalidated--;
+		}
+		return numbOfVehicle > 0 && vvalidated == 0;
+	}
+	
 	
 	public static LinkedList<String> readFileRows(String fileName) {
 		LinkedList<String> list = new LinkedList<String>();

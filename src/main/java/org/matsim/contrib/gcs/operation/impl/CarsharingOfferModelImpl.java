@@ -113,12 +113,15 @@ public class CarsharingOfferModelImpl implements CarsharingOfferModel  {
 		
 		if(closest_station.station == null) {
 			offers.add(this.getAccessStationOffer(demand, closest_station, CarsharingOffer.FAILURE_NODEPARTURESTATION));
-		} else if(manager.booking().track(closest_station.station).vehicleAvailability() < demand.getNbrOfVeh()) {
-			offers.add(this.getAccessStationOffer(demand, closest_station, CarsharingOffer.FAILURE_NODEPARTUREAVAILABILITY));
 		} else {
-			offers.add(this.getAccessStationOffer(demand, closest_station, CarsharingOffer.SUCCESS_STANDARDOFFER));
+			if(manager.booking().track(closest_station.station).vehicleAvailability() < demand.getNbrOfVeh()) {
+				offers.add(this.getAccessStationOffer(demand, closest_station, CarsharingOffer.FAILURE_NODEPARTUREAVAILABILITY));
+			} else if(CarsharingUtils.checkbattery(manager, closest_station, demand.getNbrOfVeh())){
+				offers.add(this.getAccessStationOffer(demand, closest_station, CarsharingOffer.FAILURE_NOCHARGEDVEHICLE));
+			} else {
+				offers.add(this.getAccessStationOffer(demand, closest_station, CarsharingOffer.SUCCESS_STANDARDOFFER));
+			}
 		}
-
 		return offers;
 	}
 

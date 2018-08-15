@@ -241,6 +241,7 @@ public class CarsharingOffer {
 	public static final CarsharingOfferStatus FAILURE_NODEPARTURESTATION = new CarsharingOfferStatus(false, "no_departure_station");
 	public static final CarsharingOfferStatus FAILURE_NOARRIVALSTATION = new CarsharingOfferStatus(false, "no_arrival_station");
 	public static final CarsharingOfferStatus FAILURE_NODEPARTUREAVAILABILITY = new CarsharingOfferStatus(false, "no_departure_availability");
+	public static final CarsharingOfferStatus FAILURE_NOCHARGEDVEHICLE = new CarsharingOfferStatus(false, "no_charged_vehicle");
 	public static final CarsharingOfferStatus FAILURE_NOARRIVALAVAILABILITY = new CarsharingOfferStatus(false, "no_arrival_availability");
 	public static final CarsharingOfferStatus FAILURE_FLOATINGLIMIT = new CarsharingOfferStatus(false, "floating_limit");
 	
