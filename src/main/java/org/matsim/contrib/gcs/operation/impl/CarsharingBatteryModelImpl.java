@@ -8,33 +8,37 @@
 
 package org.matsim.contrib.gcs.operation.impl;
 
-import java.util.Random;
-
 import org.matsim.contrib.gcs.operation.model.CarsharingBatteryModel;
-import org.matsim.core.gbl.MatsimRandom;
 
 
 
 public class CarsharingBatteryModelImpl implements CarsharingBatteryModel {
 	
-	protected final double batteryCapacity_Joules = 4*1000*3600; // Joules (or 4 kWh)
-	protected final double batteryThreshold_PerCent = 0.2; // 20%
-	protected final double batteryInitialSoc_PerCent = 0.7; // 70%
-	protected final double batteryBalancingThreshold_PerCent = 0.5; // 50%
+	protected final double CRITICAL_THRESHOLD = 0.2; // 20%
+	protected final double BALANCING_THRESHOLD = 0.5; // 50%
+	protected final double capacity;
+	
+	public CarsharingBatteryModelImpl() {
+		this(4*1000*3600); // Joules (or 4 kWh)
+	}
+	
+	public CarsharingBatteryModelImpl(double capacity) {
+		this.capacity = capacity;
+	}
 
 	@Override
 	public double theoreticalCapacity() {
-		return batteryCapacity_Joules;
+		return this.capacity; 
 	}
 
 	@Override
 	public double safeCapacity() {
-		return batteryCapacity_Joules - batteryCapacity_Joules * 0.01;
+		return theoreticalCapacity() - theoreticalCapacity()*0.01;
 	}
 
 	@Override
 	public double calculateCriticalSocThreshold() {
-		return batteryCapacity_Joules * batteryThreshold_PerCent;
+		return safeCapacity()*CRITICAL_THRESHOLD;
 	}
 
 	/**
@@ -43,12 +47,9 @@ public class CarsharingBatteryModelImpl implements CarsharingBatteryModel {
 	 */
 	@Override
 	public double calculateInitialSoc() {
-		Random rng = MatsimRandom.getRandom();
-		double minValue = batteryCapacity_Joules * (batteryInitialSoc_PerCent - 0.1);
-		double maxValue = batteryCapacity_Joules * (batteryInitialSoc_PerCent + 0.1);
-		double rng_capacity = minValue + rng.nextDouble() * (maxValue - minValue);
-		return rng_capacity;
+		return safeCapacity();
 	}
+	
 	
 	/**
 	 * calculateChargingRate
@@ -63,16 +64,11 @@ public class CarsharingBatteryModelImpl implements CarsharingBatteryModel {
 		double energyToCharge = powerInJoules * durationInSeconds;
 		return Math.min(energyToCharge, energyRequired);
 	}
-	
-	
-	/**
-	 * 
-	 */
+
 	@Override
 	public double getBalancingEnergy(double SoC) {
-		return SoC - (batteryCapacity_Joules * batteryBalancingThreshold_PerCent);
+		return SoC-(safeCapacity()*BALANCING_THRESHOLD);
 	}
-	
 
 	@Override
 	public double getBalancingEnergy(double SoC, double durationInSeconds) {
@@ -81,41 +77,10 @@ public class CarsharingBatteryModelImpl implements CarsharingBatteryModel {
 		double energyToBalance = batteryPower * durationInSeconds;
 		return Math.min(maxEnergyToBalance, energyToBalance);
 	}
-	
-	/**
-	 * 
-	 */
+
 	@Override
 	public double getBalancingPower() {
-		return batteryCapacity_Joules * 3600;
+		return safeCapacity() * 3600;
 	}
-	
-	
-	
-
-	/**
-	 * calculateBalancingRate
-	 * The balancing power is computed directly from the battery capacity.
-	 * @param SoC
-	 * @param durationInSeconds
-	 */
-	/*@Override
-	public PowerPerDurationLabel calculateBalancingRate(double SoC, double durationInSeconds) {
-		PowerPerDurationLabel balance;
-		double batteryPower = getBalancingPower();
-		double energyToBalance = batteryPower * durationInSeconds;
-		double maxEnergyToBalance = getBalancingEnergy(SoC);
-		
-		if(maxEnergyToBalance > 0 && energyToBalance <= maxEnergyToBalance) {
-			balance = new PowerPerDurationLabel(batteryPower, durationInSeconds);
-		} else if (energyToBalance > maxEnergyToBalance) {
-			double maxDuration = maxEnergyToBalance / batteryPower;
-			balance = new PowerPerDurationLabel(batteryPower, maxDuration);
-		} else { // maxEnergyToBalance <= 0
-			balance = new PowerPerDurationLabel(0.0, 0.0);
-		}
-		
-		return balance;
-	}*/
 
 }
