@@ -5,7 +5,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -50,6 +52,8 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	protected CarsharingRelocationParams rparams;
 	protected final ConcurrentHashMap<Id<ActivityFacility>, CarsharingStationDemand> demand;
 	protected final ConcurrentHashMap<Id<ActivityFacility>, Double> stations_active;
+	protected final LinkedList<CarsharingOperatorMobsim> operators;
+	protected final HashMap<CarsharingStationMobsim, ArrayList<CarsharingOperatorMobsim>> stations_operators_map;
 	
 	
 	protected PrintWriter perf_writer;
@@ -73,6 +77,8 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		this.rparams = m.getConfig().getRelocation();
 		this.demand = new ConcurrentHashMap<Id<ActivityFacility>, CarsharingStationDemand>();
 		this.stations_active = new ConcurrentHashMap<Id<ActivityFacility>, Double>();
+		this.operators = new LinkedList<CarsharingOperatorMobsim>();
+		this.stations_operators_map = new HashMap<CarsharingStationMobsim, ArrayList<CarsharingOperatorMobsim>>();
 	}
 	
 	void init() {
@@ -118,6 +124,18 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	@Override
 	public void updateRelocationList(int time) {
 		boolean checked = this.time_step.check((int) time);
+		if(checked) {
+			this.operators.clear();
+			this.stations_operators_map.clear();
+			for(CarsharingOperatorMobsim op : this.m.getOperators().availableSet()) {
+				ArrayList<CarsharingOperatorMobsim> s = this.stations_operators_map.get(op.getLocation());
+				if(s == null) s = new ArrayList<CarsharingOperatorMobsim>();
+				
+				s.add(op);
+				this.stations_operators_map.put(op.getLocation(), s);
+				this.operators.add(op);
+			}
+		}
 		this.update(time, checked);
 	}
 	
@@ -148,9 +166,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 				accessDistance = t.getDistance();
 			} else {
 				if(t.getType().equals("START")) {
-					//if(CarsharingUtils.checkbatteryFromBooking(m, t)) {
-						sTask = t;
-					//} 
+					sTask = t;
 				} else {
 					if(sTask != null) {
 						CarsharingOffer off = constructOffer(sTask, t, accessTime, accessDistance);
@@ -174,6 +190,8 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 					temp_tasks.clear();
 				}
 			}
+			this.operators.remove(op);
+			this.stations_operators_map.get(op.getLocation()).remove(op);
 		}
 		return booked_tasks;
 	}
