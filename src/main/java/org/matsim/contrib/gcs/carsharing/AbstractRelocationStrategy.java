@@ -42,7 +42,7 @@ import com.google.inject.Provider;
 
 public abstract class AbstractRelocationStrategy implements CarsharingRelocationModel {
 	
-	static int STEP = 10*60; // 5 min
+	static int STEP = 5*60; // 5 min
 	
 	private static Logger logger = Logger.getLogger(AbstractRelocationStrategy.class);
 	protected final CarsharingManager m;
