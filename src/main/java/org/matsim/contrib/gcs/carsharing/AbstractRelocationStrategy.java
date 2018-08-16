@@ -42,7 +42,7 @@ import com.google.inject.Provider;
 
 public abstract class AbstractRelocationStrategy implements CarsharingRelocationModel {
 	
-	static int STEP = 5*60; // 5 min
+	static int STEP = 10*60; // 5 min
 	
 	private static Logger logger = Logger.getLogger(AbstractRelocationStrategy.class);
 	protected final CarsharingManager m;
@@ -59,6 +59,8 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	protected PrintWriter perf_writer;
 	protected PrintWriter traceWriter;
 	protected PrintWriter taskWriter;
+	
+	protected int MIN_RELOCATION_STEP = 300;
 	
 	protected int time_bin_k_ub = 0;
 	protected int time_bin_k = 0;
@@ -124,13 +126,12 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	@Override
 	public void updateRelocationList(int time) {
 		boolean checked = this.time_step.check((int) time);
-		if(checked) {
+		if(time%MIN_RELOCATION_STEP==0 || checked) {
 			this.operators.clear();
 			this.stations_operators_map.clear();
 			for(CarsharingOperatorMobsim op : this.m.getOperators().availableSet()) {
 				ArrayList<CarsharingOperatorMobsim> s = this.stations_operators_map.get(op.getLocation());
 				if(s == null) s = new ArrayList<CarsharingOperatorMobsim>();
-				
 				s.add(op);
 				this.stations_operators_map.put(op.getLocation(), s);
 				this.operators.add(op);
@@ -181,7 +182,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 							}
 							m.events().processEvent(new CarsharingBookingEvent(time, m.getScenario(), m, b.getDemand(), b));
 						} else {
-							logger.warn("BOOKING FAILURE - " + b.getAgent().getId());
+							logger.warn("[R-BOOKING-FAILED] - " + b.getAgent().getId());
 						}
 					}
 					sTask = null;
@@ -190,8 +191,6 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 					temp_tasks.clear();
 				}
 			}
-			this.operators.remove(op);
-			this.stations_operators_map.get(op.getLocation()).remove(op);
 		}
 		return booked_tasks;
 	}
