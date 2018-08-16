@@ -49,6 +49,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	protected final Provider<CarsharingOperatorChoiceModel> choiceFactory;
 	protected CarsharingRelocationParams rparams;
 	protected final ConcurrentHashMap<Id<ActivityFacility>, CarsharingStationDemand> demand;
+	protected final ConcurrentHashMap<Id<ActivityFacility>, Double> stations_active;
 	
 	
 	protected PrintWriter perf_writer;
@@ -71,6 +72,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		this.pp_data = m.ppData();
 		this.rparams = m.getConfig().getRelocation();
 		this.demand = new ConcurrentHashMap<Id<ActivityFacility>, CarsharingStationDemand>();
+		this.stations_active = new ConcurrentHashMap<Id<ActivityFacility>, Double>();
 	}
 	
 	void init() {
@@ -82,6 +84,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		}
 		for(CarsharingStation s : this.m.getCsScenario().getStations().values()) {
 			this.demand.put(s.getId(), new CarsharingStationDemand(s));
+			this.stations_active.put(s.getId(), new Double(0));
 		}
 		for(CarsharingBookingRecord rec : recs) {
 			if(rec.getOriginStation() != null) { 
@@ -145,9 +148,9 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 				accessDistance = t.getDistance();
 			} else {
 				if(t.getType().equals("START")) {
-					if(CarsharingUtils.checkbatteryFromBooking(m, t)) {
+					//if(CarsharingUtils.checkbatteryFromBooking(m, t)) {
 						sTask = t;
-					} 
+					//} 
 				} else {
 					if(sTask != null) {
 						CarsharingOffer off = constructOffer(sTask, t, accessTime, accessDistance);

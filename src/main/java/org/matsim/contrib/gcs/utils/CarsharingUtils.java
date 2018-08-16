@@ -55,15 +55,18 @@ public final class CarsharingUtils {
 	static String ACCESS_STATION = "access_station";
 	static String EGRESS_STATION = "egress_station";
 	
-	public static boolean checkbatteryFromBooking(CarsharingManager m, CarsharingRelocationTask task) {
+	/*public static boolean checkbatteryFromBooking(CarsharingManager m, CarsharingRelocationTask task) {
 		int j=0;
+		int available_fleet = task.getStation().parking().getFleetSize();
 		for(CarsharingVehicleMobsim v : task.getStation().parking()) {
-			if(!v.battery().checkBattery(task.getDistance()/task.getTravelTime(), task.getDistance())) break;
+			//if(!v.battery().checkBattery(task.getDistance()/task.getTravelTime(), task.getDistance())) break;
+			double energylevel = v.battery().getSoC()/v.battery().getSafeBatteryCapacity();
+			if(energylevel < 0.8) break;
 			j++;
 		}
-		return j == task.getSize();
+		return available_fleet == j;
 		//return checkbatteryFromBooking(m, task.getStation(), task.getDistance(), task.getTravelTime(), task.getSize());
-	}
+	}*/
 	
 	public static boolean checkbatteryFromBooking(CarsharingManager m, CarsharingLocationInfo locinfo, int numbOfVehicle) {
 		return checkbatteryFromBooking(m, locinfo.station, locinfo.distance, locinfo.traveltime, numbOfVehicle);
