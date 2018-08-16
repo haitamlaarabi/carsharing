@@ -163,10 +163,10 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 								booked_tasks.add(new_task);
 								op.addTask(new_task);
 							}
+							m.events().processEvent(new CarsharingBookingEvent(time, m.getScenario(), m, b.getDemand(), b));
 						} else {
 							logger.warn("BOOKING FAILURE - " + b.getAgent().getId());
 						}
-						m.events().processEvent(new CarsharingBookingEvent(time, m.getScenario(), m, b.getDemand(), b));
 					}
 					sTask = null;
 					accessTime = 0;
