@@ -24,6 +24,7 @@ import org.matsim.contrib.gcs.carsharing.core.CarsharingVehicle;
 import org.matsim.contrib.gcs.carsharing.impl.CarsharingStationFactory;
 import org.matsim.contrib.gcs.carsharing.impl.CarsharingVehicleFactory;
 import org.matsim.contrib.gcs.utils.CarsharingUtils;
+import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.io.IOUtils;
@@ -296,7 +297,7 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 	}
 	
 	
-	public void readRawV3(String rawStationFile, String rawStationCRS, Map<String,Integer> header, String sep, int totVeh, int totPark) {
+	public void readRawV3(String rawStationFile, String rawStationCRS, Map<String,Integer> header, String sep, int totVeh, int totPark, boolean israndom) {
 		CoordinateTransformation CT = TransformationFactory.getCoordinateTransformation(rawStationCRS, scenario.getConfig().global().getCoordinateSystem());
 		try {
 			BufferedReader reader = IOUtils.getBufferedReader(rawStationFile);
@@ -361,7 +362,12 @@ public class CarsharingScenarioReader extends MatsimXmlParser {
 		    while(itcs.hasNext() && index < totVeh) {
 		    	// Create Vehicle
 		    	CarsharingStation cs = itcs.next();
-		    	int fleet = (int) Math.round(stations_fleetcoef_map.get(cs)*totVeh);
+		    	int fleet = 0;
+		    	if(israndom) {
+		    		fleet = MatsimRandom.getRandom().nextInt(cs.getCapacity());
+		    	} else {
+		    		fleet = (int) Math.round(stations_fleetcoef_map.get(cs)*totVeh);
+		    	}
 		    	int threshold = index+fleet;
 		    	if(threshold > totVeh) {
 		    		threshold = totVeh;
