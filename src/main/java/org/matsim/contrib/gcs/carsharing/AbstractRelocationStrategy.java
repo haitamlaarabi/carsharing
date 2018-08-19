@@ -42,8 +42,6 @@ import com.google.inject.Provider;
 
 public abstract class AbstractRelocationStrategy implements CarsharingRelocationModel {
 	
-	static int STEP = 5*60; // 5 min
-	
 	private static Logger logger = Logger.getLogger(AbstractRelocationStrategy.class);
 	protected final CarsharingManager m;
 	protected final TripRouter router;
@@ -60,7 +58,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 	protected PrintWriter traceWriter;
 	protected PrintWriter taskWriter;
 	
-	protected int MIN_RELOCATION_STEP = 300;
+	protected int MIN_RELOCATION_STEP = 600;
 	
 	protected int time_bin_k_ub = 0;
 	protected int time_bin_k = 0;
@@ -105,7 +103,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 		this.staff_size = this.rparams.getStaff_lbound();
 		this.time_bin = this.rparams.getBinstats_lbound();
 		this.train_size = this.rparams.getMaxtrain();
-		this.time_bin_k_ub = 1+(this.rparams.getBinstats_ubound() - this.rparams.getBinstats_lbound())/STEP;
+		this.time_bin_k_ub = 1+(this.rparams.getBinstats_ubound() - this.rparams.getBinstats_lbound())/300;
 		this.staff_size_k_ub = 1+(this.rparams.getStaff_ubound() - this.rparams.getStaff_lbound());
 		try {
 			this.perf_writer = new PrintWriter(new BufferedWriter(new FileWriter(this.rparams.getPerfomance_file(), true)));
@@ -287,7 +285,7 @@ public abstract class AbstractRelocationStrategy implements CarsharingRelocation
 			}
 		}
 		
-		this.time_bin = this.rparams.getBinstats_lbound() + this.time_bin_k*STEP;
+		this.time_bin = this.rparams.getBinstats_lbound() + this.time_bin_k*300;
 		this.time_step = new TimeStep(0, this.time_bin);
 	}
 	
