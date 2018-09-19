@@ -548,7 +548,7 @@ public final class CarsharingUtils {
 				@Override
 				public Coord getCoord() { return coord; }
 				@Override
-				public Id<ActivityFacility> getId() {	return null; }
+				public Id<ActivityFacility> getId() {	return Id.create(id, ActivityFacility.class); }
 				@Override
 				public Map<String, Object> getCustomAttributes() { return customAttributes; }
 				@Override
