@@ -1,13 +1,11 @@
-# Generic Carsharing Simulation Framework
-## An agent based framework developped using @MATSim (Multi-Agent Transport Simulation)
+# Generic Carsharing Simulator
+## An agent based transportation simulation framework based on @MATSim
 
-A generic software framework for car sharing modelling in order to:
+A generic software framework for carsharing modelling in order to:
+- Separate the carsharing mobility simulation from the corresponding operational model.
+- Be customizable and extendable.
 
-- Separate the mobility simulation of the car sharing system from its operational model.
-- Easily customize and extend the framework.
-
-While the components of the operational model can be aggregated into the following features:
-
+The components of the operational model can be aggregated into the following features:
 - Station: Conventional & free-floating stations with various power distribution models
 - Vehicle: Conventional, electric, purpose-specific vehicle models
 - Booking: Early booking and immediate booking
