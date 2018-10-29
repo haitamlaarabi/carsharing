@@ -71,18 +71,18 @@ public abstract class CarsharingInstaller extends AbstractModule {
 		return this.manager;
 	}
 	
-	public CarsharingInstaller(Scenario scenario, CarsharingScenario carsharing, Controler controler, String logdir) {
+	public CarsharingInstaller(Scenario scenario, CarsharingScenario carsharing, Controler controler, String rootdir) {
 		this.carsharing = carsharing;
 		this.controler = controler;
 		this.scenario = scenario;
 		if(this.carsharing == null) {
-			this.carsharing = new CarsharingScenario(scenario, logdir);
+			this.carsharing = new CarsharingScenario(scenario, rootdir);
 		} 
 		this.manager = new CarsharingManager(this.carsharing, this.controler);
 	}
 
-	public CarsharingInstaller(Scenario scenario, Controler controler, String logdir) {
-		this(scenario, null, controler, logdir);
+	public CarsharingInstaller(Scenario scenario, Controler controler, String rootdir) {
+		this(scenario, null, controler, rootdir);
 	}
 	
 	public void init() {

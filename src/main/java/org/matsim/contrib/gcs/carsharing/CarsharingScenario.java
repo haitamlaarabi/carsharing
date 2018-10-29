@@ -35,16 +35,16 @@ public class CarsharingScenario {
 	private final Scenario scenario;
 	private final Network carNetwork;
 	
-	private String logdir = null;
+	private String rootdir = null;
 	
-	public CarsharingScenario(Scenario scenario, String logdir) {
+	public CarsharingScenario(Scenario scenario, String rootdir) {
 		this.carNetwork = NetworkUtils.createNetwork();		
 		TransportModeNetworkFilter filter = new TransportModeNetworkFilter(scenario.getNetwork());
 		Set<String> modes = new HashSet<>();
 		modes.add(TransportMode.car);
 		filter.filter(this.carNetwork, modes);
 		
-		this.logdir = logdir;
+		this.rootdir = rootdir;
 		this.scenario = scenario;
 		CarsharingConfigGroup ccg = (CarsharingConfigGroup) scenario.getConfig().getModule(CarsharingConfigGroup.GROUP_NAME);
 		if(ccg != null) {
@@ -93,11 +93,11 @@ public class CarsharingScenario {
 		
 		//carsharing
 		// log
-		csConf.setTripsLogFile(logdir + "/trips.log");
-		csConf.setChargingLogFile(logdir + "/charge.log");
-		csConf.setBookingLogFile(logdir + "/booking.log");
-		csConf.setRelocationLogFile(logdir + "/relocation.log");
-		csConf.setLogDir(logdir);
+		csConf.setTripsLogFile(rootdir + "/log/trips.log");
+		csConf.setChargingLogFile(rootdir + "/log/charge.log");
+		csConf.setBookingLogFile(rootdir + "/log/booking.log");
+		csConf.setRelocationLogFile(rootdir + "/log/relocation.log");
+		csConf.setLogDir(rootdir+"/log");
 		
 		
 		
